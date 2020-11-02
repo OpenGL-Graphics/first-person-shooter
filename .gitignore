@@ -1,5 +1,7 @@
 *.swp
 build
+tags
+.clangd
 
 # Cmake: https://github.com/github/gitignore
 CMakeLists.txt.user
