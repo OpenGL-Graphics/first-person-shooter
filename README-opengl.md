@@ -1,5 +1,5 @@
 # Program
-- **src/main.cpp:** Draws a triangle using OpenGL shaders on a window generated with GLFW.
+- **src/hello_opengl.cpp:** Draws a triangle using OpenGL shaders on a window generated with GLFW.
 
 # OpenGL
 - **GLFW (Graphics Library Framework):** Library for creating windows with OpenGL context and for handling mouse and keyboard interactions. Read this [GLFW tutorial].

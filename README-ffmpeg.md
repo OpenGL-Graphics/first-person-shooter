@@ -1,3 +1,11 @@
+# Program
+- **src/hello_ffmpeg.cpp:** Read mp4 video and display its metadata.
+
+# Prerequisite
+```bash
+sudo apt install libavformat-dev
+```
+
 # Notions about video processing
 - **Demuxing:** Split individual streams (video, audio, subtitles...) and send them to their respective decoders.
 - **Muxing:** Encapsulating multiple streams (video, audio...) into the same container (e.g. avi).
