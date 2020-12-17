@@ -1,5 +1,9 @@
+// set imgui to use glad
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 #include <iostream>
 #include <vector>
 
@@ -143,19 +147,41 @@ int main() {
   GLuint program = create_shaders(source_vertex, source_fragment);
   glUseProgram(program);
 
+  // setup imgui context & glfw/opengl backends
+  ImGui::CreateContext();
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init("#version 130");
+
   // main loop
   while (!glfwWindowShouldClose(window)) {
+    // start imgui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // imgui window with widgets
+    ImGui::Begin("Hello world");
+    ImGui::Text("This is a text");
+    ImGui::End();
+    ImGui::Render();
+
     // clear buffer with blue color
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // draw triangle from bound buffer
+    // draw triangle from bound buffer & imgui window
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // process events & show rendered buffer
     glfwPollEvents();
     glfwSwapBuffers(window);
   }
+
+  // destroy imgui
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 
   // destroy shaders, window & terminate glfw
   glDeleteProgram(program);

@@ -13,12 +13,18 @@ set(CMAKE_BUILD_TYPE Debug)
 find_package(glfw3 REQUIRED)
 
 # glad shared library (opengl)
-add_library(glad SHARED src/glad.c)
+add_library(glad SHARED src/glad/glad.c)
 target_include_directories(glad PUBLIC include)
+
+# imgui
+add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
+file(GLOB IMGUI_SRC "src/imgui/*.cpp")
+add_library(imgui SHARED ${IMGUI_SRC})
+target_include_directories(imgui PUBLIC include/imgui include)
 
 # main executable
 add_executable(hello_opengl src/hello_opengl.cpp)
-target_link_libraries(hello_opengl glfw glad)
+target_link_libraries(hello_opengl glfw glad imgui)
 
 
 # ffmpeg main
