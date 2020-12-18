@@ -6,6 +6,16 @@
 #include <imgui_impl_opengl3.h>
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <sstream>
+
+static std::string read_file(const std::string& filename) {
+  std::ifstream f(filename.c_str());
+  std::stringstream buffer;
+  buffer << f.rdbuf();
+
+  return buffer.str();
+}
 
 static void on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
   // close window on escape key press
@@ -111,7 +121,7 @@ int main() {
   // callback for processing key press
   glfwSetKeyCallback(window, on_key);
 
-  // GPU buffer for vertexes positions
+  // GPU buffer (vbo) for vertexes positions
   const float positions[6] = {
     -0.5, -0.5,
      0,    0.5,
@@ -127,21 +137,8 @@ int main() {
   glEnableVertexAttribArray(0);
 
   // shader source codes (newer GLSL version not supported)
-  std::string source_vertex = 
-    "#version 130\n"
-    "in vec2 position;\n"
-    "void main()\n"
-    "{\n"
-    "  gl_Position = vec4(position, 0.0, 1.0);\n"
-    "}\n";
-
-  std::string source_fragment = 
-    "#version 130\n"
-    "out vec4 color;\n"
-    "void main()\n"
-    "{\n"
-    "  color = vec4(1.0, 0.0, 0.0, 1.0);\n"
-    "}\n";
+  std::string source_vertex = read_file("assets/shaders/triangle.vert");
+  std::string source_fragment = read_file("assets/shaders/triangle.frag");
 
   // create then install vertex & fragment shaders on GPU
   GLuint program = create_shaders(source_vertex, source_fragment);

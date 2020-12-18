@@ -3,7 +3,7 @@
 int main() {
   // open mp4 file & read its header
   AVFormatContext* context = NULL;
-  if (avformat_open_input(&context, "assets/bbb.mp4", NULL, NULL) != 0) {
+  if (avformat_open_input(&context, "assets/video/bbb.mp4", NULL, NULL) != 0) {
     printf("Failed to open stream\n");
   }
 
