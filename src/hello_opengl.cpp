@@ -113,7 +113,7 @@ int main() {
   // callback for processing key press
   glfwSetKeyCallback(window, on_key);
 
-  // GPU buffer (vbo) for vertexes positions
+  // GPU buffer (VBO) for vertexes positions, see https://open.gl/drawing
   const float positions[6] = {
     -0.5, -0.5,
      0,    0.5,
@@ -123,10 +123,6 @@ int main() {
   glGenBuffers(1, &index_buffer);
   glBindBuffer(GL_ARRAY_BUFFER, index_buffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-
-  // buffer attributes (position, color...)
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
-  glEnableVertexAttribArray(0);
 
   // shader source codes (newer GLSL version not supported)
   std::string source_vertex = read_file("assets/shaders/triangle.vert");
@@ -140,6 +136,15 @@ int main() {
     return 1;
   }
   glUseProgram(program);
+
+  // position attribute
+  GLuint attr_position_in = glGetAttribLocation(program, "position_in");
+  glVertexAttribPointer(attr_position_in, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
+  glEnableVertexAttribArray(attr_position_in);
+
+  // uniform: global shader variable passed by user
+  GLuint unif_color_in = glGetUniformLocation(program, "color_in");
+  glUniform3f(unif_color_in, 1.0f, 0.0f, 0.0f);
 
   // setup imgui context & glfw/opengl backends
   ImGui::CreateContext();
@@ -158,6 +163,9 @@ int main() {
     ImGui::Text("This is a text");
     ImGui::End();
     ImGui::Render();
+
+    // set random color using uniform variable
+    glUniform3f(unif_color_in, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX);
 
     // clear buffer with blue color
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
