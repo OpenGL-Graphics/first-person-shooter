@@ -93,8 +93,12 @@ int main() {
     return 1;
   }
 
+  // get monitor size
+  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
   // create window and OpenGL context
-  GLFWwindow* window = glfwCreateWindow(640, 480, "Window title", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "OpenGL test", NULL, NULL);
   if (!window) {
     std::cout << "Failed to create window or OpenGL context" << "\n";
     return 1;
@@ -113,16 +117,27 @@ int main() {
   // callback for processing key press
   glfwSetKeyCallback(window, on_key);
 
-  // GPU buffer (VBO) for vertexes positions, see https://open.gl/drawing
-  const float positions[6] = {
-    -0.5, -0.5,
-     0,    0.5,
-     0.5, -0.5
+  // GPU buffer (VBO) for vertexes (positions & colors), see https://open.gl/drawing
+  const float vertexes[20] = {
+     0.0f,  0.5f, 0.0f, 1.0f, 0.0f, // top corner
+    -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, // left corner
+     0.5f,  0.0f, 0.0f, 0.0f, 1.0f, // right corner
+     0.0f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom corner
   };
-  GLuint index_buffer;
-  glGenBuffers(1, &index_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, index_buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+  GLuint index_vbo;
+  glGenBuffers(1, &index_vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, index_vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
+
+  // GPU buffer for vertexes indices (EBO) to avoid duplication of vertexes
+  const GLuint indices[6] = {
+    0, 1, 2, // top triangle
+    1, 2, 3  // bottom triangle
+  };
+  GLuint index_ebo;
+  glGenBuffers(1, &index_ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
   // shader source codes (newer GLSL version not supported)
   std::string source_vertex = read_file("assets/shaders/triangle.vert");
@@ -139,12 +154,13 @@ int main() {
 
   // position attribute
   GLuint attr_position_in = glGetAttribLocation(program, "position_in");
-  glVertexAttribPointer(attr_position_in, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
+  glVertexAttribPointer(attr_position_in, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
   glEnableVertexAttribArray(attr_position_in);
 
-  // uniform: global shader variable passed by user
-  GLuint unif_color_in = glGetUniformLocation(program, "color_in");
-  glUniform3f(unif_color_in, 1.0f, 0.0f, 0.0f);
+  // color attribute
+  GLuint attr_color_in = glGetAttribLocation(program, "color_in");
+  glVertexAttribPointer(attr_color_in, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (2 * sizeof(float)));
+  glEnableVertexAttribArray(attr_color_in);
 
   // setup imgui context & glfw/opengl backends
   ImGui::CreateContext();
@@ -164,15 +180,12 @@ int main() {
     ImGui::End();
     ImGui::Render();
 
-    // set random color using uniform variable
-    glUniform3f(unif_color_in, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX);
-
     // clear buffer with blue color
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // draw triangle from bound buffer & imgui window
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    // draw triangle from bound buffers (vbo and ebo) & imgui window
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // process events & show rendered buffer
