@@ -24,47 +24,39 @@ static void on_key(GLFWwindow* window, int key, int scancode, int action, int mo
   }
 }
 
-static GLuint create_shaders(const std::string& source_vertex, const std::string& source_fragment) {
+static GLuint create_shader(const std::string& source_shader, GLenum type_shader) {
   // The Cherno: https://www.youtube.com/watch?v=71BLZwRGUJE
-  const char* source_vertex_char = source_vertex.c_str();
-  const char* source_fragment_char = source_fragment.c_str();
+  const char* source_shader_char = source_shader.c_str();
 
-  // compile shaders
-  GLuint shader_vertex= glCreateShader(GL_VERTEX_SHADER);
-  GLuint shader_fragment= glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(shader_vertex, 1, &source_vertex_char, NULL);
-  glShaderSource(shader_fragment, 1, &source_fragment_char, NULL);
-  glCompileShader(shader_vertex);
-  glCompileShader(shader_fragment);
+  // compile shader
+  GLuint shader = glCreateShader(type_shader);
+  glShaderSource(shader, 1, &source_shader_char, NULL);
+  glCompileShader(shader);
 
-  // TODO: group both shaders in same function (refactoring)
-  // error handling for vertex shader compilation
-  GLint result1;
-  glGetShaderiv(shader_vertex, GL_COMPILE_STATUS, &result1);
-  if (result1 == GL_FALSE) {
-    GLint length1;
-    glGetShaderiv(shader_vertex, GL_INFO_LOG_LENGTH, &length1);
-    std::vector<GLchar> message(length1);
-    glGetShaderInfoLog(shader_vertex, length1, NULL, message.data());
-    std::cout << "Vertex shader: " << message.data() << "\n";
+  // error handling for shader compilation
+  GLint result;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+  if (result == GL_FALSE) {
+    GLint length;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    std::vector<GLchar> message(length);
+    glGetShaderInfoLog(shader, length, NULL, message.data());
+    std::string type_shader_str = (type_shader == GL_VERTEX_SHADER ? "vertex" : "fragment");
+    std::cout << "Shader " << type_shader_str << ": " << message.data() << "\n";
 
-    glDeleteShader(shader_vertex);
+    glDeleteShader(shader);
     return 0;
   }
 
-  // error handling for fragment shader compilation
-  GLint result2;
-  glGetShaderiv(shader_fragment, GL_COMPILE_STATUS, &result2);
-  if (result2 == GL_FALSE) {
-    GLint length2;
-    glGetShaderiv(shader_fragment, GL_INFO_LOG_LENGTH, &length2);
-    std::vector<GLchar> message(length2);
-    glGetShaderInfoLog(shader_fragment, length2, NULL, message.data());
-    std::cout << "Fragment shader: " << message.data() << "\n";
+  return shader;
+}
 
-    glDeleteShader(shader_fragment);
+static GLuint create_shaders_program(const std::string& source_vertex, const std::string& source_fragment) {
+  // create vertex & fragment shaders
+  GLuint shader_vertex = create_shader(source_vertex, GL_VERTEX_SHADER);
+  GLuint shader_fragment = create_shader(source_fragment, GL_FRAGMENT_SHADER);
+  if (shader_vertex == 0 || shader_fragment == 0)
     return 0;
-  }
 
   // attach shaders to program & link it
   GLuint program = glCreateProgram();
@@ -141,7 +133,12 @@ int main() {
   std::string source_fragment = read_file("assets/shaders/triangle.frag");
 
   // create then install vertex & fragment shaders on GPU
-  GLuint program = create_shaders(source_vertex, source_fragment);
+  GLuint program = create_shaders_program(source_vertex, source_fragment);
+  if (program == 0) {
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 1;
+  }
   glUseProgram(program);
 
   // setup imgui context & glfw/opengl backends
