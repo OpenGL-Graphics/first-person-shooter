@@ -41,3 +41,10 @@ Useful tutorials:
 
 [imgui-repo]: https://github.com/ocornut/imgui/ 
 [imgui-example]: https://github.com/ocornut/imgui/tree/master/examples/example_glfw_opengl3
+
+# Texture image
+- As OpenGL doesn't support standard image formats (jpeg, png), texture images are loaded using [stb-image].
+- Brick and building texture images downloaded from [textures.com].
+
+[stb-image]: https://github.com/nothings/stb/blob/master/stb_image.h
+[textures.com]: https://www.textures.com
