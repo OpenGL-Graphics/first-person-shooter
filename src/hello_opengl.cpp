@@ -123,17 +123,56 @@ int main() {
   glfwSetKeyCallback(window, on_key);
 
   // GPU buffer (VBO) for vertexes (positions, colors, texture coord), see https://open.gl
-  const float vertexes[28] = {
-     0.0f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top corner
-    -0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // left corner
-     0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // right corner
-     0.0f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f// bottom corner
+  const float vertexes[] = {
+  // coord(x,y,z)        color(r,g,b)      texture(u,v)
+    -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f
   };
   GLuint vbo;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
 
+  /*
   // GPU buffer for vertexes indices (EBO) to avoid duplication of vertexes
   const GLuint indices[6] = {
     0, 1, 2, // top triangle
@@ -143,6 +182,7 @@ int main() {
   glGenBuffers(1, &ebo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  */
 
   // shader source codes (newer GLSL version not supported)
   std::string source_vertex = read_file("assets/shaders/triangle.vert");
@@ -159,17 +199,17 @@ int main() {
 
   // position attribute
   GLuint attr_position = glGetAttribLocation(program, "position");
-  glVertexAttribPointer(attr_position, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) 0);
+  glVertexAttribPointer(attr_position, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
   glEnableVertexAttribArray(attr_position);
 
   // color attribute
   GLuint attr_color = glGetAttribLocation(program, "color");
-  glVertexAttribPointer(attr_color, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) (2 * sizeof(float)));
+  glVertexAttribPointer(attr_color, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
   glEnableVertexAttribArray(attr_color);
 
   // texture coordinate attribute
   GLuint attr_texture_coord = glGetAttribLocation(program, "texture_coord");
-  glVertexAttribPointer(attr_texture_coord, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) (5 * sizeof(float)));
+  glVertexAttribPointer(attr_texture_coord, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
   glEnableVertexAttribArray(attr_texture_coord);
 
   // texture
@@ -179,7 +219,7 @@ int main() {
 
   // load image into texture
   int width, height, n_channels;
-  stbi_set_flip_vertically_on_load(true);
+  // stbi_set_flip_vertically_on_load(true);
   unsigned char* image = stbi_load("assets/images/building.jpg", &width, &height, &n_channels, 0);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
   stbi_image_free(image);
@@ -199,6 +239,9 @@ int main() {
   glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 1.0f, 10.f); 
   GLuint uniform_projection = glGetUniformLocation(program, "projection");
   glUniformMatrix4fv(uniform_projection, 1, GL_FALSE, glm::value_ptr(projection_mat));
+
+  // enable depth testing
+  glEnable(GL_DEPTH_TEST);
 
   // setup imgui context & glfw/opengl backends
   ImGui::CreateContext();
@@ -220,16 +263,17 @@ int main() {
 
     // model matrix: ever rotating rectangle using time
     glm::mat4 model_mat(1.0f);
-    model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     GLuint uniform_model = glGetUniformLocation(program, "model");
     glUniformMatrix4fv(uniform_model, 1, GL_FALSE, glm::value_ptr(model_mat));
 
-    // clear buffer with blue color
+    // before render, clear color buffer in blue & depth buffer
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw triangle from bound buffers (vbo and ebo) & imgui window
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // process events & show rendered buffer
@@ -244,7 +288,7 @@ int main() {
 
   // de-allocate GPU buffers & textures
   glDeleteBuffers(1, &vbo);
-  glDeleteBuffers(1, &ebo);
+  // glDeleteBuffers(1, &ebo);
   glDeleteTextures(1, &texture);
 
   // destroy shaders, window & terminate glfw
