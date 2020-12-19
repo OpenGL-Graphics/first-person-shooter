@@ -190,6 +190,16 @@ int main() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+  // view matrix: transform to camera coord
+  glm::mat4 view_mat = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  GLuint uniform_view = glGetUniformLocation(program, "view");
+  glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view_mat));
+
+  // projection matrix: transform to ndc coord
+  glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 1.0f, 10.f); 
+  GLuint uniform_projection = glGetUniformLocation(program, "projection");
+  glUniformMatrix4fv(uniform_projection, 1, GL_FALSE, glm::value_ptr(projection_mat));
+
   // setup imgui context & glfw/opengl backends
   ImGui::CreateContext();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -208,11 +218,11 @@ int main() {
     ImGui::End();
     ImGui::Render();
 
-    // ever rotating rectangle using time & tranformation matrix
-    glm::mat4 transformation(1.0f);
-    transformation = glm::rotate(transformation, (float)glfwGetTime() * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    GLuint uniform_transformation = glGetUniformLocation(program, "transformation");
-    glUniformMatrix4fv(uniform_transformation, 1, GL_FALSE, glm::value_ptr(transformation));
+    // model matrix: ever rotating rectangle using time
+    glm::mat4 model_mat(1.0f);
+    model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    GLuint uniform_model = glGetUniformLocation(program, "model");
+    glUniformMatrix4fv(uniform_model, 1, GL_FALSE, glm::value_ptr(model_mat));
 
     // clear buffer with blue color
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
