@@ -98,12 +98,14 @@ int main() {
     return 1;
   }
 
-  // get monitor size
+  // get monitor width & height
   GLFWmonitor* monitor = glfwGetPrimaryMonitor();
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  const int width_monitor = mode->width;
+  const int height_monitor = mode->height;
 
   // create window and OpenGL context
-  GLFWwindow* window = glfwCreateWindow(mode->width, mode->height, "OpenGL test", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(width_monitor, height_monitor, "OpenGL test", NULL, NULL);
   if (!window) {
     std::cout << "Failed to create window or OpenGL context" << "\n";
     return 1;
@@ -122,50 +124,56 @@ int main() {
   // callback for processing key press
   glfwSetKeyCallback(window, on_key);
 
-  // GPU buffer (VBO) for vertexes (positions, colors, texture coord), see https://open.gl
+  // GPU buffer (VBO) for vertexes (positions, colors, texture direction), see https://open.gl
+  // coord(x,y,z)        color(r,g,b)      texture(u,v,w)
   const float vertexes[] = {
-  // coord(x,y,z)        color(r,g,b)      texture(u,v)
-    -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+    // negative-x (left face)
+    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f,  1.0f,
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f,  1.0f,
+    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f,  1.0f,
 
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+     // positive-x (right face)
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f,
+     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f,
 
-    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+     // negative-y (bottom face)
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f, -1.0f,
+     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f,  1.0f,
+     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f,  1.0f,
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f,  1.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
 
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+    // positive-y (top face)
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f, -1.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f,  1.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f,  1.0f,
+    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f,  1.0f,
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
 
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    // negative-z (back face)
+    -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f,
+     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f, -1.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, -1.0f,
+     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, -1.0f, 
+    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
 
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f
+    // positive-z (front face)
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
   };
   GLuint vbo;
   glGenBuffers(1, &vbo);
@@ -199,44 +207,55 @@ int main() {
 
   // position attribute
   GLuint attr_position = glGetAttribLocation(program, "position");
-  glVertexAttribPointer(attr_position, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
+  glVertexAttribPointer(attr_position, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *) 0);
   glEnableVertexAttribArray(attr_position);
 
   // color attribute
   GLuint attr_color = glGetAttribLocation(program, "color");
-  glVertexAttribPointer(attr_color, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
+  glVertexAttribPointer(attr_color, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *) (3 * sizeof(float)));
   glEnableVertexAttribArray(attr_color);
 
-  // texture coordinate attribute
-  GLuint attr_texture_coord = glGetAttribLocation(program, "texture_coord");
-  glVertexAttribPointer(attr_texture_coord, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
-  glEnableVertexAttribArray(attr_texture_coord);
+  // texture direction attribute
+  GLuint attr_texture_dir = glGetAttribLocation(program, "texture_dir");
+  glVertexAttribPointer(attr_texture_dir, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *) (6 * sizeof(float)));
+  glEnableVertexAttribArray(attr_texture_dir);
 
   // texture
   GLuint texture;
   glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
-  // load image into texture
-  int width, height, n_channels;
-  // stbi_set_flip_vertically_on_load(true);
-  unsigned char* image = stbi_load("assets/images/building.jpg", &width, &height, &n_channels, 0);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-  stbi_image_free(image);
+  // 6-sided texture cube using loaded images 
+  std::string images_names[6] = {
+    "assets/images/brick1.jpg",
+    "assets/images/brick1.jpg",
+    "assets/images/roof.jpg",
+    "assets/images/roof.jpg",
+    "assets/images/brick2.jpg",
+    "assets/images/brick2.jpg",
+  };
+  for (size_t i_texture = 0; i_texture < 6; i_texture++) {
+    // stbi_set_flip_vertically_on_load(true);
+    int width_image, height_image, n_channels_image;
+    unsigned char* image = stbi_load(images_names[i_texture].c_str(), &width_image, &height_image, &n_channels_image, 0);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i_texture, 0, GL_RGB, width_image, height_image, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    stbi_image_free(image);
+  }
 
   // wrapping texture on mesh
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   // view matrix: transform to camera coord
-  glm::mat4 view_mat = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  glm::mat4 view_mat = glm::lookAt(glm::vec3(0.0f, 3.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   GLuint uniform_view = glGetUniformLocation(program, "view");
   glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view_mat));
 
   // projection matrix: transform to ndc coord
-  glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width/(float)height, 1.0f, 10.f); 
+  glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 10.f); 
   GLuint uniform_projection = glGetUniformLocation(program, "projection");
   glUniformMatrix4fv(uniform_projection, 1, GL_FALSE, glm::value_ptr(projection_mat));
 
@@ -261,19 +280,25 @@ int main() {
     ImGui::End();
     ImGui::Render();
 
-    // model matrix: ever rotating rectangle using time
-    glm::mat4 model_mat(1.0f);
-    model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    GLuint uniform_model = glGetUniformLocation(program, "model");
-    glUniformMatrix4fv(uniform_model, 1, GL_FALSE, glm::value_ptr(model_mat));
-
     // before render, clear color buffer in blue & depth buffer
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // draw triangle from bound buffers (vbo and ebo) & imgui window
-    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // draw multiple cubes
+    for (char i_cube = -2; i_cube <= 2; i_cube += 2) {
+      // model matrix: ever rotating rectangle using time
+      glm::mat4 model_mat(1.0f);
+      model_mat = glm::translate(model_mat, glm::vec3(i_cube, 0.0f, 0.0f));
+      // model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+      GLuint uniform_model = glGetUniformLocation(program, "model");
+      glUniformMatrix4fv(uniform_model, 1, GL_FALSE, glm::value_ptr(model_mat));
+
+      // draw triangle from bound buffers (vbo and ebo)
+      // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+
+    // render imgui window
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // process events & show rendered buffer
