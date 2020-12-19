@@ -8,9 +8,11 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 static std::string read_file(const std::string& filename) {
   std::ifstream f(filename.c_str());
@@ -205,6 +207,12 @@ int main() {
     ImGui::Text("This is a text");
     ImGui::End();
     ImGui::Render();
+
+    // ever rotating rectangle using time & tranformation matrix
+    glm::mat4 transformation(1.0f);
+    transformation = glm::rotate(transformation, (float)glfwGetTime() * glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    GLuint uniform_transformation = glGetUniformLocation(program, "transformation");
+    glUniformMatrix4fv(uniform_transformation, 1, GL_FALSE, glm::value_ptr(transformation));
 
     // clear buffer with blue color
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
