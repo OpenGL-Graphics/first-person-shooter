@@ -13,6 +13,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+// camera
+glm::vec3 pos_camera(0.0f, 0.0f, 5.0f);
+glm::vec3 dir_camera(0.0f, 0.0f, -1.0f);
+glm::vec3 up_camera(0.0f, 1.0f, 0.0f);
+const float X_SPEED = 0.1f;
+const float Z_SPEED = 0.1f;
 
 static std::string read_file(const std::string& filename) {
   std::ifstream f(filename.c_str());
@@ -22,10 +30,24 @@ static std::string read_file(const std::string& filename) {
   return buffer.str();
 }
 
-static void on_key(GLFWwindow* window, int key, int scancode, int action, int mods) {
+static void on_key(GLFWwindow* window) {
   // close window on escape key press
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
+
+  // move camera
+  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+    pos_camera -= Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    pos_camera += Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+    pos_camera -= X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+    pos_camera += X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
   }
 }
 
@@ -122,7 +144,8 @@ int main() {
   }
 
   // callback for processing key press
-  glfwSetKeyCallback(window, on_key);
+  // glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
+  // glfwSetKeyCallback(window, on_key);
 
   // GPU buffer (VBO) for vertexes (positions, colors, texture direction), see https://open.gl
   // coord(x,y,z)        color(r,g,b)      texture(u,v,w)
@@ -264,6 +287,9 @@ int main() {
 
   // main loop
   while (!glfwWindowShouldClose(window)) {
+    // keyboard input (move camera, quit application)
+    on_key(window);
+
     // start imgui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -279,13 +305,15 @@ int main() {
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    /*
     // rotating camera using basic trigonometry
     const float radius = 5.0f;
     float x_camera = radius * cos((float)glfwGetTime());
     float z_camera = radius * sin((float)glfwGetTime());
+    */
 
     // view matrix (2/3): transform to camera coord
-    glm::mat4 view_mat = glm::lookAt(glm::vec3(x_camera, 3.0f, z_camera), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view_mat = glm::lookAt(pos_camera, pos_camera + dir_camera, up_camera);
     GLuint uniform_view = glGetUniformLocation(program, "view");
     glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view_mat));
 
