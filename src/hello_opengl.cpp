@@ -160,7 +160,7 @@ int main() {
     -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
 
     // negative-z (back face)
-    -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f,
+    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
      0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f, -1.0f,
      0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, -1.0f,
      0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, -1.0f, 
@@ -249,12 +249,7 @@ int main() {
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  // view matrix: transform to camera coord
-  glm::mat4 view_mat = glm::lookAt(glm::vec3(0.0f, 3.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  GLuint uniform_view = glGetUniformLocation(program, "view");
-  glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view_mat));
-
-  // projection matrix: transform to ndc coord
+  // projection matrix (3/3): transform to ndc coord
   glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 10.f); 
   GLuint uniform_projection = glGetUniformLocation(program, "projection");
   glUniformMatrix4fv(uniform_projection, 1, GL_FALSE, glm::value_ptr(projection_mat));
@@ -284,9 +279,19 @@ int main() {
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // rotating camera using basic trigonometry
+    const float radius = 5.0f;
+    float x_camera = radius * cos((float)glfwGetTime());
+    float z_camera = radius * sin((float)glfwGetTime());
+
+    // view matrix (2/3): transform to camera coord
+    glm::mat4 view_mat = glm::lookAt(glm::vec3(x_camera, 3.0f, z_camera), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    GLuint uniform_view = glGetUniformLocation(program, "view");
+    glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view_mat));
+
     // draw multiple cubes
     for (char i_cube = -2; i_cube <= 2; i_cube += 2) {
-      // model matrix: ever rotating rectangle using time
+      // model matrix (1/3): ever rotating rectangle using time
       glm::mat4 model_mat(1.0f);
       model_mat = glm::translate(model_mat, glm::vec3(i_cube, 0.0f, 0.0f));
       // model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
