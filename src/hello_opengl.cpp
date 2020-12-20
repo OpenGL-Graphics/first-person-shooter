@@ -22,96 +22,18 @@ glm::vec3 up_camera(0.0f, 1.0f, 0.0f);
 const float X_SPEED = 0.1f;
 const float Z_SPEED = 0.1f;
 
-static std::string read_file(const std::string& filename) {
-  std::ifstream f(filename.c_str());
-  std::stringstream buffer;
-  buffer << f.rdbuf();
+// mouse cursor & horizontal/vertical angle
+float x_mouse = 0.0f;
+float y_mouse = 0.0f;
+float pitch = 0.0f;
+float yaw = 0.0f;
 
-  return buffer.str();
-}
-
-static void on_key(GLFWwindow* window) {
-  // close window on escape key press
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
-  }
-
-  // move camera
-  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-    pos_camera -= Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-    pos_camera += Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-    pos_camera -= X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-    pos_camera += X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
-  }
-}
-
-static GLuint create_shader(const std::string& source_shader, GLenum type_shader) {
-  // The Cherno: https://www.youtube.com/watch?v=71BLZwRGUJE
-  const char* source_shader_char = source_shader.c_str();
-
-  // compile shader
-  GLuint shader = glCreateShader(type_shader);
-  glShaderSource(shader, 1, &source_shader_char, NULL);
-  glCompileShader(shader);
-
-  // error handling for shader compilation
-  GLint result;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-  if (result == GL_FALSE) {
-    GLint length;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-    std::vector<GLchar> message(length);
-    glGetShaderInfoLog(shader, length, NULL, message.data());
-    std::string type_shader_str = (type_shader == GL_VERTEX_SHADER ? "vertex" : "fragment");
-    std::cout << "Shader " << type_shader_str << ": " << message.data() << "\n";
-
-    glDeleteShader(shader);
-    return 0;
-  }
-
-  return shader;
-}
-
-static GLuint create_shaders_program(const std::string& source_vertex, const std::string& source_fragment) {
-  // create vertex & fragment shaders
-  GLuint shader_vertex = create_shader(source_vertex, GL_VERTEX_SHADER);
-  GLuint shader_fragment = create_shader(source_fragment, GL_FRAGMENT_SHADER);
-  if (shader_vertex == 0 || shader_fragment == 0)
-    return 0;
-
-  // attach shaders to program & link it
-  GLuint program = glCreateProgram();
-  glAttachShader(program, shader_vertex);
-  glAttachShader(program, shader_fragment);
-  glLinkProgram(program);
-  glValidateProgram(program);
-
-  // error handling of program linking
-  GLint result_link;
-  glGetProgramiv(program,  GL_LINK_STATUS, &result_link);
-  if (result_link == GL_FALSE) {
-    GLint length_link;
-    glGetProgramiv(program,  GL_INFO_LOG_LENGTH, &length_link);
-    std::vector<GLchar> message(length_link);
-    glGetProgramInfoLog(program, length_link, NULL, message.data());
-    std::cout << "program: " << message.data() << "\n";
-
-    glDeleteProgram(program);
-    return 0;
-  }
-
-  // flag attached shaders objects for deletion
-  glDeleteShader(shader_vertex);
-  glDeleteShader(shader_fragment);
-
-  return program;
-}
+// functions headers
+static std::string read_file(const std::string& filename);
+static void on_key(GLFWwindow* window);
+static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
+static GLuint create_shader(const std::string& source_shader, GLenum type_shader);
+static GLuint create_shaders_program(const std::string& source_vertex, const std::string& source_fragment);
 
 int main() {
   // initialize glfw
@@ -120,11 +42,13 @@ int main() {
     return 1;
   }
 
-  // get monitor width & height
+  // get monitor width/height & init mouse position
   GLFWmonitor* monitor = glfwGetPrimaryMonitor();
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
   const int width_monitor = mode->width;
   const int height_monitor = mode->height;
+  x_mouse = width_monitor / 2.0f;
+  y_mouse = height_monitor / 2.0f;
 
   // create window and OpenGL context
   GLFWwindow* window = glfwCreateWindow(width_monitor, height_monitor, "OpenGL test", NULL, NULL);
@@ -143,9 +67,11 @@ int main() {
     std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
   }
 
-  // callback for processing key press
+  // callback for processing keyboard & mouse inputs
   // glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
   // glfwSetKeyCallback(window, on_key);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetCursorPosCallback(window, on_mouse_move);
 
   // GPU buffer (VBO) for vertexes (positions, colors, texture direction), see https://open.gl
   // coord(x,y,z)        color(r,g,b)      texture(u,v,w)
@@ -312,8 +238,10 @@ int main() {
     float z_camera = radius * sin((float)glfwGetTime());
     */
 
-    // view matrix (2/3): transform to camera coord
+    // view matrix (2/3): transform to camera coord (consider rotation due to mouse movement)
     glm::mat4 view_mat = glm::lookAt(pos_camera, pos_camera + dir_camera, up_camera);
+    view_mat = glm::rotate(view_mat, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    view_mat = glm::rotate(view_mat, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
     GLuint uniform_view = glGetUniformLocation(program, "view");
     glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view_mat));
 
@@ -355,4 +283,115 @@ int main() {
   glfwTerminate();
 
   return 0;
+}
+
+static std::string read_file(const std::string& filename) {
+  std::ifstream f(filename.c_str());
+  std::stringstream buffer;
+  buffer << f.rdbuf();
+
+  return buffer.str();
+}
+
+static void on_key(GLFWwindow* window) {
+  // close window on escape key press
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
+
+  // move camera
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    pos_camera -= Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    pos_camera += Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    pos_camera -= X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    pos_camera += X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
+  }
+}
+
+static void on_mouse_move(GLFWwindow* window, double xpos, double ypos) {
+  // see: https://www.reddit.com/r/opengl/comments/831vpb/
+  // calculate offset in mouse cursor position
+  float sensitivity = 0.01f;
+  float x_offset = xpos - x_mouse; 
+  float y_offset = ypos - y_mouse; 
+  x_mouse = xpos;
+  y_mouse = ypos;
+  
+  // horizontal/vertical rotation angle around y-axis/x-axis
+  yaw += sensitivity * x_offset;
+  pitch += sensitivity * y_offset;
+
+  // limit horizontal/vertical rotation angle
+  yaw = (yaw > glm::radians(90.0f)) ? glm::radians(90.0f): yaw;
+  yaw = (yaw < glm::radians(-90.0f)) ? glm::radians(-90.0f): yaw;
+  pitch = (pitch > glm::radians(90.0f)) ? glm::radians(90.0f): pitch;
+  pitch = (pitch < glm::radians(-90.0f)) ? glm::radians(-90.0f): pitch;
+}
+
+static GLuint create_shader(const std::string& source_shader, GLenum type_shader) {
+  // The Cherno: https://www.youtube.com/watch?v=71BLZwRGUJE
+  const char* source_shader_char = source_shader.c_str();
+
+  // compile shader
+  GLuint shader = glCreateShader(type_shader);
+  glShaderSource(shader, 1, &source_shader_char, NULL);
+  glCompileShader(shader);
+
+  // error handling for shader compilation
+  GLint result;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+  if (result == GL_FALSE) {
+    GLint length;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    std::vector<GLchar> message(length);
+    glGetShaderInfoLog(shader, length, NULL, message.data());
+    std::string type_shader_str = (type_shader == GL_VERTEX_SHADER ? "vertex" : "fragment");
+    std::cout << "Shader " << type_shader_str << ": " << message.data() << "\n";
+
+    glDeleteShader(shader);
+    return 0;
+  }
+
+  return shader;
+}
+
+static GLuint create_shaders_program(const std::string& source_vertex, const std::string& source_fragment) {
+  // create vertex & fragment shaders
+  GLuint shader_vertex = create_shader(source_vertex, GL_VERTEX_SHADER);
+  GLuint shader_fragment = create_shader(source_fragment, GL_FRAGMENT_SHADER);
+  if (shader_vertex == 0 || shader_fragment == 0)
+    return 0;
+
+  // attach shaders to program & link it
+  GLuint program = glCreateProgram();
+  glAttachShader(program, shader_vertex);
+  glAttachShader(program, shader_fragment);
+  glLinkProgram(program);
+  glValidateProgram(program);
+
+  // error handling of program linking
+  GLint result_link;
+  glGetProgramiv(program,  GL_LINK_STATUS, &result_link);
+  if (result_link == GL_FALSE) {
+    GLint length_link;
+    glGetProgramiv(program,  GL_INFO_LOG_LENGTH, &length_link);
+    std::vector<GLchar> message(length_link);
+    glGetProgramInfoLog(program, length_link, NULL, message.data());
+    std::cout << "program: " << message.data() << "\n";
+
+    glDeleteProgram(program);
+    return 0;
+  }
+
+  // flag attached shaders objects for deletion
+  glDeleteShader(shader_vertex);
+  glDeleteShader(shader_fragment);
+
+  return program;
 }
