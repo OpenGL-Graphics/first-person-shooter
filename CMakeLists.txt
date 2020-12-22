@@ -7,6 +7,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # debug with gdb
 set(CMAKE_BUILD_TYPE Debug)
 
+# copy video assets folder
+file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
+
 
 # opengl main
 # glfw
@@ -23,17 +26,5 @@ add_library(imgui SHARED ${IMGUI_SRC})
 target_include_directories(imgui PUBLIC include/imgui include)
 
 # main executable
-add_executable(hello_opengl src/hello_opengl.cpp)
-target_link_libraries(hello_opengl glfw glad imgui)
-
-
-# ffmpeg main
-# ffmpeg libraries
-find_library(AVFORMAT_LIBRARY avformat)
-
-# copy video assets folder
-file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
-
-# main executable
-add_executable(hello_ffmpeg src/hello_ffmpeg.c)
-target_link_libraries(hello_ffmpeg ${AVFORMAT_LIBRARY})
+add_executable(main src/main.cpp)
+target_link_libraries(main glfw glad imgui)

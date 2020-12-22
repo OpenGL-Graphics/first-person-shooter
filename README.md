@@ -1,5 +1,5 @@
 # Program
-- **src/hello_opengl.cpp:** Draws a triangle using OpenGL shaders on a window generated with GLFW.
+- **src/main.cpp:** Draws textured 3D cubes with OpenGL shaders on a window generated with GLFW, with the possibility to navigate in the scene using the mouse and WASD keys.
 
 # OpenGL
 - **GLFW (Graphics Library Framework):** Library for creating windows with OpenGL context and for handling mouse and keyboard interactions. Read this [GLFW tutorial].
