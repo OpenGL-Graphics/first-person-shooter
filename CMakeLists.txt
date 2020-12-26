@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 project(VIDEO)
 
-# autocomplete with clang in vim
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # debug with gdb
 set(CMAKE_BUILD_TYPE Debug)
 
-# copy video assets folder
+# autocomplete with clang & linting in vim (needed by YCM plugin)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# copy assets folder
 file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 
 

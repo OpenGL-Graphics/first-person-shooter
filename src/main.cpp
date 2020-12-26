@@ -6,6 +6,7 @@
 #include <imgui_impl_opengl3.h>
 #include <iostream>
 #include <vector>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #define STB_IMAGE_IMPLEMENTATION
@@ -14,6 +15,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <shaders/program.hpp>
 
 // camera
 glm::vec3 pos_camera(0.0f, 0.0f, 5.0f);
@@ -32,8 +34,6 @@ float yaw = 0.0f;
 static std::string read_file(const std::string& filename);
 static void on_key(GLFWwindow* window);
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
-static GLuint create_shader(const std::string& source_shader, GLenum type_shader);
-static GLuint create_shaders_program(const std::string& source_vertex, const std::string& source_fragment);
 
 int main() {
   // initialize glfw
@@ -146,7 +146,8 @@ int main() {
   std::string source_fragment = read_file("assets/shaders/triangle.frag");
 
   // create then install vertex & fragment shaders on GPU
-  GLuint program = create_shaders_program(source_vertex, source_fragment);
+  Program program_shaders(source_vertex, source_fragment);
+  GLuint program = program_shaders.m_id;
   if (program == 0) {
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -200,8 +201,7 @@ int main() {
 
   // projection matrix (3/3): transform to ndc coord
   glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 10.f); 
-  GLuint uniform_projection = glGetUniformLocation(program, "projection");
-  glUniformMatrix4fv(uniform_projection, 1, GL_FALSE, glm::value_ptr(projection_mat));
+  program_shaders.set_mat4("projection", projection_mat);
 
   // enable depth testing
   glEnable(GL_DEPTH_TEST);
@@ -242,8 +242,7 @@ int main() {
     glm::mat4 view_mat = glm::lookAt(pos_camera, pos_camera + dir_camera, up_camera);
     view_mat = glm::rotate(view_mat, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
     view_mat = glm::rotate(view_mat, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-    GLuint uniform_view = glGetUniformLocation(program, "view");
-    glUniformMatrix4fv(uniform_view, 1, GL_FALSE, glm::value_ptr(view_mat));
+    program_shaders.set_mat4("view", view_mat);
 
     // draw multiple cubes
     for (char i_cube = -2; i_cube <= 2; i_cube += 2) {
@@ -251,8 +250,7 @@ int main() {
       glm::mat4 model_mat(1.0f);
       model_mat = glm::translate(model_mat, glm::vec3(i_cube, 0.0f, 0.0f));
       // model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-      GLuint uniform_model = glGetUniformLocation(program, "model");
-      glUniformMatrix4fv(uniform_model, 1, GL_FALSE, glm::value_ptr(model_mat));
+      program_shaders.set_mat4("model", model_mat);
 
       // draw triangle from bound buffers (vbo and ebo)
       // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -332,66 +330,4 @@ static void on_mouse_move(GLFWwindow* window, double xpos, double ypos) {
   yaw = (yaw < glm::radians(-90.0f)) ? glm::radians(-90.0f): yaw;
   pitch = (pitch > glm::radians(90.0f)) ? glm::radians(90.0f): pitch;
   pitch = (pitch < glm::radians(-90.0f)) ? glm::radians(-90.0f): pitch;
-}
-
-static GLuint create_shader(const std::string& source_shader, GLenum type_shader) {
-  // The Cherno: https://www.youtube.com/watch?v=71BLZwRGUJE
-  const char* source_shader_char = source_shader.c_str();
-
-  // compile shader
-  GLuint shader = glCreateShader(type_shader);
-  glShaderSource(shader, 1, &source_shader_char, NULL);
-  glCompileShader(shader);
-
-  // error handling for shader compilation
-  GLint result;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-  if (result == GL_FALSE) {
-    GLint length;
-    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-    std::vector<GLchar> message(length);
-    glGetShaderInfoLog(shader, length, NULL, message.data());
-    std::string type_shader_str = (type_shader == GL_VERTEX_SHADER ? "vertex" : "fragment");
-    std::cout << "Shader " << type_shader_str << ": " << message.data() << "\n";
-
-    glDeleteShader(shader);
-    return 0;
-  }
-
-  return shader;
-}
-
-static GLuint create_shaders_program(const std::string& source_vertex, const std::string& source_fragment) {
-  // create vertex & fragment shaders
-  GLuint shader_vertex = create_shader(source_vertex, GL_VERTEX_SHADER);
-  GLuint shader_fragment = create_shader(source_fragment, GL_FRAGMENT_SHADER);
-  if (shader_vertex == 0 || shader_fragment == 0)
-    return 0;
-
-  // attach shaders to program & link it
-  GLuint program = glCreateProgram();
-  glAttachShader(program, shader_vertex);
-  glAttachShader(program, shader_fragment);
-  glLinkProgram(program);
-  glValidateProgram(program);
-
-  // error handling of program linking
-  GLint result_link;
-  glGetProgramiv(program,  GL_LINK_STATUS, &result_link);
-  if (result_link == GL_FALSE) {
-    GLint length_link;
-    glGetProgramiv(program,  GL_INFO_LOG_LENGTH, &length_link);
-    std::vector<GLchar> message(length_link);
-    glGetProgramInfoLog(program, length_link, NULL, message.data());
-    std::cout << "program: " << message.data() << "\n";
-
-    glDeleteProgram(program);
-    return 0;
-  }
-
-  // flag attached shaders objects for deletion
-  glDeleteShader(shader_vertex);
-  glDeleteShader(shader_fragment);
-
-  return program;
 }

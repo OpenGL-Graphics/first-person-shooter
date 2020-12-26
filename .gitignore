@@ -2,6 +2,7 @@
 build
 tags
 .clangd
+.cache
 
 # Cmake: https://github.com/github/gitignore
 CMakeLists.txt.user
