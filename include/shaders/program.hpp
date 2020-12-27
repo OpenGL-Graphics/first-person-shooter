@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <shaders/shader.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -13,7 +15,11 @@ class Program {
     GLuint m_id_vertex;
     GLuint m_id_fragment;
 
-    Program(const std::string& source_vertex, const std::string& source_fragment) {
+    Program(const std::string& path_vertex, const std::string& path_fragment) {
+      // read shader source codes into strings (newer GLSL version not supported)
+      std::string source_vertex = read_file(path_vertex);
+      std::string source_fragment = read_file(path_fragment);
+
       // create vertex & fragment shaders
       Shader shader_vertex(source_vertex, GL_VERTEX_SHADER);
       Shader shader_fragment(source_fragment, GL_FRAGMENT_SHADER);
@@ -54,5 +60,14 @@ class Program {
       // set value of uniform variable using its name
       GLuint uniform = glGetUniformLocation(m_id, name.c_str());
       glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(mat));
+    }
+
+  private:
+    std::string read_file(const std::string& filename) {
+      std::ifstream f(filename.c_str());
+      std::stringstream buffer;
+      buffer << f.rdbuf();
+
+      return buffer.str();
     }
 };

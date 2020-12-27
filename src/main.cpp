@@ -7,31 +7,23 @@
 #include <iostream>
 #include <vector>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <shaders/program.hpp>
+#include <navigation/camera.hpp>
 
 // camera
+Camera camera;
 glm::vec3 pos_camera(0.0f, 0.0f, 5.0f);
-glm::vec3 dir_camera(0.0f, 0.0f, -1.0f);
-glm::vec3 up_camera(0.0f, 1.0f, 0.0f);
-const float X_SPEED = 0.1f;
-const float Z_SPEED = 0.1f;
 
-// mouse cursor & horizontal/vertical angle
+// last position of mouse cursor (to calculate offset on movement)
 float x_mouse = 0.0f;
 float y_mouse = 0.0f;
-float pitch = 0.0f;
-float yaw = 0.0f;
 
 // functions headers
-static std::string read_file(const std::string& filename);
 static void on_key(GLFWwindow* window);
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
 
@@ -141,12 +133,8 @@ int main() {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
   */
 
-  // shader source codes (newer GLSL version not supported)
-  std::string source_vertex = read_file("assets/shaders/triangle.vert");
-  std::string source_fragment = read_file("assets/shaders/triangle.frag");
-
   // create then install vertex & fragment shaders on GPU
-  Program program_shaders(source_vertex, source_fragment);
+  Program program_shaders("assets/shaders/cube.vert", "assets/shaders/cube.frag");
   GLuint program = program_shaders.m_id;
   if (program == 0) {
     glfwDestroyWindow(window);
@@ -238,10 +226,8 @@ int main() {
     float z_camera = radius * sin((float)glfwGetTime());
     */
 
-    // view matrix (2/3): transform to camera coord (consider rotation due to mouse movement)
-    glm::mat4 view_mat = glm::lookAt(pos_camera, pos_camera + dir_camera, up_camera);
-    view_mat = glm::rotate(view_mat, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-    view_mat = glm::rotate(view_mat, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    // view matrix (2/3): transform to camera coord
+    glm::mat4 view_mat = camera.get_view_mat();
     program_shaders.set_mat4("view", view_mat);
 
     // draw multiple cubes
@@ -283,14 +269,6 @@ int main() {
   return 0;
 }
 
-static std::string read_file(const std::string& filename) {
-  std::ifstream f(filename.c_str());
-  std::stringstream buffer;
-  buffer << f.rdbuf();
-
-  return buffer.str();
-}
-
 static void on_key(GLFWwindow* window) {
   // close window on escape key press
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -298,36 +276,24 @@ static void on_key(GLFWwindow* window) {
   }
 
   // move camera
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-    pos_camera -= Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-    pos_camera += Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-    pos_camera -= X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    pos_camera += X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
-  }
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    camera.move(Direction::FORWARD);
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    camera.move(Direction::BACKWARD);
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    camera.move(Direction::LEFT);
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    camera.move(Direction::RIGHT);
 }
 
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos) {
   // see: https://www.reddit.com/r/opengl/comments/831vpb/
   // calculate offset in mouse cursor position
-  float sensitivity = 0.01f;
   float x_offset = xpos - x_mouse; 
   float y_offset = ypos - y_mouse; 
   x_mouse = xpos;
   y_mouse = ypos;
   
-  // horizontal/vertical rotation angle around y-axis/x-axis
-  yaw += sensitivity * x_offset;
-  pitch += sensitivity * y_offset;
-
-  // limit horizontal/vertical rotation angle
-  yaw = (yaw > glm::radians(90.0f)) ? glm::radians(90.0f): yaw;
-  yaw = (yaw < glm::radians(-90.0f)) ? glm::radians(-90.0f): yaw;
-  pitch = (pitch > glm::radians(90.0f)) ? glm::radians(90.0f): pitch;
-  pitch = (pitch < glm::radians(-90.0f)) ? glm::radians(-90.0f): pitch;
+  // horizontal/vertical rotation around y-axis/x-axis accord. to offset
+  camera.rotate(x_offset, y_offset);
 }
