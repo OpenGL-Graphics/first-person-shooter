@@ -1,4 +1,7 @@
 // inspired by: https://learnopengl.com/Getting-started/Shaders
+#ifndef PROGRAM_HPP
+#define PROGRAM_HPP
+
 #include <glad/glad.h>
 #include <string>
 #include <vector>
@@ -12,8 +15,6 @@
 class Program {
   public:
     GLuint m_id;
-    GLuint m_id_vertex;
-    GLuint m_id_fragment;
 
     Program(const std::string& path_vertex, const std::string& path_fragment) {
       // read shader source codes into strings (newer GLSL version not supported)
@@ -23,17 +24,17 @@ class Program {
       // create vertex & fragment shaders
       Shader shader_vertex(source_vertex, GL_VERTEX_SHADER);
       Shader shader_fragment(source_fragment, GL_FRAGMENT_SHADER);
-      m_id_vertex = shader_vertex.m_id;
-      m_id_fragment = shader_fragment.m_id;
-      if (m_id_vertex == 0 || m_id_fragment == 0) {
+      GLuint vertex = shader_vertex.m_id;
+      GLuint fragment = shader_fragment.m_id;
+      if (vertex == 0 || fragment == 0) {
         m_id = 0;
         return;
       }
 
       // attach shaders to program & link it
       m_id = glCreateProgram();
-      glAttachShader(m_id, m_id_vertex);
-      glAttachShader(m_id, m_id_fragment);
+      glAttachShader(m_id, vertex);
+      glAttachShader(m_id, fragment);
       glLinkProgram(m_id);
       glValidateProgram(m_id);
 
@@ -52,14 +53,22 @@ class Program {
       }
 
       // flag attached shaders objects for deletion
-      glDeleteShader(m_id_vertex);
-      glDeleteShader(m_id_fragment);
+      glDeleteShader(vertex);
+      glDeleteShader(fragment);
     }
 
     void set_mat4(const std::string& name, const glm::mat4& mat) {
       // set value of uniform variable using its name
       GLuint uniform = glGetUniformLocation(m_id, name.c_str());
       glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(mat));
+    }
+
+    void use() {
+      glUseProgram(m_id);
+    }
+
+    void free() {
+      glDeleteProgram(m_id);
     }
 
   private:
@@ -71,3 +80,5 @@ class Program {
       return buffer.str();
     }
 };
+
+#endif // PROGRAM_HPP

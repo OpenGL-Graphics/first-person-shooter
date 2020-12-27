@@ -7,13 +7,12 @@
 #include <iostream>
 #include <vector>
 #include <iostream>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <shaders/program.hpp>
 #include <navigation/camera.hpp>
+#include <meshes/cube.hpp>
 
 // camera
 Camera camera;
@@ -60,78 +59,8 @@ int main() {
   }
 
   // callback for processing keyboard & mouse inputs
-  // glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
-  // glfwSetKeyCallback(window, on_key);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSetCursorPosCallback(window, on_mouse_move);
-
-  // GPU buffer (VBO) for vertexes (positions, colors, texture direction), see https://open.gl
-  // coord(x,y,z)        color(r,g,b)      texture(u,v,w)
-  const float vertexes[] = {
-    // negative-x (left face)
-    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f,  1.0f,
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f,  1.0f,
-    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f,  1.0f,
-
-     // positive-x (right face)
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f,
-     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f,
-     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f,
-     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f,
-
-     // negative-y (bottom face)
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
-     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f, -1.0f,
-     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f,  1.0f,
-     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f,  1.0f,
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f,  1.0f,
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
-
-    // positive-y (top face)
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f, -1.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f,  1.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f,  1.0f,
-    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f,  1.0f,
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
-
-    // negative-z (back face)
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
-     0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f, -1.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, -1.0f,
-     0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, -1.0f, 
-    -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f,
-
-    // positive-z (front face)
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f, -1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f,  1.0f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f,  1.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-  };
-  GLuint vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertexes), vertexes, GL_STATIC_DRAW);
-
-  /*
-  // GPU buffer for vertexes indices (EBO) to avoid duplication of vertexes
-  const GLuint indices[6] = {
-    0, 1, 2, // top triangle
-    1, 2, 3  // bottom triangle
-  };
-  GLuint ebo;
-  glGenBuffers(1, &ebo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-  */
 
   // create then install vertex & fragment shaders on GPU
   Program program_shaders("assets/shaders/cube.vert", "assets/shaders/cube.frag");
@@ -141,30 +70,11 @@ int main() {
     glfwTerminate();
     return 1;
   }
-  glUseProgram(program);
+  program_shaders.use();
 
-  // position attribute
-  GLuint attr_position = glGetAttribLocation(program, "position");
-  glVertexAttribPointer(attr_position, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *) 0);
-  glEnableVertexAttribArray(attr_position);
-
-  // color attribute
-  GLuint attr_color = glGetAttribLocation(program, "color");
-  glVertexAttribPointer(attr_color, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *) (3 * sizeof(float)));
-  glEnableVertexAttribArray(attr_color);
-
-  // texture direction attribute
-  GLuint attr_texture_dir = glGetAttribLocation(program, "texture_dir");
-  glVertexAttribPointer(attr_texture_dir, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *) (6 * sizeof(float)));
-  glEnableVertexAttribArray(attr_texture_dir);
-
-  // texture
-  GLuint texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-
-  // 6-sided texture cube using loaded images 
-  std::string images_names[6] = {
+  // cube with its texture
+  std::vector<std::string> names_attributes {"position", "color", "texture_dir"};
+  std::vector<std::string> paths_textures {
     "assets/images/brick1.jpg",
     "assets/images/brick1.jpg",
     "assets/images/roof.jpg",
@@ -172,20 +82,7 @@ int main() {
     "assets/images/brick2.jpg",
     "assets/images/brick2.jpg",
   };
-  for (size_t i_texture = 0; i_texture < 6; i_texture++) {
-    // stbi_set_flip_vertically_on_load(true);
-    int width_image, height_image, n_channels_image;
-    unsigned char* image = stbi_load(images_names[i_texture].c_str(), &width_image, &height_image, &n_channels_image, 0);
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i_texture, 0, GL_RGB, width_image, height_image, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-    stbi_image_free(image);
-  }
-
-  // wrapping texture on mesh
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  Cube cube(program, names_attributes, paths_textures);
 
   // projection matrix (3/3): transform to ndc coord
   glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 10.f); 
@@ -219,28 +116,19 @@ int main() {
     glClearColor(0.0f, 0.5f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    /*
-    // rotating camera using basic trigonometry
-    const float radius = 5.0f;
-    float x_camera = radius * cos((float)glfwGetTime());
-    float z_camera = radius * sin((float)glfwGetTime());
-    */
-
     // view matrix (2/3): transform to camera coord
     glm::mat4 view_mat = camera.get_view_mat();
     program_shaders.set_mat4("view", view_mat);
 
     // draw multiple cubes
     for (char i_cube = -2; i_cube <= 2; i_cube += 2) {
-      // model matrix (1/3): ever rotating rectangle using time
+      // model matrix (1/3): translate cubes in world coordinates
       glm::mat4 model_mat(1.0f);
       model_mat = glm::translate(model_mat, glm::vec3(i_cube, 0.0f, 0.0f));
-      // model_mat = glm::rotate(model_mat, (float)glfwGetTime() * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
       program_shaders.set_mat4("model", model_mat);
 
-      // draw triangle from bound buffers (vbo and ebo)
-      // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
+      // draw cube
+      cube.draw();
     }
 
     // render imgui window
@@ -257,12 +145,10 @@ int main() {
   ImGui::DestroyContext();
 
   // de-allocate GPU buffers & textures
-  glDeleteBuffers(1, &vbo);
-  // glDeleteBuffers(1, &ebo);
-  glDeleteTextures(1, &texture);
+  cube.free();
 
   // destroy shaders, window & terminate glfw
-  glDeleteProgram(program);
+  program_shaders.free();
   glfwDestroyWindow(window);
   glfwTerminate();
 

@@ -1,4 +1,7 @@
 // Inspired by https://learnopengl.com/Getting-started/Camera
+#ifndef CAMERA_HPP
+#define CAMERA_HPP
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -66,3 +69,5 @@ private:
   const float Z_SPEED = 0.1f;
   const float SENSITIVITY = 0.01f;
 };
+
+#endif // CAMERA_HPP

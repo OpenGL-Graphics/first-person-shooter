@@ -1,4 +1,7 @@
 // inspired by: https://learnopengl.com/Getting-started/Shaders
+#ifndef SHADER_HPP
+#define SHADER_HPP
+
 #include <glad/glad.h>
 #include <string>
 #include <iostream>
@@ -35,3 +38,5 @@ class Shader {
       }
     }
 };
+
+#endif // SHADER_HPP
