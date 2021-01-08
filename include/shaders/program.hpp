@@ -14,8 +14,6 @@
 
 class Program {
   public:
-    GLuint m_id;
-
     Program(const std::string& path_vertex, const std::string& path_fragment) {
       // read shader source codes into strings (newer GLSL version not supported)
       std::string source_vertex = read_file(path_vertex);
@@ -53,8 +51,8 @@ class Program {
       }
 
       // flag attached shaders objects for deletion
-      glDeleteShader(vertex);
-      glDeleteShader(fragment);
+      shader_vertex.free();
+      shader_fragment.free();
     }
 
     void set_mat4(const std::string& name, const glm::mat4& mat) {
@@ -71,7 +69,17 @@ class Program {
       glDeleteProgram(m_id);
     }
 
+    bool has_failed() {
+      return (m_id == 0) ? true : false;
+    }
+
+    GLuint define_attribute(const std::string& attribute) {
+      return glGetAttribLocation(m_id, attribute.c_str());
+    }
+
   private:
+    GLuint m_id;
+
     std::string read_file(const std::string& filename) {
       std::ifstream f(filename.c_str());
       std::stringstream buffer;

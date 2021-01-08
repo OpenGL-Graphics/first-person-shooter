@@ -33,9 +33,13 @@ class Shader {
         std::string type_shader_str = (type == GL_VERTEX_SHADER ? "vertex" : "fragment");
         std::cout << "Shader " << type_shader_str << ": " << message.data() << "\n";
 
-        glDeleteShader(m_id);
+        free();
         m_id = 0;
       }
+    }
+
+    void free() {
+      glDeleteShader(m_id);
     }
 };
 
