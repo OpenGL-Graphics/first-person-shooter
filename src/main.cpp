@@ -17,10 +17,11 @@
 
 // functions headers
 static void on_key(GLFWwindow* window);
+static void on_mouse_click(GLFWwindow* window, int button, int action, int mods);
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
 
 // camera
-Camera camera;
+Camera camera(glm::vec3(0.0f, 3.0f, 5.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 // last position of mouse cursor (to calculate offset on movement)
 float x_mouse = 0.0f;
@@ -61,14 +62,14 @@ int main() {
     std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
   }
 
-  // callback for processing keyboard & mouse inputs
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  glfwSetCursorPosCallback(window, on_mouse_move);
+  // callback for processing mouse click
+  glfwSetMouseButtonCallback(window, on_mouse_click);
 
   // create then install vertex & fragment shaders on GPU
   Program program_cube_color("assets/shaders/cube_color.vert", "assets/shaders/cube_color.frag");
   Program program_cube_texture("assets/shaders/cube_texture.vert", "assets/shaders/cube_texture.frag");
-  if (program_cube_color.has_failed() || program_cube_texture.has_failed()) {
+  Program program_cube_light("assets/shaders/cube.vert", "assets/shaders/cube.frag");
+  if (program_cube_color.has_failed() || program_cube_texture.has_failed() || program_cube_light.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();
     return 1;
@@ -85,10 +86,29 @@ int main() {
   };
   CubeColor cube_color(program_cube_color);
   CubeTexture cube_texture(program_cube_texture, paths_textures);
+  Cube cube_light(program_cube_light);
 
   // model & projection matrices
-  glm::mat4 model_mat_color (glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-  glm::mat4 model_mat_texture (glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
+  glm::mat4 model_mat_color(glm::mat4(1.0f));
+  glm::mat4 model_mat_texture(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
+  /*
+  glm::mat4 model_mat_light(glm::scale(
+    glm::translate(
+      glm::mat4(1.0f), 
+      glm::vec3(-2.0f, 0.0f, 0.0f)
+    ),
+    glm::vec3(0.5f, 0.5f, 1.0f)
+  ));
+  */
+  glm::mat4 model_mat_light(
+    glm::translate(
+      glm::scale(
+        glm::mat4(1.0f), 
+        glm::vec3(0.5f, 1.0f, 1.0f)
+      ),
+      glm::vec3(-2.0f, 0.0f, 0.0f)
+    )
+  );
   glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 50.f); 
 
   // enable depth testing
@@ -136,6 +156,13 @@ int main() {
     program_cube_texture.set_mat4("projection", projection_mat);
     cube_texture.draw();
 
+    // draw light cube
+    program_cube_light.use();
+    program_cube_light.set_mat4("model", model_mat_light);
+    program_cube_light.set_mat4("view", view_mat);
+    program_cube_light.set_mat4("projection", projection_mat);
+    cube_light.draw();
+
     // render imgui window
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -152,10 +179,12 @@ int main() {
   // de-allocate GPU buffers & textures
   cube_color.free();
   cube_texture.free();
+  cube_light.free();
 
   // destroy shaders, window & terminate glfw
   program_cube_color.free();
   program_cube_texture.free();
+  program_cube_light.free();
   glfwDestroyWindow(window);
   glfwTerminate();
 
@@ -177,6 +206,19 @@ static void on_key(GLFWwindow* window) {
     camera.move(Direction::LEFT);
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     camera.move(Direction::RIGHT);
+}
+
+static void on_mouse_click(GLFWwindow* window, int button, int action, int mods) {
+  // switch mouse mode & listen for mouse movement
+  if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
+    if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+      glfwSetCursorPosCallback(window, on_mouse_move);
+    } else {
+      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+      glfwSetCursorPosCallback(window, NULL);
+    }
+  }
 }
 
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos) {

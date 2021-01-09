@@ -14,10 +14,10 @@ enum class Direction {
 
 class Camera {
 public:
-  Camera():
-    m_position(glm::vec3(0.0f, 0.0f, 5.0f)),
-    m_direction(glm::vec3(0.0f, 0.0f, -1.0f)),
-    m_up(glm::vec3(0.0f, 1.0f, 0.0f)),
+  Camera(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up):
+    m_position(position),
+    m_direction(direction),
+    m_up(up),
     m_pitch(0.0f),
     m_yaw(0.0f)
   {
