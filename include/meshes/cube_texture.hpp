@@ -25,7 +25,7 @@ protected:
   void set_attribute() override {
     // texture direction attribute
     GLuint attr_texture_dir = m_program.define_attribute("texture_dir");
-    glVertexAttribPointer(attr_texture_dir, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *) (6 * sizeof(float)));
+    glVertexAttribPointer(attr_texture_dir, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void *) (6 * sizeof(float)));
     glEnableVertexAttribArray(attr_texture_dir);
   }
 

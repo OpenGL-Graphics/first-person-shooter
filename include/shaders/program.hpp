@@ -61,6 +61,11 @@ class Program {
       glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(mat));
     }
 
+    void set_vec3(const std::string& name, const glm::vec3& v) {
+      GLuint uniform = glGetUniformLocation(m_id, name.c_str());
+      glUniform3fv(uniform, 1, glm::value_ptr(v));
+    }
+
     void use() {
       glUseProgram(m_id);
     }

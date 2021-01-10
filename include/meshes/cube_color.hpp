@@ -16,7 +16,7 @@ protected:
   void set_attribute() override {
     // color attribute
     GLuint attr_color = m_program.define_attribute("color");
-    glVertexAttribPointer(attr_color, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *) (3 * sizeof(float)));
+    glVertexAttribPointer(attr_color, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void *) (3 * sizeof(float)));
     glEnableVertexAttribArray(attr_color);
   }
 };

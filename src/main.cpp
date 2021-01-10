@@ -14,6 +14,7 @@
 #include <navigation/camera.hpp>
 #include <meshes/cube_color.hpp>
 #include <meshes/cube_texture.hpp>
+#include <meshes/cube_light.hpp>
 
 // functions headers
 static void on_key(GLFWwindow* window);
@@ -21,7 +22,8 @@ static void on_mouse_click(GLFWwindow* window, int button, int action, int mods)
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
 
 // camera
-Camera camera(glm::vec3(0.0f, 3.0f, 5.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+glm::vec3 position_camera(0.0f, 3.0f, 5.0f);
+Camera camera(position_camera, glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 // last position of mouse cursor (to calculate offset on movement)
 float x_mouse = 0.0f;
@@ -68,8 +70,9 @@ int main() {
   // create then install vertex & fragment shaders on GPU
   Program program_cube_color("assets/shaders/cube_color.vert", "assets/shaders/cube_color.frag");
   Program program_cube_texture("assets/shaders/cube_texture.vert", "assets/shaders/cube_texture.frag");
-  Program program_cube_light("assets/shaders/cube.vert", "assets/shaders/cube.frag");
-  if (program_cube_color.has_failed() || program_cube_texture.has_failed() || program_cube_light.has_failed()) {
+  Program program_cube_light("assets/shaders/cube_light.vert", "assets/shaders/cube_light.frag");
+  Program program_light("assets/shaders/light.vert", "assets/shaders/light.frag");
+  if (program_cube_color.has_failed() || program_cube_texture.has_failed() || program_cube_light.has_failed() || program_light.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();
     return 1;
@@ -86,30 +89,28 @@ int main() {
   };
   CubeColor cube_color(program_cube_color);
   CubeTexture cube_texture(program_cube_texture, paths_textures);
-  Cube cube_light(program_cube_light);
 
-  // model & projection matrices
-  glm::mat4 model_mat_color(glm::mat4(1.0f));
-  glm::mat4 model_mat_texture(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
-  /*
-  glm::mat4 model_mat_light(glm::scale(
+  // light source cube & illuminated cube
+  Cube light(program_light);
+  CubeLight cube_light(program_cube_light);
+
+  // model & projection matrices for texture & color cubes
+  glm::mat4 model_cube_color(glm::mat4(1.0f));
+  glm::mat4 model_cube_texture(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
+  glm::mat4 model_cube_light(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)));
+
+  // for light: scaling then translation T * S (glm uses column-major order, i.e. transpose)
+  glm::vec3 position_light(-2.0f, 0.0f, 1.0f);
+  glm::mat4 model_light(glm::scale(
     glm::translate(
       glm::mat4(1.0f), 
-      glm::vec3(-2.0f, 0.0f, 0.0f)
+      position_light
     ),
-    glm::vec3(0.5f, 0.5f, 1.0f)
+    glm::vec3(0.2f)
   ));
-  */
-  glm::mat4 model_mat_light(
-    glm::translate(
-      glm::scale(
-        glm::mat4(1.0f), 
-        glm::vec3(0.5f, 1.0f, 1.0f)
-      ),
-      glm::vec3(-2.0f, 0.0f, 0.0f)
-    )
-  );
-  glm::mat4 projection_mat = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 50.f); 
+
+  // projection matrix
+  glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 50.f); 
 
   // enable depth testing
   glEnable(GL_DEPTH_TEST);
@@ -140,27 +141,43 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // camera matrix changed by user input
-    glm::mat4 view_mat = camera.get_view_mat();
+    glm::mat4 view = camera.get_view();
 
     // draw color cube (one program run at a time)
     program_cube_color.use();
-    program_cube_color.set_mat4("model", model_mat_color);
-    program_cube_color.set_mat4("view", view_mat);
-    program_cube_color.set_mat4("projection", projection_mat);
+    program_cube_color.set_mat4("model", model_cube_color);
+    program_cube_color.set_mat4("view", view);
+    program_cube_color.set_mat4("projection", projection);
     cube_color.draw();
 
     // draw texture cube
     program_cube_texture.use();
-    program_cube_texture.set_mat4("model", model_mat_texture);
-    program_cube_texture.set_mat4("view", view_mat);
-    program_cube_texture.set_mat4("projection", projection_mat);
+    program_cube_texture.set_mat4("model", model_cube_texture);
+    program_cube_texture.set_mat4("view", view);
+    program_cube_texture.set_mat4("projection", projection);
     cube_texture.draw();
 
+    // cube & light colors
+    glm::vec3 color(1.0f, 0.5, 0.3);
+    glm::vec3 color_light(1.0f, 1.0f, 1.0f);
+
     // draw light cube
+    program_light.use();
+    program_light.set_mat4("model", model_light);
+    program_light.set_mat4("view", view);
+    program_light.set_mat4("projection", projection);
+    program_light.set_vec3("color", color_light);
+    light.draw();
+
+    // draw illuminated cube
     program_cube_light.use();
-    program_cube_light.set_mat4("model", model_mat_light);
-    program_cube_light.set_mat4("view", view_mat);
-    program_cube_light.set_mat4("projection", projection_mat);
+    program_cube_light.set_mat4("model", model_cube_light);
+    program_cube_light.set_mat4("view", view);
+    program_cube_light.set_mat4("projection", projection);
+    program_cube_light.set_vec3("color", color);
+    program_cube_light.set_vec3("color_light", color_light);
+    program_cube_light.set_vec3("position_light", position_light);
+    program_cube_light.set_vec3("position_camera", position_camera);
     cube_light.draw();
 
     // render imgui window
@@ -180,11 +197,15 @@ int main() {
   cube_color.free();
   cube_texture.free();
   cube_light.free();
+  light.free();
 
-  // destroy shaders, window & terminate glfw
+  // destroy shaders programs
   program_cube_color.free();
   program_cube_texture.free();
   program_cube_light.free();
+  program_light.free();
+
+  // destroy window & terminate glfw
   glfwDestroyWindow(window);
   glfwTerminate();
 

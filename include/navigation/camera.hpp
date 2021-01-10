@@ -23,13 +23,13 @@ public:
   {
   }
 
-  glm::mat4 get_view_mat() {
+  glm::mat4 get_view() {
     // consider rotation due to mouse (yaw & pitch)
-    glm::mat4 view_mat = glm::lookAt(m_position, m_position + m_direction, m_up);
-    view_mat = glm::rotate(view_mat, m_pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-    view_mat = glm::rotate(view_mat, m_yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 view = glm::lookAt(m_position, m_position + m_direction, m_up);
+    view = glm::rotate(view, m_pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    view = glm::rotate(view, m_yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    return view_mat;
+    return view;
   }
 
   void move(Direction direction) {
