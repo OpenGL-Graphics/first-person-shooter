@@ -1,7 +1,7 @@
 #include <meshes/mesh.hpp>
 
-Mesh::Mesh(Program program, const std::vector<float>& vertexes):
-  m_program(program)
+Mesh::Mesh(const std::vector<float>& vertexes, int n_vertexes):
+  m_n_vertexes(n_vertexes)
 {
   // initialize vbo buffer
   init_buffers(vertexes);
@@ -10,7 +10,7 @@ Mesh::Mesh(Program program, const std::vector<float>& vertexes):
 void Mesh::draw() {
   // draw all vertexes from cube triangles from bound buffers (vbo)
   glBindVertexArray(m_vao);
-  glDrawArrays(GL_TRIANGLES, 0, 6 * 2 * 3);
+  glDrawArrays(GL_TRIANGLES, 0, m_n_vertexes);
 }
 
 void Mesh::free() {

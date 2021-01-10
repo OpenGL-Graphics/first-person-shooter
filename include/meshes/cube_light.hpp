@@ -5,10 +5,10 @@
 
 class CubeLight : public Cube {
 public:
-  CubeLight(Program program);
+  CubeLight(const Program& program);
 
 protected:
-  void set_attribute() override;
+  void set_attribute(const Program& program) override;
 };
 
 #endif // CUBE_LIGHT_HPP

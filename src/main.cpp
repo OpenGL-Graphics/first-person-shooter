@@ -15,6 +15,7 @@
 #include <meshes/cube_color.hpp>
 #include <meshes/cube_texture.hpp>
 #include <meshes/cube_light.hpp>
+#include <meshes/pyramid.hpp>
 
 // functions headers
 static void on_key(GLFWwindow* window);
@@ -67,11 +68,11 @@ int main() {
   glfwSetMouseButtonCallback(window, on_mouse_click);
 
   // create then install vertex & fragment shaders on GPU
-  Program program_cube_color("assets/shaders/cube/color.vert", "assets/shaders/cube/color.frag");
-  Program program_cube_texture("assets/shaders/cube/texture.vert", "assets/shaders/cube/texture.frag");
-  Program program_cube_light("assets/shaders/cube/light.vert", "assets/shaders/cube/light.frag");
-  Program program_light("assets/shaders/mesh.vert", "assets/shaders/mesh.frag");
-  if (program_cube_color.has_failed() || program_cube_texture.has_failed() || program_cube_light.has_failed() || program_light.has_failed()) {
+  Program program_color("assets/shaders/color.vert", "assets/shaders/color.frag");
+  Program program_texture("assets/shaders/texture.vert", "assets/shaders/texture.frag");
+  Program program_light("assets/shaders/light.vert", "assets/shaders/light.frag");
+  Program program_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+  if (program_color.has_failed() || program_texture.has_failed() || program_light.has_failed() || program_basic.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();
     return 1;
@@ -86,25 +87,27 @@ int main() {
     "assets/images/brick2.jpg",
     "assets/images/brick2.jpg",
   };
-  CubeColor cube_color(program_cube_color);
-  CubeTexture cube_texture(program_cube_texture, paths_textures);
+  CubeColor cube_color(program_color);
+  CubeTexture cube_texture(program_texture, paths_textures);
 
   // light source cube & illuminated cube
-  Cube light(program_light);
-  CubeLight cube_light(program_cube_light);
+  Cube light(program_basic);
+  CubeLight cube_light(program_light);
+  Pyramid pyramid(program_light);
 
-  // model & projection matrices for texture & color cubes
+  // model & projection matrices for meshes
   glm::mat4 model_cube_color(glm::mat4(1.0f));
   glm::mat4 model_cube_texture(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
   glm::mat4 model_cube_light(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)));
+  glm::mat4 model_pyramid(glm::scale(
+    glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 2.0f)),
+    glm::vec3(2.0f)
+  ));
 
   // for light: scaling then translation T * S (glm uses column-major order, i.e. transpose)
   glm::vec3 position_light(-2.0f, -1.0f, 2.0f);
   glm::mat4 model_light(glm::scale(
-    glm::translate(
-      glm::mat4(1.0f), 
-      position_light
-    ),
+    glm::translate(glm::mat4(1.0f), position_light),
     glm::vec3(0.2f)
   ));
 
@@ -143,47 +146,51 @@ int main() {
     glm::mat4 view = camera.get_view();
 
     // draw color cube (one program run at a time)
-    program_cube_color.use();
-    program_cube_color.set_mat4("model", model_cube_color);
-    program_cube_color.set_mat4("view", view);
-    program_cube_color.set_mat4("projection", projection);
+    program_color.use();
+    program_color.set_mat4("model", model_cube_color);
+    program_color.set_mat4("view", view);
+    program_color.set_mat4("projection", projection);
     cube_color.draw();
 
     // draw texture cube
-    program_cube_texture.use();
-    program_cube_texture.set_mat4("model", model_cube_texture);
-    program_cube_texture.set_mat4("view", view);
-    program_cube_texture.set_mat4("projection", projection);
+    program_texture.use();
+    program_texture.set_mat4("model", model_cube_texture);
+    program_texture.set_mat4("view", view);
+    program_texture.set_mat4("projection", projection);
     cube_texture.draw();
 
     // cube & light colors
     glm::vec3 color(1.0f, 0.5, 0.3);
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
+    glm::vec3 color_pyramid(1.0f, 0.0f, 1.0f);
 
     // draw light cube
-    program_light.use();
-    program_light.set_mat4("model", model_light);
-    program_light.set_mat4("view", view);
-    program_light.set_mat4("projection", projection);
-    program_light.set_vec3("color", color_light);
+    program_basic.use();
+    program_basic.set_mat4("model", model_light);
+    program_basic.set_mat4("view", view);
+    program_basic.set_mat4("projection", projection);
+    program_basic.set_vec3("color", color_light);
     light.draw();
 
     // draw illuminated cube
-    program_cube_light.use();
-    program_cube_light.set_mat4("model", model_cube_light);
-    program_cube_light.set_mat4("view", view);
-    program_cube_light.set_mat4("projection", projection);
-    program_cube_light.set_vec3("material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f));
-    program_cube_light.set_vec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-    program_cube_light.set_vec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    program_cube_light.set_float("material.shininess", 32.0f);
-    program_cube_light.set_vec3("light.position", position_light);
-    program_cube_light.set_vec3("light.ambiant", 0.2f * color_light);
-    program_cube_light.set_vec3("light.diffuse", 0.5f * color_light);
-    program_cube_light.set_vec3("light.specular", color_light);
-    program_cube_light.set_vec3("position_camera", camera.m_position);
+    program_light.use();
+    program_light.set_mat4("model", model_cube_light);
+    program_light.set_mat4("view", view);
+    program_light.set_mat4("projection", projection);
+    program_light.set_vec3("material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f));
+    program_light.set_vec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+    program_light.set_vec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    program_light.set_float("material.shininess", 32.0f);
+    program_light.set_vec3("light.position", position_light);
+    program_light.set_vec3("light.ambiant", 0.2f * color_light);
+    program_light.set_vec3("light.diffuse", 0.5f * color_light);
+    program_light.set_vec3("light.specular", color_light);
+    program_light.set_vec3("position_camera", camera.m_position);
     cube_light.draw();
 
+    // draw illuminated pyramid
+    program_light.set_mat4("model", model_pyramid);
+    pyramid.draw();
 
     // render imgui window
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -205,10 +212,10 @@ int main() {
   light.free();
 
   // destroy shaders programs
-  program_cube_color.free();
-  program_cube_texture.free();
-  program_cube_light.free();
+  program_color.free();
+  program_texture.free();
   program_light.free();
+  program_basic.free();
 
   // destroy window & terminate glfw
   glfwDestroyWindow(window);

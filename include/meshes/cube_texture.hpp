@@ -5,11 +5,11 @@
 
 class CubeTexture : public Cube {
 public:
-  CubeTexture(Program program, const std::vector<std::string>& paths_images);
+  CubeTexture(const Program& program, const std::vector<std::string>& paths_images);
   void free() override;
 
 protected:
-  void set_attribute() override;
+  void set_attribute(const Program& program) override;
 
 private:
   GLuint m_texture;

@@ -2,11 +2,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-CubeTexture::CubeTexture(Program program, const std::vector<std::string>& paths_images):
+CubeTexture::CubeTexture(const Program& program, const std::vector<std::string>& paths_images):
   Cube(program)
 {
   // get texture attribute from shaders & apply 6-sided texture from image
-  set_attribute();
+  set_attribute(program);
   apply_texture(paths_images);
 }
 
@@ -16,9 +16,9 @@ void CubeTexture::free() {
   glDeleteTextures(1, &m_texture);
 }
 
-void CubeTexture::set_attribute() {
+void CubeTexture::set_attribute(const Program& program) {
   // texture direction attribute
-  GLuint attr_texture_dir = m_program.define_attribute("texture_dir");
+  GLuint attr_texture_dir = program.define_attribute("texture_dir");
   glVertexAttribPointer(attr_texture_dir, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void *) (6 * sizeof(float)));
   glEnableVertexAttribArray(attr_texture_dir);
 }

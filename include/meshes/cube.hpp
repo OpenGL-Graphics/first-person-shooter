@@ -5,13 +5,14 @@
 
 class Cube : public Mesh {
 public:
-  Cube(Program program);
+  Cube(const Program& program);
 
 protected:
-  virtual void set_attribute();
+  void set_attribute(const Program& program) override;
 
 private:
   static const std::vector<float> VERTEXES;
+  static const int N_VERTEXES = 6 * 2 * 3;
 };
 
 #endif // CUBE_HPP

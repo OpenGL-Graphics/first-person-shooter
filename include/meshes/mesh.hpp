@@ -8,18 +8,17 @@
 // abstract class (note the pure virtual set_attributes() method)
 class Mesh {
 public:
-  Mesh(Program program, const std::vector<float>& vertexes);
+  Mesh(const std::vector<float>& vertexes, int n_vertexes);
   virtual void draw() final;
   virtual void free();
 
 protected:
-  Program m_program;
-
-  virtual void set_attribute() = 0;
+  virtual void set_attribute(const Program& program) = 0;
 
 private:
   GLuint m_vao;
   GLuint m_vbo;
+  int m_n_vertexes;
 
   void init_buffers(const std::vector<float>& vertexes);
 };

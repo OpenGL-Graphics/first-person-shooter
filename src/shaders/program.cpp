@@ -47,18 +47,18 @@ Program::Program(const std::string& path_vertex, const std::string& path_fragmen
   shader_fragment.free();
 }
 
-void Program::set_mat4(const std::string& name, const glm::mat4& mat) const {
+void Program::set_mat4(const std::string& name, const glm::mat4& mat) {
   // set value of uniform variable using its name
   GLuint uniform = glGetUniformLocation(m_id, name.c_str());
   glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void Program::set_vec3(const std::string& name, const glm::vec3& vect) const {
+void Program::set_vec3(const std::string& name, const glm::vec3& vect) {
   GLuint uniform = glGetUniformLocation(m_id, name.c_str());
   glUniform3fv(uniform, 1, glm::value_ptr(vect));
 }
 
-void Program::set_float(const std::string& name, float value) const {
+void Program::set_float(const std::string& name, float value) {
   GLuint uniform = glGetUniformLocation(m_id, name.c_str());
   glUniform1f(uniform, value);
 }
@@ -75,7 +75,8 @@ bool Program::has_failed() {
   return (m_id == 0) ? true : false;
 }
 
-GLuint Program::define_attribute(const std::string& attribute) {
+GLuint Program::define_attribute(const std::string& attribute) const {
+  // declared as const. bcos program passed by reference in mesh
   return glGetAttribLocation(m_id, attribute.c_str());
 }
 
