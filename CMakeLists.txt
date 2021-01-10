@@ -29,5 +29,8 @@ add_library(imgui SHARED ${IMGUI_SRC})
 target_include_directories(imgui PUBLIC include/imgui include)
 
 # main executable
-add_executable(main src/main.cpp)
+file(GLOB MESHES_SRC "src/meshes/*.cpp")
+file(GLOB NAVIGATION_SRC "src/navigation/*.cpp")
+file(GLOB SHADERS_SRC "src/shaders/*.cpp")
+add_executable(main src/main.cpp ${MESHES_SRC} ${NAVIGATION_SRC} ${SHADERS_SRC})
 target_link_libraries(main glfw glad imgui)

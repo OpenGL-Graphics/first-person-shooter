@@ -67,10 +67,10 @@ int main() {
   glfwSetMouseButtonCallback(window, on_mouse_click);
 
   // create then install vertex & fragment shaders on GPU
-  Program program_cube_color("assets/shaders/cube_color.vert", "assets/shaders/cube_color.frag");
-  Program program_cube_texture("assets/shaders/cube_texture.vert", "assets/shaders/cube_texture.frag");
-  Program program_cube_light("assets/shaders/cube_light.vert", "assets/shaders/cube_light.frag");
-  Program program_light("assets/shaders/light.vert", "assets/shaders/light.frag");
+  Program program_cube_color("assets/shaders/cube/color.vert", "assets/shaders/cube/color.frag");
+  Program program_cube_texture("assets/shaders/cube/texture.vert", "assets/shaders/cube/texture.frag");
+  Program program_cube_light("assets/shaders/cube/light.vert", "assets/shaders/cube/light.frag");
+  Program program_light("assets/shaders/mesh.vert", "assets/shaders/mesh.frag");
   if (program_cube_color.has_failed() || program_cube_texture.has_failed() || program_cube_light.has_failed() || program_light.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();

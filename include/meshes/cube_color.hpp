@@ -5,20 +5,10 @@
 
 class CubeColor : public Cube {
 public:
-  CubeColor(Program program):
-    Cube(program)
-  {
-    // get color attribute from shader
-    set_attribute();
-  }
+  CubeColor(Program program);
 
 protected:
-  void set_attribute() override {
-    // color attribute
-    GLuint attr_color = m_program.define_attribute("color");
-    glVertexAttribPointer(attr_color, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(float), (void *) (3 * sizeof(float)));
-    glEnableVertexAttribArray(attr_color);
-  }
+  void set_attribute() override;
 };
 
 #endif // CUBE_COLOR_HPP
