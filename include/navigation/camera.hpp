@@ -14,6 +14,9 @@ enum class Direction {
 
 class Camera {
 public:
+  // used to calculate mesh material's specular component
+  glm::vec3 m_position;
+
   Camera(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up):
     m_position(position),
     m_direction(direction),
@@ -56,7 +59,6 @@ public:
 
 private:
   // look at parameters
-  glm::vec3 m_position;
   glm::vec3 m_direction;
   glm::vec3 m_up;
 

@@ -22,8 +22,7 @@ static void on_mouse_click(GLFWwindow* window, int button, int action, int mods)
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
 
 // camera
-glm::vec3 position_camera(0.0f, 3.0f, 5.0f);
-Camera camera(position_camera, glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+Camera camera(glm::vec3(0.0f, 3.0f, 5.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 // last position of mouse cursor (to calculate offset on movement)
 float x_mouse = 0.0f;
@@ -100,7 +99,7 @@ int main() {
   glm::mat4 model_cube_light(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)));
 
   // for light: scaling then translation T * S (glm uses column-major order, i.e. transpose)
-  glm::vec3 position_light(-2.0f, 0.0f, 1.0f);
+  glm::vec3 position_light(-2.0f, -1.0f, 2.0f);
   glm::mat4 model_light(glm::scale(
     glm::translate(
       glm::mat4(1.0f), 
@@ -174,11 +173,17 @@ int main() {
     program_cube_light.set_mat4("model", model_cube_light);
     program_cube_light.set_mat4("view", view);
     program_cube_light.set_mat4("projection", projection);
-    program_cube_light.set_vec3("color", color);
-    program_cube_light.set_vec3("color_light", color_light);
-    program_cube_light.set_vec3("position_light", position_light);
-    program_cube_light.set_vec3("position_camera", position_camera);
+    program_cube_light.set_vec3("material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f));
+    program_cube_light.set_vec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+    program_cube_light.set_vec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    program_cube_light.set_float("material.shininess", 32.0f);
+    program_cube_light.set_vec3("light.position", position_light);
+    program_cube_light.set_vec3("light.ambiant", 0.2f * color_light);
+    program_cube_light.set_vec3("light.diffuse", 0.5f * color_light);
+    program_cube_light.set_vec3("light.specular", color_light);
+    program_cube_light.set_vec3("position_camera", camera.m_position);
     cube_light.draw();
+
 
     // render imgui window
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

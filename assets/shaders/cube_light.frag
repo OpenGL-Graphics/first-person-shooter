@@ -1,31 +1,44 @@
 #version 130
 
+// different colors for each material & light components
+struct Material {
+  vec3 ambiant;
+  vec3 diffuse;
+  vec3 specular;
+  float shininess;
+};
+
+struct Light {
+  vec3 position;
+  vec3 ambiant;
+  vec3 diffuse;
+  vec3 specular;
+};
+
 in vec3 normal_vert;
 in vec3 position_vert;
 
-uniform vec3 color;
-uniform vec3 color_light;
-uniform vec3 position_light;
+uniform Material material;
+uniform Light light;
 uniform vec3 position_camera;
 
 out vec4 color_out;
 
 void main() {
-  // ambiant light
-  float strength_ambiant = 0.1;
-  vec3 ambiant = strength_ambiant * color_light;
+  // ambiant light constant
+  vec3 ambiant = material.ambiant * light.ambiant;
 
-  // diffuse light
-  vec3 light = normalize(position_light - position_vert);
-  float strength_diffuse = max(dot(light, normal_vert), 0.0);
-  vec3 diffuse = strength_diffuse * color_light;
+  // diffuse light depends on light beam & fragment normal
+  vec3 light_vec = normalize(light.position - position_vert);
+  float strength_diffuse = max(dot(light_vec, normal_vert), 0.0);
+  vec3 diffuse = (strength_diffuse * material.diffuse) * light.diffuse;
 
-  // specular light
-  vec3 camera = normalize(position_camera - position_vert);
-  vec3 light_reflect = reflect(-light, normal_vert);
-  float strength_specular = 0.5 * pow(max(dot(light_reflect, camera), 0.0), 32);
-  vec3 specular = strength_specular * color_light;
+  // specular light depends on reflected light beam on fragment & camera position
+  vec3 camera_vec = normalize(position_camera - position_vert);
+  vec3 light_reflect_vec = reflect(-light_vec, normal_vert);
+  float strength_specular = pow(max(dot(light_reflect_vec, camera_vec), 0.0), material.shininess);
+  vec3 specular = (strength_specular * material.specular) * light.specular;
 
-  // combine lights with object color
-  color_out = vec4((ambiant + diffuse + specular) * color, 1.0);
+  // combine material components
+  color_out = vec4(ambiant + diffuse + specular, 1.0);
 }

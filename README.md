@@ -56,4 +56,7 @@ According to this [blog post][lights], we distinguish three types of colors when
 2. Diffuse: Object's color when illuminated by a directed light, and is often perceived as the true color of the object.
 3. Specular: Reflection of the directed light on the object's surface. It depends on the shininess which makes the surface reflects (instead of scattering) the light, as its value increases. This therefore makes the highlight area become smaller, brighter, and more concentrated.
 
+A table of these components values for different materials can be found on [this site][materials].
+
 [lights]: http://blog.lexique-du-net.com/index.php?post/2009/07/24/AmbientDiffuseEmissive-and-specular-colorSome-examples
+[materials]: http://devernay.free.fr/cours/opengl/materials.html
