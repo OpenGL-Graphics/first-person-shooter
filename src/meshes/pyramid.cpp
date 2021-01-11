@@ -1,8 +1,9 @@
 #include <meshes/pyramid.hpp>
 
-Pyramid::Pyramid(const Program& program):
-  Mesh(VERTEXES, N_VERTEXES)
-{
+Pyramid::Pyramid(const Program& program) {
+  // initialize vbo buffer
+  init_buffers();
+
   // get position attribute from shader
   set_attribute(program);
 }
@@ -19,33 +20,10 @@ void Pyramid::set_attribute(const Program& program) {
   glEnableVertexAttribArray(attr_normal);
 }
 
-// coord(x,y,z)       normal(nx,ny,nz)
-const std::vector<float> Pyramid::VERTEXES = {
-  // front-right face
-   0.0f, 0.0f,  0.5f,  1.0f,  0.0f, 1.0f,
-   0.5f, 0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
-   0.0f, 0.5f,  0.0f,  1.0f,  0.0f, 1.0f,
+std::vector<float> Pyramid::get_vertexes() {
+  return m_vertexes;
+}
 
-  // front-left face
-   0.0f, 0.0f,  0.5f, -1.0f,  0.0f, 1.0f,
-  -0.5f, 0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-   0.0f, 0.5f,  0.0f, -1.0f,  0.0f, 1.0f,
-
-  // back-right face
-   0.5f, 0.0f,  0.0f,  1.0f,  0.0f, -1.0f,
-   0.0f, 0.0f, -0.5f,  1.0f,  0.0f, -1.0f,
-   0.0f, 0.5f,  0.0f,  1.0f,  0.0f, -1.0f,
-
-  // back-left face
-   0.0f, 0.0f, -0.5f, -1.0f,  0.0f, -1.0f,
-  -0.5f, 0.0f,  0.0f, -1.0f,  0.0f, -1.0f,
-   0.0f, 0.5f,  0.0f, -1.0f,  0.0f, -1.0f,
-
-  // bottom face
-   0.5f, 0.0f,  0.0f,  0.0f, -1.0f, 0.0f,
-   0.0f, 0.0f,  0.5f,  0.0f, -1.0f, 0.0f,
-  -0.5f, 0.0f,  0.0f,  0.0f, -1.0f, 0.0f,
-   0.5f, 0.0f,  0.0f,  0.0f, -1.0f, 0.0f,
-   0.0f, 0.0f, -0.5f,  0.0f, -1.0f, 0.0f,
-  -0.5f, 0.0f,  0.0f,  0.0f, -1.0f, 0.0f,
-};
+int Pyramid::get_n_vertexes() {
+  return m_n_vertexes;
+}

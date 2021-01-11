@@ -16,6 +16,7 @@
 #include <meshes/cube_texture.hpp>
 #include <meshes/cube_light.hpp>
 #include <meshes/pyramid.hpp>
+#include <meshes/circle.hpp>
 
 // functions headers
 static void on_key(GLFWwindow* window);
@@ -68,10 +69,10 @@ int main() {
   glfwSetMouseButtonCallback(window, on_mouse_click);
 
   // create then install vertex & fragment shaders on GPU
+  Program program_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program program_color("assets/shaders/color.vert", "assets/shaders/color.frag");
   Program program_texture("assets/shaders/texture.vert", "assets/shaders/texture.frag");
   Program program_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  Program program_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   if (program_color.has_failed() || program_texture.has_failed() || program_light.has_failed() || program_basic.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -94,15 +95,14 @@ int main() {
   Cube light(program_basic);
   CubeLight cube_light(program_light);
   Pyramid pyramid(program_light);
+  Circle circle(program_basic, 36);
 
   // model & projection matrices for meshes
   glm::mat4 model_cube_color(glm::mat4(1.0f));
   glm::mat4 model_cube_texture(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
   glm::mat4 model_cube_light(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)));
-  glm::mat4 model_pyramid(glm::scale(
-    glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 2.0f)),
-    glm::vec3(2.0f)
-  ));
+  glm::mat4 model_pyramid(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 2.0f)));
+  glm::mat4 model_circle(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 3.0f)));
 
   // for light: scaling then translation T * S (glm uses column-major order, i.e. transpose)
   glm::vec3 position_light(-2.0f, -1.0f, 2.0f);
@@ -163,6 +163,7 @@ int main() {
     glm::vec3 color(1.0f, 0.5, 0.3);
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
     glm::vec3 color_pyramid(1.0f, 0.0f, 1.0f);
+    glm::vec3 color_circle(1.0f, 1.0f, 0.0f);
 
     // draw light cube
     program_basic.use();
@@ -171,6 +172,11 @@ int main() {
     program_basic.set_mat4("projection", projection);
     program_basic.set_vec3("color", color_light);
     light.draw();
+
+    // draw circle
+    program_basic.set_mat4("model", model_circle);
+    program_basic.set_vec3("color", color_circle);
+    circle.draw();
 
     // draw illuminated cube
     program_light.use();
@@ -210,12 +216,13 @@ int main() {
   cube_texture.free();
   cube_light.free();
   light.free();
+  circle.free();
 
   // destroy shaders programs
+  program_basic.free();
   program_color.free();
   program_texture.free();
   program_light.free();
-  program_basic.free();
 
   // destroy window & terminate glfw
   glfwDestroyWindow(window);

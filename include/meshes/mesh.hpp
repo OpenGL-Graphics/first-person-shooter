@@ -5,22 +5,26 @@
 #include <shaders/program.hpp>
 #include <vector>
 
-// abstract class (note the pure virtual set_attributes() method)
+// abstract class (note the pure virtual methods)
 class Mesh {
 public:
-  Mesh(const std::vector<float>& vertexes, int n_vertexes);
   virtual void draw() final;
   virtual void free();
 
 protected:
+  std::vector<float> m_vertexes;
+  int m_n_vertexes;
+
+  virtual void init_buffers() final;
   virtual void set_attribute(const Program& program) = 0;
+
+  // getters needed to access derived classes members here
+  virtual std::vector<float> get_vertexes() = 0;
+  virtual int get_n_vertexes() = 0;
 
 private:
   GLuint m_vao;
   GLuint m_vbo;
-  int m_n_vertexes;
-
-  void init_buffers(const std::vector<float>& vertexes);
 };
 
 #endif // MESH_HPP
