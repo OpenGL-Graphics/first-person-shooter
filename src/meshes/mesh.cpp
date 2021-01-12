@@ -1,7 +1,10 @@
 #include <meshes/mesh.hpp>
 #include <iostream>
 
-void Mesh::draw() {
+void Mesh::draw(GLenum render_type) {
+  // set render type to (fill, wireframe or point)
+  glPolygonMode(GL_FRONT_AND_BACK, render_type);
+
   // draw all vertexes from cube triangles from bound buffers (vbo)
   int n_vertexes(get_n_vertexes());
   glBindVertexArray(m_vao);

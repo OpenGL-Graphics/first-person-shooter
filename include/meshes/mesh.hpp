@@ -8,7 +8,7 @@
 // abstract class (note the pure virtual methods)
 class Mesh {
 public:
-  virtual void draw() final;
+  virtual void draw(GLenum render_type=GL_FILL) final;
   virtual void free();
 
 protected:

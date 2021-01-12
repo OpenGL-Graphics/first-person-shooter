@@ -20,7 +20,6 @@ void Circle::set_attribute(const Program& program) {
 
 std::vector<float> Circle::get_vertexes() {
   float angle = 2*M_PI / m_n_corners;
-  std::cout << "angle: " << angle * (180.0 / M_PI) << std::endl;
 
   for (size_t step = 0; step < m_n_corners; step++) {
     float angle_begin = step * angle;
@@ -36,6 +35,6 @@ std::vector<float> Circle::get_vertexes() {
 }
 
 int Circle::get_n_vertexes() {
-  m_n_vertexes = 3 * m_n_corners;
+  m_n_vertexes = m_n_corners * 3;
   return m_n_vertexes;
 }
