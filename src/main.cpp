@@ -18,6 +18,7 @@
 #include <meshes/pyramid.hpp>
 #include <meshes/circle.hpp>
 #include <meshes/cylinder.hpp>
+#include <meshes/sphere.hpp>
 
 // functions headers
 static void on_key(GLFWwindow* window);
@@ -97,7 +98,8 @@ int main() {
   CubeLight cube_light(program_light);
   Pyramid pyramid(program_light);
   Circle circle(program_basic, 36);
-  Cylinder cylinder(program_basic, 12);
+  Cylinder cylinder(program_basic, 36);
+  Sphere sphere(program_basic, 12, 12);
 
   // model & projection matrices for meshes
   glm::mat4 model_cube_color(glm::mat4(1.0f));
@@ -106,6 +108,7 @@ int main() {
   glm::mat4 model_pyramid(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 2.0f)));
   glm::mat4 model_circle(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 3.0f)));
   glm::mat4 model_cylinder(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 3.0f)));
+  glm::mat4 model_sphere(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 3.0f)));
 
   // for light: scaling then translation T * S (glm uses column-major order, i.e. transpose)
   glm::vec3 position_light(-2.0f, -1.0f, 2.0f);
@@ -168,6 +171,7 @@ int main() {
     glm::vec3 color_pyramid(1.0f, 0.0f, 1.0f);
     glm::vec3 color_circle(1.0f, 1.0f, 0.0f);
     glm::vec3 color_cylinder(0.0f, 1.0f, 0.0f);
+    glm::vec3 color_sphere(0.0f, 0.0f, 1.0f);
 
     // draw light cube
     program_basic.use();
@@ -186,6 +190,11 @@ int main() {
     program_basic.set_mat4("model", model_cylinder);
     program_basic.set_vec3("color", color_cylinder);
     cylinder.draw(GL_LINE);
+
+    // draw sphere
+    program_basic.set_mat4("model", model_sphere);
+    program_basic.set_vec3("color", color_sphere);
+    sphere.draw(GL_LINE);
 
     // draw illuminated cube
     program_light.use();
@@ -227,6 +236,7 @@ int main() {
   light.free();
   circle.free();
   cylinder.free();
+  sphere.free();
 
   // destroy shaders programs
   program_basic.free();
