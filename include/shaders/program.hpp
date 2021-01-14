@@ -12,6 +12,7 @@ class Program {
     void set_mat4(const std::string& name, const glm::mat4& mat);
     void set_vec3(const std::string& name, const glm::vec3& vect);
     void set_float(const std::string& name, float value);
+    void set_int(const std::string& name, int value);
     void use();
     void free();
     bool has_failed();

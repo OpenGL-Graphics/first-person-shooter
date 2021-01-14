@@ -42,7 +42,6 @@ std::vector<float> Sphere::get_vertexes() {
       m_vertexes.insert(m_vertexes.end(), {std::cos(lon_begin)*std::sin(lat_end), std::cos(lat_end), std::sin(lon_begin)*std::sin(lat_end)});
     }
   }
-  std::cout << "nvertexes: " << m_vertexes.size() << std::endl;
 
   return m_vertexes;
 }

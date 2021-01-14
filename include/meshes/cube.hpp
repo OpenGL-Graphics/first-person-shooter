@@ -1,5 +1,5 @@
 #ifndef CUBE_HPP
-# define CUBE_HPP
+#define CUBE_HPP
 
 #include <meshes/mesh.hpp>
 

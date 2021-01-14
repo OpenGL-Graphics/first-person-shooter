@@ -24,8 +24,9 @@ void CubeTexture::set_attribute(const Program& program) {
 }
 
 void CubeTexture::apply_texture(const std::vector<std::string>& paths_images) {
-  // texture
+  // texture1
   glGenTextures(1, &m_texture);
+  glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_CUBE_MAP, m_texture);
 
   // 6-sided texture cube using loaded images 

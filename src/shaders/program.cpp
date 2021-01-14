@@ -58,6 +58,11 @@ void Program::set_vec3(const std::string& name, const glm::vec3& vect) {
   glUniform3fv(uniform, 1, glm::value_ptr(vect));
 }
 
+void Program::set_int(const std::string& name, int value) {
+  GLuint uniform = glGetUniformLocation(m_id, name.c_str());
+  glUniform1i(uniform, value);
+}
+
 void Program::set_float(const std::string& name, float value) {
   GLuint uniform = glGetUniformLocation(m_id, name.c_str());
   glUniform1f(uniform, value);
