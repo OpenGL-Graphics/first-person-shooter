@@ -2,19 +2,17 @@
 #define CUBE_TEXTURE_HPP
 
 #include <meshes/cube.hpp>
+#include <materials/texture.hpp>
 
 class CubeTexture : public Cube {
 public:
-  CubeTexture(const Program& program, const std::vector<std::string>& paths_images);
-  void free() override;
+  CubeTexture(const Program& program, const Texture& texture);
 
 protected:
-  void set_attribute(const Program& program) override;
+  void set_attribute() override;
 
 private:
-  GLuint m_texture;
-
-  void apply_texture(const std::vector<std::string>& paths_images);
+  Texture m_texture;
 };
 
 #endif // CUBE_TEXTURE_HPP

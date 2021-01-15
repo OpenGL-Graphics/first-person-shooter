@@ -8,7 +8,7 @@ public:
   Pyramid(const Program& program);
 
 protected:
-  void set_attribute(const Program& program) override;
+  void set_attribute() override;
 
 private:
   // coord(x,y,z)        normal(nx,ny,nz)

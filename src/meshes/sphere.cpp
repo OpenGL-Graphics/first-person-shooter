@@ -2,6 +2,7 @@
 #include <iostream>
 
 Sphere::Sphere(const Program& program, int n_longitudes, int n_latitudes):
+  Mesh(program),
   // works only with even and >= 4 number of corners (not odd)
   m_n_longitudes(n_longitudes),
   m_n_latitudes(n_latitudes)
@@ -10,12 +11,12 @@ Sphere::Sphere(const Program& program, int n_longitudes, int n_latitudes):
   init_buffers();
 
   // get position attribute from shader
-  set_attribute(program);
+  set_attribute();
 }
 
-void Sphere::set_attribute(const Program& program) {
+void Sphere::set_attribute() {
   // position attribute
-  GLuint attr_position = program.define_attribute("position");
+  GLuint attr_position = m_program.define_attribute("position");
   glVertexAttribPointer(attr_position, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
   glEnableVertexAttribArray(attr_position);
 }

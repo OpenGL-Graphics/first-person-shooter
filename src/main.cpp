@@ -16,7 +16,9 @@
 #include <meshes/circle.hpp>
 #include <meshes/cylinder.hpp>
 #include <meshes/sphere.hpp>
-#include <meshes/text.hpp>
+#include <meshes/rectangle.hpp>
+#include <materials/texture.hpp>
+// #include <meshes/text.hpp>
 #include <gui/dialog.hpp>
 
 // functions headers
@@ -70,18 +72,19 @@ int main() {
   glfwSetMouseButtonCallback(window, on_mouse_click);
 
   // create then install vertex & fragment shaders on GPU
-  Program program_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-  Program program_color("assets/shaders/color.vert", "assets/shaders/color.frag");
-  Program program_texture("assets/shaders/texture.vert", "assets/shaders/texture.frag");
-  Program program_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  Program program_text("assets/shaders/text.vert", "assets/shaders/text.frag");
-  if (program_color.has_failed() || program_texture.has_failed() || program_light.has_failed() || program_basic.has_failed() || program_text.has_failed()) {
+  Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+  Program pgm_color("assets/shaders/color.vert", "assets/shaders/color.frag");
+  Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
+  Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
+  Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
+  Program pgm_text("assets/shaders/text.vert", "assets/shaders/text.frag");
+  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();
     return 1;
   }
 
-  // color & texture cube
+  // textures
   std::vector<std::string> paths_textures {
     "assets/images/brick1.jpg",
     "assets/images/brick1.jpg",
@@ -90,26 +93,32 @@ int main() {
     "assets/images/brick2.jpg",
     "assets/images/brick2.jpg",
   };
-  CubeColor cube_color(program_color);
-  CubeTexture cube_texture(program_texture, paths_textures);
+  int index_texture3d = 0;
+  int index_texture2d = 1;
+  Texture texture3d(paths_textures, index_texture3d);
+  Texture texture2d("assets/images/grass.png", index_texture2d);
 
-  // light source cube & illuminated cube
-  Cube light(program_basic);
-  CubeLight cube_light(program_light);
-  Pyramid pyramid(program_light);
-  Circle circle(program_basic, 36);
-  Cylinder cylinder(program_basic, 36);
-  Sphere sphere(program_basic, 12, 12);
+  // meshes
+  CubeColor cube_color(pgm_color);
+  CubeTexture cube_texture(pgm_texture_cube, texture3d);
+  Cube light(pgm_basic);
+  CubeLight cube_light(pgm_light);
+  Pyramid pyramid(pgm_light);
+  Circle circle(pgm_basic, 36);
+  Cylinder cylinder(pgm_basic, 36);
+  Sphere sphere(pgm_basic, 12, 12);
+  Rectangle rectangle(pgm_texture_surface, texture2d);
 
   // model & projection matrices for meshes
   glm::mat4 model_cube_color(glm::mat4(1.0f));
-  glm::mat4 model_cube_texture(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
+  glm::mat4 model_cube_texture;
   glm::mat4 model_cube_light(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)));
   glm::mat4 model_pyramid(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 2.0f)));
   glm::mat4 model_circle(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 3.0f)));
   glm::mat4 model_cylinder(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 3.0f)));
   glm::mat4 model_sphere(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 3.0f)));
   glm::mat4 model_text(glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)));
+  glm::mat4 model_rectangle(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
 
   // for light: scaling then translation T * S (glm uses column-major order, i.e. transpose)
   glm::vec3 position_light(-2.0f, -1.0f, 2.0f);
@@ -128,7 +137,7 @@ int main() {
   Dialog dialog(window, "Dialog title", "Dialog text");
 
   // freetype-gl
-  Text text(program_text, "Hello", 0, 0);
+  // Text text(pgm_text, "Hello", 0, 0);
 
   // main loop
   while (!glfwWindowShouldClose(window)) {
@@ -142,27 +151,45 @@ int main() {
     // camera matrix changed by user input
     glm::mat4 view = camera.get_view();
 
+    /*
     // draw each character using textures
-    program_text.use();
-    program_text.set_mat4("model", model_text);
-    program_text.set_mat4("view", view);
-    program_text.set_mat4("projection", projection);
-    program_text.set_int("texture_in", 0);
+    pgm_text.use();
+    pgm_text.set_mat4("model", model_text);
+    pgm_text.set_mat4("view", view);
+    pgm_text.set_mat4("projection", projection);
+    pgm_text.set_int("texture_in", 0);
+    pgm_text.set_int("texture_in", index_tex_text - GL_TEXTURE0);
     text.draw();
+    */
 
     // draw color cube (one program run at a time)
-    program_color.use();
-    program_color.set_mat4("model", model_cube_color);
-    program_color.set_mat4("view", view);
-    program_color.set_mat4("projection", projection);
+    pgm_color.use();
+    pgm_color.set_mat4("model", model_cube_color);
+    pgm_color.set_mat4("view", view);
+    pgm_color.set_mat4("projection", projection);
     cube_color.draw();
 
-    // draw texture cube
-    program_texture.use();
-    program_texture.set_mat4("model", model_cube_texture);
-    program_texture.set_mat4("view", view);
-    program_texture.set_mat4("projection", projection);
-    program_texture.set_int("texture_in", 1);
+    // draw rectangle
+    pgm_texture_surface.use();
+    pgm_texture_surface.set_int("texture_in", index_texture2d);
+    pgm_texture_surface.set_mat4("model", model_rectangle);
+    pgm_texture_surface.set_mat4("view", view);
+    pgm_texture_surface.set_mat4("projection", projection);
+    rectangle.draw();
+
+    // draw 3x texture cubes
+    pgm_texture_cube.use();
+    model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
+    pgm_texture_cube.set_mat4("model", model_cube_texture);
+    pgm_texture_cube.set_mat4("view", view);
+    pgm_texture_cube.set_mat4("projection", projection);
+    pgm_texture_cube.set_int("texture_in", index_texture3d);
+    cube_texture.draw();
+    model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -1.0f));
+    pgm_texture_cube.set_mat4("model", model_cube_texture);
+    cube_texture.draw();
+    model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f));
+    pgm_texture_cube.set_mat4("model", model_cube_texture);
     cube_texture.draw();
 
     // cube & light colors
@@ -174,46 +201,46 @@ int main() {
     glm::vec3 color_sphere(0.0f, 0.0f, 1.0f);
 
     // draw light cube
-    program_basic.use();
-    program_basic.set_mat4("model", model_light);
-    program_basic.set_mat4("view", view);
-    program_basic.set_mat4("projection", projection);
-    program_basic.set_vec3("color", color_light);
+    pgm_basic.use();
+    pgm_basic.set_mat4("model", model_light);
+    pgm_basic.set_mat4("view", view);
+    pgm_basic.set_mat4("projection", projection);
+    pgm_basic.set_vec3("color", color_light);
     light.draw();
 
     // draw circle
-    program_basic.set_mat4("model", model_circle);
-    program_basic.set_vec3("color", color_circle);
+    pgm_basic.set_mat4("model", model_circle);
+    pgm_basic.set_vec3("color", color_circle);
     circle.draw(GL_LINE);
 
     // draw cylinder
-    program_basic.set_mat4("model", model_cylinder);
-    program_basic.set_vec3("color", color_cylinder);
+    pgm_basic.set_mat4("model", model_cylinder);
+    pgm_basic.set_vec3("color", color_cylinder);
     cylinder.draw(GL_LINE);
 
     // draw sphere
-    program_basic.set_mat4("model", model_sphere);
-    program_basic.set_vec3("color", color_sphere);
+    pgm_basic.set_mat4("model", model_sphere);
+    pgm_basic.set_vec3("color", color_sphere);
     sphere.draw(GL_LINE);
 
     // draw illuminated cube
-    program_light.use();
-    program_light.set_mat4("model", model_cube_light);
-    program_light.set_mat4("view", view);
-    program_light.set_mat4("projection", projection);
-    program_light.set_vec3("material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f));
-    program_light.set_vec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-    program_light.set_vec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    program_light.set_float("material.shininess", 32.0f);
-    program_light.set_vec3("light.position", position_light);
-    program_light.set_vec3("light.ambiant", 0.2f * color_light);
-    program_light.set_vec3("light.diffuse", 0.5f * color_light);
-    program_light.set_vec3("light.specular", color_light);
-    program_light.set_vec3("position_camera", camera.m_position);
+    pgm_light.use();
+    pgm_light.set_mat4("model", model_cube_light);
+    pgm_light.set_mat4("view", view);
+    pgm_light.set_mat4("projection", projection);
+    pgm_light.set_vec3("material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f));
+    pgm_light.set_vec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
+    pgm_light.set_vec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    pgm_light.set_float("material.shininess", 32.0f);
+    pgm_light.set_vec3("light.position", position_light);
+    pgm_light.set_vec3("light.ambiant", 0.2f * color_light);
+    pgm_light.set_vec3("light.diffuse", 0.5f * color_light);
+    pgm_light.set_vec3("light.specular", color_light);
+    pgm_light.set_vec3("position_camera", camera.m_position);
     cube_light.draw();
 
     // draw illuminated pyramid
-    program_light.set_mat4("model", model_pyramid);
+    pgm_light.set_mat4("model", model_pyramid);
     pyramid.draw();
 
     // render imgui dialog
@@ -227,7 +254,7 @@ int main() {
   // destroy imgui
   dialog.free();
 
-  // de-allocate GPU buffers & textures
+  // destroy meshes
   cube_color.free();
   cube_texture.free();
   cube_light.free();
@@ -235,14 +262,20 @@ int main() {
   circle.free();
   cylinder.free();
   sphere.free();
-  text.free();
+  // text.free();
+  rectangle.free();
+
+  // destroy textures
+  texture2d.free();
+  texture3d.free();
 
   // destroy shaders programs
-  program_basic.free();
-  program_color.free();
-  program_texture.free();
-  program_text.free();
-  program_light.free();
+  pgm_basic.free();
+  pgm_color.free();
+  pgm_texture_cube.free();
+  pgm_texture_surface.free();
+  pgm_text.free();
+  pgm_light.free();
 
   // destroy window & terminate glfw
   glfwDestroyWindow(window);

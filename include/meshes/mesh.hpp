@@ -8,15 +8,17 @@
 // abstract class (note the pure virtual methods)
 class Mesh {
 public:
+  Mesh(const Program& program);
   virtual void draw(GLenum render_type=GL_FILL) final;
-  virtual void free();
+  virtual void free() final;
 
 protected:
   std::vector<float> m_vertexes;
   int m_n_vertexes;
+  Program m_program;
 
   virtual void init_buffers() final;
-  virtual void set_attribute(const Program& program) = 0;
+  virtual void set_attribute() = 0;
 
   // getters needed to access derived classes members here
   virtual std::vector<float> get_vertexes() = 0;

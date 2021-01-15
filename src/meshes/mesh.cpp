@@ -1,6 +1,11 @@
 #include <meshes/mesh.hpp>
 #include <iostream>
 
+Mesh::Mesh(const Program& program):
+  m_program(program)
+{
+}
+
 void Mesh::draw(GLenum render_type) {
   // set render type to (fill, wireframe or point)
   glPolygonMode(GL_FRONT_AND_BACK, render_type);

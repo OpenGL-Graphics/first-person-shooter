@@ -13,24 +13,27 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # copy assets folder
 file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 
-
-# opengl main
-# glfw
+# needed packages
 find_package(glfw3 REQUIRED)
+find_package(Freetype REQUIRED)
 
 # glad shared library (opengl)
 add_library(glad SHARED src/glad/glad.c)
 target_include_directories(glad PUBLIC include)
 
-# imgui
+# imgui library (preprocessor definition to force it to use glad)
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 file(GLOB IMGUI_SRC "src/imgui/*.cpp")
 add_library(imgui SHARED ${IMGUI_SRC})
 target_include_directories(imgui PUBLIC include/imgui include)
 
 # main executable
-file(GLOB MESHES_SRC "src/meshes/*.cpp")
-file(GLOB NAVIGATION_SRC "src/navigation/*.cpp")
-file(GLOB SHADERS_SRC "src/shaders/*.cpp")
-add_executable(main src/main.cpp ${MESHES_SRC} ${NAVIGATION_SRC} ${SHADERS_SRC})
+file(GLOB SRC
+  "src/gui/*.cpp"
+  "src/meshes/*.cpp"
+  "src/materials/*.cpp"
+  "src/navigation/*.cpp"
+  "src/shaders/*.cpp"
+)
+add_executable(main src/main.cpp ${SRC})
 target_link_libraries(main glfw glad imgui)

@@ -8,7 +8,7 @@ public:
   CubeColor(const Program& program);
 
 protected:
-  void set_attribute(const Program& program) override;
+  void set_attribute() override;
 };
 
 #endif // CUBE_COLOR_HPP

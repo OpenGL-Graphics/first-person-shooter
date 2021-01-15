@@ -12,7 +12,7 @@ protected:
   std::vector<float> m_vertexes;
   int m_n_vertexes;
 
-  void set_attribute(const Program& program) override;
+  void set_attribute() override;
   std::vector<float> get_vertexes() override;
   int get_n_vertexes() override;
 

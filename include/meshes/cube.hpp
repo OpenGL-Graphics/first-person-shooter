@@ -60,7 +60,7 @@ protected:
   };
   int m_n_vertexes = 6 * 2 * 3;
 
-  void set_attribute(const Program& program) override;
+  void set_attribute() override;
   std::vector<float> get_vertexes() override;
   int get_n_vertexes() override;
 };
