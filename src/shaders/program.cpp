@@ -68,6 +68,12 @@ void Program::set_float(const std::string& name, float value) {
   glUniform1f(uniform, value);
 }
 
+template <class T>
+void Program::set_texture(const std::string& name, const Texture<T>& texture) {
+  // works with 2d & 3d textures for surface & cubes
+  set_int(name, texture.get_index());
+}
+
 void Program::use() {
   glUseProgram(m_id);
 }
@@ -92,3 +98,7 @@ std::string Program::read_file(const std::string& filename) {
 
   return buffer.str();
 }
+
+// template instantiation to generate function from it (fixes link error)
+template void Program::set_texture<std::string>(const std::string&, const Texture<std::string>&);
+template void Program::set_texture<std::vector<std::string>>(const std::string&, const Texture<std::vector<std::string>>&);

@@ -6,13 +6,14 @@
 
 class CubeTexture : public Cube {
 public:
-  CubeTexture(const Program& program, const Texture& texture);
+  CubeTexture(const Program& program, const Texture3D& texture);
+  void draw(GLenum render_type=GL_FILL) override;
 
 protected:
   void set_attribute() override;
 
 private:
-  Texture m_texture;
+  Texture3D m_texture;
 };
 
 #endif // CUBE_TEXTURE_HPP

@@ -1,24 +1,30 @@
 #include <materials/texture.hpp>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
+#include <materials/image.hpp>
+#include <type_traits>
+#include <vector>
 
-Texture::Texture(const std::string& path, int index):
-  m_index(GL_TEXTURE0 + index),
+// template specialization for 2d surface textures
+template <>
+Texture2D::Texture(const std::string& path, GLenum index):
+  m_index(index),
   m_type(GL_TEXTURE_2D)
 {
   generate();
   from_image(path);
 }
 
-Texture::Texture(const std::vector<std::string>& paths, int index):
-  m_index(GL_TEXTURE0 + index),
+// template specialization for 3d cubic textures
+template <>
+Texture3D::Texture(const std::vector<std::string>& paths, GLenum index):
+  m_index(index),
   m_type(GL_TEXTURE_CUBE_MAP)
 {
   generate();
   from_images(paths);
 }
 
-void Texture::generate() {
+template <class T>
+void Texture<T>::generate() {
   // generate & bind texture
   glGenTextures(1, &m_id);
   glActiveTexture(m_index);
@@ -31,37 +37,33 @@ void Texture::generate() {
   glTexParameteri(m_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-void Texture::from_image(const std::string& path, GLenum type_face) {
-  // load image from its path
-  int width, height, n_channels;
-  stbi_set_flip_vertically_on_load(true);
-  unsigned char* image = stbi_load(path.c_str(), &width, &height, &n_channels, 0);
-
-  GLenum format;
-  switch (n_channels) {
-    case 1: 
-      format = GL_RED;
-      break;
-    case 3: 
-      format = GL_RGB;
-      break;
-    case 4: 
-      format = GL_RGBA;
-      break;
-  }
-
+template <class T>
+void Texture<T>::from_image(const std::string& path, GLenum type_face) {
   // define texture from loaded image 
-  glTexImage2D(type_face, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, image);
-  stbi_image_free(image);
+  Image image(path);
+  glTexImage2D(type_face, 0, image.format, image.width, image.height, 0, image.format, GL_UNSIGNED_BYTE, image.data);
+  image.free();
 }
 
-void Texture::from_images(const std::vector<std::string>& paths) {
+template <class T>
+void Texture<T>::from_images(const std::vector<std::string>& paths) {
   // 6-sided texture cube using loaded images 
   for (size_t i_texture = 0; i_texture < 6; i_texture++) {
     from_image(paths[i_texture], GL_TEXTURE_CUBE_MAP_POSITIVE_X + i_texture);
   }
 }
 
-void Texture::free() {
+template <class T>
+void Texture<T>::free() {
   glDeleteTextures(1, &m_id);
 }
+
+template <class T>
+int Texture<T>::get_index() const {
+  // used to pass texture index to program in Program::set_texture
+  return m_index - GL_TEXTURE0;
+}
+
+// template instantiation to generate class from it (fixes link error)
+template class Texture<std::string>;
+template class Texture<std::vector<std::string>>;

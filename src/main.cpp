@@ -16,7 +16,7 @@
 #include <meshes/circle.hpp>
 #include <meshes/cylinder.hpp>
 #include <meshes/sphere.hpp>
-#include <meshes/rectangle.hpp>
+#include <meshes/surface.hpp>
 #include <materials/texture.hpp>
 // #include <meshes/text.hpp>
 #include <gui/dialog.hpp>
@@ -48,6 +48,7 @@ int main() {
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
   const int width_monitor = mode->width;
   const int height_monitor = mode->height;
+  std::cout << "monitor: " << width_monitor << " " << height_monitor << std::endl;
   x_mouse = width_monitor / 2.0f;
   y_mouse = height_monitor / 2.0f;
 
@@ -93,10 +94,10 @@ int main() {
     "assets/images/brick2.jpg",
     "assets/images/brick2.jpg",
   };
-  int index_texture3d = 0;
-  int index_texture2d = 1;
-  Texture texture3d(paths_textures, index_texture3d);
-  Texture texture2d("assets/images/grass.png", index_texture2d);
+  GLenum index_texture3d = GL_TEXTURE0;
+  GLenum index_texture2d = GL_TEXTURE1;
+  Texture3D texture3d(paths_textures, index_texture3d);
+  Texture2D texture2d("assets/images/grass.png", index_texture2d);
 
   // meshes
   CubeColor cube_color(pgm_color);
@@ -107,9 +108,9 @@ int main() {
   Circle circle(pgm_basic, 36);
   Cylinder cylinder(pgm_basic, 36);
   Sphere sphere(pgm_basic, 12, 12);
-  Rectangle rectangle(pgm_texture_surface, texture2d);
+  Surface surface(pgm_texture_surface, texture2d);
 
-  // model & projection matrices for meshes
+  // model matrices
   glm::mat4 model_cube_color(glm::mat4(1.0f));
   glm::mat4 model_cube_texture;
   glm::mat4 model_cube_light(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)));
@@ -127,8 +128,9 @@ int main() {
     glm::vec3(0.2f)
   ));
 
-  // projection matrix
-  glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 50.f); 
+  // 2d & 3d projection matrices
+  glm::mat4 projection3d = glm::perspective(glm::radians(45.0f), (float)width_monitor/(float)height_monitor, 1.0f, 50.f); 
+  glm::mat4 projection2d = glm::ortho(0, width_monitor, 0, height_monitor);
 
   // enable depth testing
   glEnable(GL_DEPTH_TEST);
@@ -156,7 +158,7 @@ int main() {
     pgm_text.use();
     pgm_text.set_mat4("model", model_text);
     pgm_text.set_mat4("view", view);
-    pgm_text.set_mat4("projection", projection);
+    pgm_text.set_mat4("projection", projection3d);
     pgm_text.set_int("texture_in", 0);
     pgm_text.set_int("texture_in", index_tex_text - GL_TEXTURE0);
     text.draw();
@@ -166,24 +168,22 @@ int main() {
     pgm_color.use();
     pgm_color.set_mat4("model", model_cube_color);
     pgm_color.set_mat4("view", view);
-    pgm_color.set_mat4("projection", projection);
+    pgm_color.set_mat4("projection", projection3d);
     cube_color.draw();
 
     // draw rectangle
     pgm_texture_surface.use();
-    pgm_texture_surface.set_int("texture_in", index_texture2d);
     pgm_texture_surface.set_mat4("model", model_rectangle);
     pgm_texture_surface.set_mat4("view", view);
-    pgm_texture_surface.set_mat4("projection", projection);
-    rectangle.draw();
+    pgm_texture_surface.set_mat4("projection", projection3d);
+    surface.draw();
 
     // draw 3x texture cubes
     pgm_texture_cube.use();
     model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
     pgm_texture_cube.set_mat4("model", model_cube_texture);
     pgm_texture_cube.set_mat4("view", view);
-    pgm_texture_cube.set_mat4("projection", projection);
-    pgm_texture_cube.set_int("texture_in", index_texture3d);
+    pgm_texture_cube.set_mat4("projection", projection3d);
     cube_texture.draw();
     model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -1.0f));
     pgm_texture_cube.set_mat4("model", model_cube_texture);
@@ -204,7 +204,7 @@ int main() {
     pgm_basic.use();
     pgm_basic.set_mat4("model", model_light);
     pgm_basic.set_mat4("view", view);
-    pgm_basic.set_mat4("projection", projection);
+    pgm_basic.set_mat4("projection", projection3d);
     pgm_basic.set_vec3("color", color_light);
     light.draw();
 
@@ -227,7 +227,7 @@ int main() {
     pgm_light.use();
     pgm_light.set_mat4("model", model_cube_light);
     pgm_light.set_mat4("view", view);
-    pgm_light.set_mat4("projection", projection);
+    pgm_light.set_mat4("projection", projection3d);
     pgm_light.set_vec3("material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f));
     pgm_light.set_vec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
     pgm_light.set_vec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
@@ -263,7 +263,7 @@ int main() {
   cylinder.free();
   sphere.free();
   // text.free();
-  rectangle.free();
+  surface.free();
 
   // destroy textures
   texture2d.free();

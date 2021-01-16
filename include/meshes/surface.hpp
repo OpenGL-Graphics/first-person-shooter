@@ -1,12 +1,13 @@
-#ifndef RECTANGLE_HPP
-#define RECTANGLE_HPP
+#ifndef SURFACE_HPP
+#define SURFACE_HPP
 
 #include <meshes/mesh.hpp>
 #include <materials/texture.hpp>
 
-class Rectangle : public Mesh {
+class Surface : public Mesh {
 public:
-  Rectangle(const Program& program, const Texture& texture);
+  Surface(const Program& program, const Texture2D& texture);
+  void draw(GLenum render_type=GL_FILL) override;
 
 protected:
   // coord(x,y,z)         texture(u,v,w)
@@ -26,10 +27,7 @@ protected:
   int get_n_vertexes() override;
 
 private:
-  Texture m_texture;
-  std::string m_path_image;
-
-  void apply_texture();
+  Texture2D m_texture;
 };
 
-#endif // RECTANGLE_HPP
+#endif // SURFACE_HPP

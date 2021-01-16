@@ -9,7 +9,7 @@
 class Mesh {
 public:
   Mesh(const Program& program);
-  virtual void draw(GLenum render_type=GL_FILL) final;
+  virtual void draw(GLenum render_type=GL_FILL);
   virtual void free() final;
 
 protected:

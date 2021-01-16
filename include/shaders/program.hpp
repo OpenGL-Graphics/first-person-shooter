@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <string>
 #include <glm/glm.hpp>
+#include <materials/texture.hpp>
 
 class Program {
   public:
@@ -17,6 +18,9 @@ class Program {
     void free();
     bool has_failed();
     GLuint define_attribute(const std::string& attribute) const;
+
+    template <class T>
+    void set_texture(const std::string& name, const Texture<T>& texture);
 
   private:
     GLuint m_id;

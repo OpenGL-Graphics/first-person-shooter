@@ -1,6 +1,6 @@
-#include <meshes/rectangle.hpp>
+#include <meshes/surface.hpp>
 
-Rectangle::Rectangle(const Program& program, const Texture& texture):
+Surface::Surface(const Program& program, const Texture2D& texture):
   Mesh(program),
   m_texture(texture)
 {
@@ -11,7 +11,12 @@ Rectangle::Rectangle(const Program& program, const Texture& texture):
   set_attribute();
 }
 
-void Rectangle::set_attribute() {
+void Surface::draw(GLenum render_type) {
+  m_program.set_texture("texture_in", m_texture);
+  Mesh::draw(render_type);
+}
+
+void Surface::set_attribute() {
   // position attribute (same name as input var in vertex shader)
   GLuint attr_position = m_program.define_attribute("position");
   glVertexAttribPointer(attr_position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
@@ -23,10 +28,10 @@ void Rectangle::set_attribute() {
   glEnableVertexAttribArray(attr_texture_dir);
 }
 
-std::vector<float> Rectangle::get_vertexes() {
+std::vector<float> Surface::get_vertexes() {
   return m_vertexes;
 }
 
-int Rectangle::get_n_vertexes() {
+int Surface::get_n_vertexes() {
   return m_n_vertexes;
 }
