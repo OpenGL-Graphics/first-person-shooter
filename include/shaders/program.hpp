@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <string>
 #include <glm/glm.hpp>
-#include <materials/texture.hpp>
+#include <shaders/uniforms.hpp>
 
 class Program {
   public:
@@ -14,13 +14,11 @@ class Program {
     void set_vec3(const std::string& name, const glm::vec3& vect);
     void set_float(const std::string& name, float value);
     void set_int(const std::string& name, int value);
+    void set_uniforms(const Uniforms& uniforms);
     void use();
     void free();
     bool has_failed();
     GLuint define_attribute(const std::string& attribute) const;
-
-    template <class T>
-    void set_texture(const std::string& name, const Texture<T>& texture);
 
   private:
     GLuint m_id;

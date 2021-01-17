@@ -1,19 +1,13 @@
 #include <meshes/surface.hpp>
 
-Surface::Surface(const Program& program, const Texture2D& texture):
-  Mesh(program),
-  m_texture(texture)
+Surface::Surface(const Program& program):
+  Mesh(program)
 {
   // initialize vbo buffer
   init_buffers();
 
   // get attributes from shader
   set_attribute();
-}
-
-void Surface::draw(GLenum render_type) {
-  m_program.set_texture("texture_in", m_texture);
-  Mesh::draw(render_type);
 }
 
 void Surface::set_attribute() {

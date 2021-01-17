@@ -2,12 +2,10 @@
 #define SURFACE_HPP
 
 #include <meshes/mesh.hpp>
-#include <materials/texture.hpp>
 
 class Surface : public Mesh {
 public:
-  Surface(const Program& program, const Texture2D& texture);
-  void draw(GLenum render_type=GL_FILL) override;
+  Surface(const Program& program);
 
 protected:
   // coord(x,y,z)         texture(u,v,w)
@@ -25,9 +23,6 @@ protected:
   void set_attribute() override;
   std::vector<float> get_vertexes() override;
   int get_n_vertexes() override;
-
-private:
-  Texture2D m_texture;
 };
 
 #endif // SURFACE_HPP

@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <shaders/program.hpp>
+#include <shaders/uniforms.hpp>
 #include <navigation/camera.hpp>
 #include <meshes/cube_color.hpp>
 #include <meshes/cube_texture.hpp>
@@ -48,7 +49,6 @@ int main() {
   const GLFWvidmode* mode = glfwGetVideoMode(monitor);
   const int width_monitor = mode->width;
   const int height_monitor = mode->height;
-  std::cout << "monitor: " << width_monitor << " " << height_monitor << std::endl;
   x_mouse = width_monitor / 2.0f;
   y_mouse = height_monitor / 2.0f;
 
@@ -101,14 +101,14 @@ int main() {
 
   // meshes
   CubeColor cube_color(pgm_color);
-  CubeTexture cube_texture(pgm_texture_cube, texture3d);
+  CubeTexture cube_texture(pgm_texture_cube);
   Cube light(pgm_basic);
   CubeLight cube_light(pgm_light);
   Pyramid pyramid(pgm_light);
   Circle circle(pgm_basic, 36);
   Cylinder cylinder(pgm_basic, 36);
   Sphere sphere(pgm_basic, 12, 12);
-  Surface surface(pgm_texture_surface, texture2d);
+  Surface surface(pgm_texture_surface);
 
   // model matrices
   glm::mat4 model_cube_color(glm::mat4(1.0f));
@@ -165,32 +165,43 @@ int main() {
     */
 
     // draw color cube (one program run at a time)
-    pgm_color.use();
-    pgm_color.set_mat4("model", model_cube_color);
-    pgm_color.set_mat4("view", view);
-    pgm_color.set_mat4("projection", projection3d);
-    cube_color.draw();
+    Uniforms uniforms = {
+      .model      = model_cube_color,
+      .view       = view,
+      .projection = projection3d,
+    };
+    cube_color.draw(uniforms);
 
-    // draw rectangle
-    pgm_texture_surface.use();
-    pgm_texture_surface.set_mat4("model", model_rectangle);
-    pgm_texture_surface.set_mat4("view", view);
-    pgm_texture_surface.set_mat4("projection", projection3d);
-    surface.draw();
+    // draw 2d surface
+    surface.draw({
+      .model      = model_rectangle,
+      .view       = view,
+      .projection = projection3d,
+      .texture2d  = texture2d.get_index()
+    });
 
     // draw 3x texture cubes
-    pgm_texture_cube.use();
     model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
-    pgm_texture_cube.set_mat4("model", model_cube_texture);
-    pgm_texture_cube.set_mat4("view", view);
-    pgm_texture_cube.set_mat4("projection", projection3d);
-    cube_texture.draw();
+    cube_texture.draw({
+      .model      = model_cube_texture,
+      .view       = view,
+      .projection = projection3d,
+      .texture3d  = texture3d.get_index()
+    });
     model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -1.0f));
-    pgm_texture_cube.set_mat4("model", model_cube_texture);
-    cube_texture.draw();
+    cube_texture.draw({
+      .model      = model_cube_texture,
+      .view       = view,
+      .projection = projection3d,
+      .texture3d  = texture3d.get_index()
+    });
     model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f));
-    pgm_texture_cube.set_mat4("model", model_cube_texture);
-    cube_texture.draw();
+    cube_texture.draw({
+      .model      = model_cube_texture,
+      .view       = view,
+      .projection = projection3d,
+      .texture3d  = texture3d.get_index()
+    });
 
     // cube & light colors
     glm::vec3 color(1.0f, 0.5, 0.3);
@@ -201,47 +212,68 @@ int main() {
     glm::vec3 color_sphere(0.0f, 0.0f, 1.0f);
 
     // draw light cube
-    pgm_basic.use();
-    pgm_basic.set_mat4("model", model_light);
-    pgm_basic.set_mat4("view", view);
-    pgm_basic.set_mat4("projection", projection3d);
-    pgm_basic.set_vec3("color", color_light);
-    light.draw();
+    light.draw({
+      .model      = model_light,
+      .view       = view,
+      .projection = projection3d,
+      .color      = color_light
+    });
 
     // draw circle
-    pgm_basic.set_mat4("model", model_circle);
-    pgm_basic.set_vec3("color", color_circle);
-    circle.draw(GL_LINE);
+    circle.draw({
+      .model      = model_circle,
+      .view       = view,
+      .projection = projection3d,
+      .color      = color_circle
+    }, GL_LINE);
 
     // draw cylinder
-    pgm_basic.set_mat4("model", model_cylinder);
-    pgm_basic.set_vec3("color", color_cylinder);
-    cylinder.draw(GL_LINE);
+    cylinder.draw({
+      .model      = model_cylinder,
+      .view       = view,
+      .projection = projection3d,
+      .color      = color_cylinder
+    }, GL_LINE);
 
     // draw sphere
-    pgm_basic.set_mat4("model", model_sphere);
-    pgm_basic.set_vec3("color", color_sphere);
-    sphere.draw(GL_LINE);
+    sphere.draw({
+      .model      = model_sphere,
+      .view       = view,
+      .projection = projection3d,
+      .color      = color_sphere
+    }, GL_LINE);
 
     // draw illuminated cube
-    pgm_light.use();
-    pgm_light.set_mat4("model", model_cube_light);
-    pgm_light.set_mat4("view", view);
-    pgm_light.set_mat4("projection", projection3d);
-    pgm_light.set_vec3("material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f));
-    pgm_light.set_vec3("material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f));
-    pgm_light.set_vec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-    pgm_light.set_float("material.shininess", 32.0f);
-    pgm_light.set_vec3("light.position", position_light);
-    pgm_light.set_vec3("light.ambiant", 0.2f * color_light);
-    pgm_light.set_vec3("light.diffuse", 0.5f * color_light);
-    pgm_light.set_vec3("light.specular", color_light);
-    pgm_light.set_vec3("position_camera", camera.m_position);
-    cube_light.draw();
+    cube_light.draw({
+      .model              = model_cube_light,
+      .view               = view,
+      .projection         = projection3d,
+      .material_ambiant   = glm::vec3(1.0f, 0.5f, 0.31f),
+      .material_diffuse   = glm::vec3(1.0f, 0.5f, 0.31f),
+      .material_specular  = glm::vec3(0.5f, 0.5f, 0.5f),
+      .material_shininess = 32.0f,
+      .light_position     = position_light,
+      .light_ambiant      = 0.2f * color_light,
+      .light_diffuse      = 0.5f * color_light,
+      .light_specular     = color_light,
+      .camera_position    = camera.m_position,
+    });
 
     // draw illuminated pyramid
-    pgm_light.set_mat4("model", model_pyramid);
-    pyramid.draw();
+    pyramid.draw({
+      .model              = model_pyramid,
+      .view               = view,
+      .projection         = projection3d,
+      .material_ambiant   = glm::vec3(1.0f, 0.5f, 0.31f),
+      .material_diffuse   = glm::vec3(1.0f, 0.5f, 0.31f),
+      .material_specular  = glm::vec3(0.5f, 0.5f, 0.5f),
+      .material_shininess = 32.0f,
+      .light_position     = position_light,
+      .light_ambiant      = 0.2f * color_light,
+      .light_diffuse      = 0.5f * color_light,
+      .light_specular     = color_light,
+      .camera_position    = camera.m_position,
+    });
 
     // render imgui dialog
     dialog.render();

@@ -60,7 +60,7 @@ void Texture<T>::free() {
 
 template <class T>
 int Texture<T>::get_index() const {
-  // used to pass texture index to program in Program::set_texture
+  // used to pass texture index to shaders program
   return m_index - GL_TEXTURE0;
 }
 

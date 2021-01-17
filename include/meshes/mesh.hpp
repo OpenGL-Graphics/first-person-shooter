@@ -3,13 +3,14 @@
 
 #include <glad/glad.h>
 #include <shaders/program.hpp>
+#include <shaders/uniforms.hpp>
 #include <vector>
 
 // abstract class (note the pure virtual methods)
 class Mesh {
 public:
   Mesh(const Program& program);
-  virtual void draw(GLenum render_type=GL_FILL);
+  virtual void draw(const Uniforms& uniforms, GLenum render_type=GL_FILL) final;
   virtual void free() final;
 
 protected:

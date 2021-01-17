@@ -50,28 +50,26 @@ Program::Program(const std::string& path_vertex, const std::string& path_fragmen
 void Program::set_mat4(const std::string& name, const glm::mat4& mat) {
   // set value of uniform variable using its name
   GLuint uniform = glGetUniformLocation(m_id, name.c_str());
-  glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(mat));
+  if (uniform != -1)
+    glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 void Program::set_vec3(const std::string& name, const glm::vec3& vect) {
   GLuint uniform = glGetUniformLocation(m_id, name.c_str());
-  glUniform3fv(uniform, 1, glm::value_ptr(vect));
+  if (uniform != -1)
+    glUniform3fv(uniform, 1, glm::value_ptr(vect));
 }
 
 void Program::set_int(const std::string& name, int value) {
   GLuint uniform = glGetUniformLocation(m_id, name.c_str());
-  glUniform1i(uniform, value);
+  if (uniform != -1)
+    glUniform1i(uniform, value);
 }
 
 void Program::set_float(const std::string& name, float value) {
   GLuint uniform = glGetUniformLocation(m_id, name.c_str());
-  glUniform1f(uniform, value);
-}
-
-template <class T>
-void Program::set_texture(const std::string& name, const Texture<T>& texture) {
-  // works with 2d & 3d textures for surface & cubes
-  set_int(name, texture.get_index());
+  if (uniform != -1)
+    glUniform1f(uniform, value);
 }
 
 void Program::use() {
@@ -87,7 +85,7 @@ bool Program::has_failed() {
 }
 
 GLuint Program::define_attribute(const std::string& attribute) const {
-  // declared as const. bcos program passed by reference in mesh
+  // declared as const. bcos program passed by const reference in mesh
   return glGetAttribLocation(m_id, attribute.c_str());
 }
 
@@ -99,6 +97,29 @@ std::string Program::read_file(const std::string& filename) {
   return buffer.str();
 }
 
-// template instantiation to generate function from it (fixes link error)
-template void Program::set_texture<std::string>(const std::string&, const Texture<std::string>&);
-template void Program::set_texture<std::vector<std::string>>(const std::string&, const Texture<std::vector<std::string>>&);
+void Program::set_uniforms(const Uniforms& uniforms) {
+  // transformation matrix
+  set_mat4("model", uniforms.model);
+  set_mat4("view", uniforms.view);
+  set_mat4("projection", uniforms.projection);
+
+  // material
+  set_vec3("color", uniforms.color);
+  set_vec3("material.ambiant", uniforms.material_ambiant);
+  set_vec3("material.diffuse", uniforms.material_diffuse);
+  set_vec3("material.specular", uniforms.material_specular);
+  set_float("material.shininess", uniforms.material_shininess);
+
+  // light
+  set_vec3("light.position", uniforms.light_position);
+  set_vec3("light.ambiant", uniforms.light_ambiant);
+  set_vec3("light.diffuse", uniforms.light_diffuse);
+  set_vec3("light.specular", uniforms.light_specular);
+
+  // camera
+  set_vec3("position_camera", uniforms.camera_position);
+
+  // texture
+  set_int("texture2d", uniforms.texture2d);
+  set_int("texture3d", uniforms.texture3d);
+}
