@@ -98,28 +98,21 @@ std::string Program::read_file(const std::string& filename) {
 }
 
 void Program::set_uniforms(const Uniforms& uniforms) {
-  // transformation matrix
-  set_mat4("model", uniforms.model);
-  set_mat4("view", uniforms.view);
-  set_mat4("projection", uniforms.projection);
+  // uniforms are passed via Mesh::draw() to program
+  for (const auto& item : uniforms) {
+    KeyUniform key_uniform(item.first);
+    ValueUniform value_uniform(item.second);
 
-  // material
-  set_vec3("color", uniforms.color);
-  set_vec3("material.ambiant", uniforms.material_ambiant);
-  set_vec3("material.diffuse", uniforms.material_diffuse);
-  set_vec3("material.specular", uniforms.material_specular);
-  set_float("material.shininess", uniforms.material_shininess);
-
-  // light
-  set_vec3("light.position", uniforms.light_position);
-  set_vec3("light.ambiant", uniforms.light_ambiant);
-  set_vec3("light.diffuse", uniforms.light_diffuse);
-  set_vec3("light.specular", uniforms.light_specular);
-
-  // camera
-  set_vec3("position_camera", uniforms.camera_position);
-
-  // texture
-  set_int("texture2d", uniforms.texture2d);
-  set_int("texture3d", uniforms.texture3d);
+    if (auto ptr_value = std::get_if<glm::mat4>(&value_uniform)) {
+      set_mat4(key_uniform, *ptr_value);
+    } else if (auto ptr_value = std::get_if<glm::vec3>(&value_uniform)) {
+      set_vec3(key_uniform, *ptr_value);
+    } else if (auto ptr_value = std::get_if<float>(&value_uniform)) {
+      set_float(key_uniform, *ptr_value);
+    } else if (auto ptr_value = std::get_if<GLenum>(&value_uniform)) {
+      set_int(key_uniform, *ptr_value);
+    } else {
+      std::cout << "Incompatible value type" << '\n'; 
+    }
+  }
 }

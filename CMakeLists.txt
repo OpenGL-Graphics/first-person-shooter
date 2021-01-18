@@ -5,7 +5,7 @@ project(VIDEO)
 set(CMAKE_BUILD_TYPE Debug)
 
 # use C++11
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 # autocomplete with clang & linting in vim (needed by YCM plugin)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

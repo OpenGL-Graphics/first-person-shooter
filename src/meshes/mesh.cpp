@@ -7,7 +7,7 @@ Mesh::Mesh(const Program& program):
 }
 
 void Mesh::draw(const Uniforms& uniforms, GLenum render_type) {
-  // pass uniforms to shaders program
+  // pass uniforms map to shaders program
   m_program.use();
   m_program.set_uniforms(uniforms);
 

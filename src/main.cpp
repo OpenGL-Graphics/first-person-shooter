@@ -166,41 +166,41 @@ int main() {
 
     // draw color cube (one program run at a time)
     Uniforms uniforms = {
-      .model      = model_cube_color,
-      .view       = view,
-      .projection = projection3d,
+      {"model", model_cube_color},
+      {"view", view},
+      {"projection", projection3d},
     };
     cube_color.draw(uniforms);
 
     // draw 2d surface
     surface.draw({
-      .model      = model_rectangle,
-      .view       = view,
-      .projection = projection3d,
-      .texture2d  = texture2d.get_index()
+      {"model", model_rectangle},
+      {"view",  view},
+      {"projection", projection3d},
+      {"texture2d", texture2d.get_index()},
     });
 
     // draw 3x texture cubes
     model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f));
     cube_texture.draw({
-      .model      = model_cube_texture,
-      .view       = view,
-      .projection = projection3d,
-      .texture3d  = texture3d.get_index()
+      {"model", model_cube_texture},
+      {"view", view},
+      {"projection", projection3d},
+      {"texture3d", texture3d.get_index()},
     });
     model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -1.0f));
     cube_texture.draw({
-      .model      = model_cube_texture,
-      .view       = view,
-      .projection = projection3d,
-      .texture3d  = texture3d.get_index()
+      {"model",model_cube_texture},
+      {"view", view},
+      {"projection", projection3d},
+      {"texture3d", texture3d.get_index()},
     });
     model_cube_texture = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f));
     cube_texture.draw({
-      .model      = model_cube_texture,
-      .view       = view,
-      .projection = projection3d,
-      .texture3d  = texture3d.get_index()
+      {"model", model_cube_texture},
+      {"view", view},
+      {"projection", projection3d},
+      {"texture3d", texture3d.get_index()},
     });
 
     // cube & light colors
@@ -213,66 +213,66 @@ int main() {
 
     // draw light cube
     light.draw({
-      .model      = model_light,
-      .view       = view,
-      .projection = projection3d,
-      .color      = color_light
+      {"model", model_light},
+      {"view", view},
+      {"projection", projection3d},
+      {"color", color_light},
     });
 
     // draw circle
     circle.draw({
-      .model      = model_circle,
-      .view       = view,
-      .projection = projection3d,
-      .color      = color_circle
+      {"model", model_circle},
+      {"view", view},
+      {"projection", projection3d},
+      {"color", color_circle},
     }, GL_LINE);
 
     // draw cylinder
     cylinder.draw({
-      .model      = model_cylinder,
-      .view       = view,
-      .projection = projection3d,
-      .color      = color_cylinder
+      {"model", model_cylinder},
+      {"view", view},
+      {"projection", projection3d},
+      {"color", color_cylinder},
     }, GL_LINE);
 
     // draw sphere
     sphere.draw({
-      .model      = model_sphere,
-      .view       = view,
-      .projection = projection3d,
-      .color      = color_sphere
+        {"model", model_sphere},
+        {"view", view},
+        {"projection", projection3d},
+        {"color", color_sphere},
     }, GL_LINE);
 
     // draw illuminated cube
     cube_light.draw({
-      .model              = model_cube_light,
-      .view               = view,
-      .projection         = projection3d,
-      .material_ambiant   = glm::vec3(1.0f, 0.5f, 0.31f),
-      .material_diffuse   = glm::vec3(1.0f, 0.5f, 0.31f),
-      .material_specular  = glm::vec3(0.5f, 0.5f, 0.5f),
-      .material_shininess = 32.0f,
-      .light_position     = position_light,
-      .light_ambiant      = 0.2f * color_light,
-      .light_diffuse      = 0.5f * color_light,
-      .light_specular     = color_light,
-      .camera_position    = camera.m_position,
+      {"model", model_cube_light},
+      {"view", view},
+      {"projection", projection3d},
+      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
+      {"material.shininess", 32.0f},
+      {"light.position", position_light},
+      {"light.ambiant", 0.2f * color_light},
+      {"light.diffuse", 0.5f * color_light},
+      {"light.specular", color_light},
+      {"position_camera", camera.m_position},
     });
 
     // draw illuminated pyramid
     pyramid.draw({
-      .model              = model_pyramid,
-      .view               = view,
-      .projection         = projection3d,
-      .material_ambiant   = glm::vec3(1.0f, 0.5f, 0.31f),
-      .material_diffuse   = glm::vec3(1.0f, 0.5f, 0.31f),
-      .material_specular  = glm::vec3(0.5f, 0.5f, 0.5f),
-      .material_shininess = 32.0f,
-      .light_position     = position_light,
-      .light_ambiant      = 0.2f * color_light,
-      .light_diffuse      = 0.5f * color_light,
-      .light_specular     = color_light,
-      .camera_position    = camera.m_position,
+      {"model", model_pyramid},
+      {"view", view},
+      {"projection", projection3d},
+      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.specular",glm::vec3(0.5f, 0.5f, 0.5f)},
+      {"material.shininess", 32.0f},
+      {"light.position", position_light},
+      {"light.ambiant", 0.2f * color_light},
+      {"light.diffuse", 0.5f * color_light},
+      {"light.specular", color_light},
+      {"position_camera", camera.m_position},
     });
 
     // render imgui dialog

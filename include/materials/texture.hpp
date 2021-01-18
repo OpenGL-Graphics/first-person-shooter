@@ -10,7 +10,7 @@ class Texture {
 public:
   Texture(const T&, GLenum index=GL_TEXTURE0);
   void free();
-  int get_index() const;
+  GLenum get_index() const;
 
 private:
   GLuint m_id;
@@ -23,7 +23,7 @@ private:
 };
 
 // type of texture for a single image (2d) or a vector (3d)
-typedef Texture<std::string> Texture2D;
-typedef Texture<std::vector<std::string>> Texture3D;
+using Texture2D = Texture<std::string>;
+using Texture3D = Texture<std::vector<std::string>>;
 
 #endif // TEXTURE_HPP
