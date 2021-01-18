@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <string>
 #include <vector>
+#include <materials/image.hpp>
 
 template <class T>
 class Texture {
@@ -11,11 +12,15 @@ public:
   Texture(const T&, GLenum index=GL_TEXTURE0);
   void free();
   GLenum get_index() const;
+  int get_width() const;
+  int get_height() const;
 
 private:
   GLuint m_id;
   GLuint m_type;
   GLenum m_index;
+  int m_width;
+  int m_height;
 
   void generate();
   void from_image(const std::string& path, GLenum type_face=GL_TEXTURE_2D);

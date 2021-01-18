@@ -13,12 +13,12 @@ Surface::Surface(const Program& program):
 void Surface::set_attribute() {
   // position attribute (same name as input var in vertex shader)
   GLuint attr_position = m_program.define_attribute("position");
-  glVertexAttribPointer(attr_position, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
+  glVertexAttribPointer(attr_position, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0);
   glEnableVertexAttribArray(attr_position);
 
   // texture direction attribute
   GLuint attr_texture_dir = m_program.define_attribute("texture_coord");
-  glVertexAttribPointer(attr_texture_dir, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
+  glVertexAttribPointer(attr_texture_dir, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) (2 * sizeof(float)));
   glEnableVertexAttribArray(attr_texture_dir);
 }
 

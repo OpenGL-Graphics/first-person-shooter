@@ -1,4 +1,5 @@
 #include <materials/image.hpp>
+#include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
@@ -6,6 +7,10 @@ Image::Image(const std::string& path) {
   // load image from its path
   stbi_set_flip_vertically_on_load(true);
   data = stbi_load(path.c_str(), &width, &height, &n_channels, 0);
+
+  if (data == nullptr) {
+    std::cout << "Image " << path << " doesn't exist" << std::endl;
+  }
 
   switch (n_channels) {
     case 1: 

@@ -1,5 +1,4 @@
 #include <materials/texture.hpp>
-#include <materials/image.hpp>
 #include <type_traits>
 #include <vector>
 
@@ -42,6 +41,8 @@ void Texture<T>::from_image(const std::string& path, GLenum type_face) {
   // define texture from loaded image 
   Image image(path);
   glTexImage2D(type_face, 0, image.format, image.width, image.height, 0, image.format, GL_UNSIGNED_BYTE, image.data);
+  m_width = image.width;
+  m_height = image.height;
   image.free();
 }
 
@@ -62,6 +63,18 @@ template <class T>
 GLenum Texture<T>::get_index() const {
   // used to pass texture index to shaders program
   return m_index - GL_TEXTURE0;
+}
+
+template <class T>
+int Texture<T>::get_width() const {
+  // used to scale HUD
+  return m_width;
+}
+
+template <class T>
+int Texture<T>::get_height() const {
+  // used to scale HUD
+  return m_height;
 }
 
 // template instantiation to generate class from it (fixes link error)

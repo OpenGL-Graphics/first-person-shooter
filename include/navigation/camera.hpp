@@ -7,16 +7,15 @@
 
 class Camera {
 public:
-  // used to calculate mesh material's specular component
-  glm::vec3 m_position;
-
   Camera(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up);
-  glm::mat4 get_view();
+  glm::mat4 get_view() const;
+  glm::vec3 get_position() const;
   void move(Direction direction);
   void rotate(float x_offset, float y_offset);
 
 private:
   // look at parameters
+  glm::vec3 m_position;
   glm::vec3 m_direction;
   glm::vec3 m_up;
 

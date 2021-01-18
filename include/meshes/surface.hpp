@@ -8,15 +8,15 @@ public:
   Surface(const Program& program);
 
 protected:
-  // coord(x,y,z)         texture(u,v,w)
+  //coord(x,y) texture(u,v)
   std::vector<float> m_vertexes {
-    // positive-z (front face)
-    -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
-     0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-     0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-    -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+    // non-centered surface
+    0.0f, 0.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 1.0f, 0.0f,
+    1.0f, 1.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f, 1.0f,
+    0.0f, 1.0f, 0.0f, 1.0f,
+    0.0f, 0.0f, 0.0f, 0.0f,
   };
   int m_n_vertexes = 6;
 

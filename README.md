@@ -60,3 +60,8 @@ A table of these components values for different materials can be found on [this
 
 [lights]: http://blog.lexique-du-net.com/index.php?post/2009/07/24/AmbientDiffuseEmissive-and-specular-colorSome-examples
 [materials]: http://devernay.free.fr/cours/opengl/materials.html
+
+# Resources
+- [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
+
+[health-bar]: https://opengameart.org/content/rpg-hud-bars

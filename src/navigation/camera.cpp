@@ -10,13 +10,18 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm:
 {
 }
 
-glm::mat4 Camera::get_view() {
+glm::mat4 Camera::get_view() const {
   // consider rotation due to mouse (yaw & pitch)
   glm::mat4 view = glm::lookAt(m_position, m_position + m_direction, m_up);
   view = glm::rotate(view, m_pitch, glm::vec3(1.0f, 0.0f, 0.0f));
   view = glm::rotate(view, m_yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
   return view;
+}
+
+glm::vec3 Camera::get_position() const {
+  // used to calculate specular component of material
+  return m_position;
 }
 
 void Camera::move(Direction direction) {
