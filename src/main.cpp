@@ -9,19 +9,20 @@
 #include <glm/gtx/string_cast.hpp>
 #include <shaders/program.hpp>
 #include <navigation/camera.hpp>
-#include <meshes/cube_color.hpp>
-#include <meshes/cube_texture.hpp>
-#include <meshes/cube_light.hpp>
-#include <meshes/pyramid.hpp>
-#include <meshes/circle.hpp>
-#include <meshes/cylinder.hpp>
-#include <meshes/sphere.hpp>
-#include <meshes/surface.hpp>
+#include <geometries/cube.hpp>
+#include <geometries/pyramid.hpp>
+#include <geometries/circle.hpp>
+#include <geometries/cylinder.hpp>
+#include <geometries/sphere.hpp>
+#include <geometries/surface.hpp>
 #include <materials/texture.hpp>
+#include <render/renderer.hpp>
+#include <vertexes/vbo.hpp>
 // #include <meshes/text.hpp>
 #include <gui/dialog.hpp>
 
-#include <glm/gtx/string_cast.hpp>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 // functions headers
 static void on_key(GLFWwindow* window);
@@ -39,6 +40,28 @@ float y_mouse = 0.0f;
 const glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
 
 int main() {
+  // initialize freetype library
+  FT_Library ft;
+  if (FT_Init_FreeType(&ft)) {
+    std::cout << "Failed to initialize FreeType" << std::endl;
+    return 1;
+  }
+
+  // load roboto font
+  FT_Face face;
+  if (FT_New_Face(ft, "assets/fonts/Roboto.ttf", 0, &face)) {
+    std::cout << "Failed to load font" << std::endl;
+    return 1;
+  }
+
+  // set font pixel size
+  FT_Set_Pixel_Sizes(face, 0, 48);
+
+  // load font character into 8 bits grayscale bitmap
+  FT_Load_Glyph(face, 'X', FT_LOAD_RENDER);
+  std::cout << "font width: " << face->glyph->bitmap.width << std::endl;
+
+
   // initialize glfw
   if (!glfwInit()) {
     std::cout << "Failed to initialize GLFW" << "\n";
@@ -95,21 +118,23 @@ int main() {
     "assets/images/brick2.jpg",
     "assets/images/brick2.jpg",
   };
-  Texture3D texture_brick(paths_textures, GL_TEXTURE0);
-  Texture2D texture_grass("assets/images/grass.png", GL_TEXTURE1);
-  Texture2D texture_hud_health("assets/images/health.png", GL_TEXTURE2);
+  Texture3D texture_brick(paths_textures);
+  Texture2D texture_grass("assets/images/grass.png");
+  Texture2D texture_hud_health("assets/images/health.png");
 
-  // meshes
-  CubeColor cube_color(pgm_color);
-  CubeTexture cube_texture(pgm_texture_cube);
-  Cube light(pgm_basic);
-  CubeLight cube_light(pgm_light);
-  Pyramid pyramid(pgm_light);
-  Circle circle(pgm_basic, 36);
-  Cylinder cylinder(pgm_basic, 36);
-  Sphere sphere(pgm_basic, 12, 12);
-  Surface grass(pgm_texture_surface);
-  Surface hud_health(pgm_texture_surface);
+  // renderer (encapsulates VAO & VBO) for each object to render
+  VBO vbo_cube(Cube{});
+  VBO vbo_surface(Surface{});
+  Renderer cube_color(pgm_color, vbo_cube, {{0, "position", 3, 12, 0}, {0, "color", 3, 12, 3}});
+  Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {0, "texture_coord", 3, 12, 6}});
+  Renderer light(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
+  Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
+  Renderer pyramid(pgm_light, VBO(Pyramid()), {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
+  Renderer circle(pgm_basic, VBO(Circle(36)), {{0, "position", 3, 3, 0}});
+  Renderer cylinder(pgm_basic, VBO(Cylinder(36)), {{0, "position", 3, 3, 0}});
+  Renderer sphere(pgm_basic, VBO(Sphere(12, 12)), {{0, "position", 3, 3, 0}});
+  Renderer grass(pgm_texture_surface, vbo_surface, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
+  Renderer hud_health(pgm_texture_surface, vbo_surface, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
   // enable depth testing
   glEnable(GL_DEPTH_TEST);
@@ -145,6 +170,13 @@ int main() {
     text.draw();
     */
 
+    // draw color cube (one program run at a time)
+    cube_color.draw({
+      {"model", glm::mat4(1.0f)},
+      {"view", view},
+      {"projection", projection3d},
+    });
+
     // draw 2d hud surface (scaling then translation to lower left corner)
     glm::mat4 model_hud_health(glm::scale(
       glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)),
@@ -154,22 +186,15 @@ int main() {
       {"model", model_hud_health},
       {"view", glm::mat4(1.0f)},
       {"projection", projection2d},
-      {"texture2d", texture_hud_health.get_index()},
+      {"texture2d", texture_hud_health},
     });
 
-    // draw color cube (one program run at a time)
-    cube_color.draw({
-      {"model", glm::mat4(1.0f)},
-      {"view", view},
-      {"projection", projection3d},
-    });
-
-    // draw 2d grass surface
+    // draw 2d grass surface (non-centered)
     grass.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f))},
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f))},
       {"view",  view},
       {"projection", projection3d},
-      {"texture2d", texture_grass.get_index()},
+      {"texture2d", texture_grass},
     });
 
     // draw 3x texture cubes
@@ -177,19 +202,19 @@ int main() {
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f))},
       {"view", view},
       {"projection", projection3d},
-      {"texture3d", texture_brick.get_index()},
+      {"texture3d", texture_brick},
     });
     cube_texture.draw({
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -1.0f))},
       {"view", view},
       {"projection", projection3d},
-      {"texture3d", texture_brick.get_index()},
+      {"texture3d", texture_brick},
     });
     cube_texture.draw({
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))},
       {"view", view},
       {"projection", projection3d},
-      {"texture3d", texture_brick.get_index()},
+      {"texture3d", texture_brick},
     });
 
     // cube & light colors
@@ -201,7 +226,7 @@ int main() {
       {"view", view},
       {"projection", projection3d},
       {"color", glm::vec3(1.0f, 1.0f, 0.0f)},
-    }, GL_LINE);
+    });
 
     // draw cylinder
     cylinder.draw({
@@ -209,7 +234,7 @@ int main() {
       {"view", view},
       {"projection", projection3d},
       {"color", glm::vec3(0.0f, 1.0f, 0.0f)},
-    }, GL_LINE);
+    });
 
     // draw sphere
     sphere.draw({
@@ -217,7 +242,7 @@ int main() {
         {"view", view},
         {"projection", projection3d},
         {"color", glm::vec3(0.0f, 0.0f, 1.0f)},
-    }, GL_LINE);
+    });
 
     // draw light cube (scaling then translation)
     glm::vec3 position_light(-2.0f, -1.0f, 2.0f);
@@ -275,7 +300,7 @@ int main() {
   // destroy imgui
   dialog.free();
 
-  // destroy meshes
+  // destroy renderers of each mesh (frees vao & vbo)
   cube_color.free();
   cube_texture.free();
   cube_light.free();
@@ -283,9 +308,9 @@ int main() {
   circle.free();
   cylinder.free();
   sphere.free();
-  // text.free();
   grass.free();
   hud_health.free();
+  // text.free();
 
   // destroy textures
   texture_brick.free();

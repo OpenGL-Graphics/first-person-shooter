@@ -16,6 +16,7 @@ class Program {
     void set_int(const std::string& name, int value);
     void set_uniforms(const Uniforms& uniforms);
     void use();
+    void unuse();
     void free();
     bool has_failed();
     GLuint define_attribute(const std::string& attribute) const;

@@ -30,10 +30,13 @@ target_include_directories(imgui PUBLIC include/imgui include)
 # main executable
 file(GLOB SRC
   "src/gui/*.cpp"
-  "src/meshes/*.cpp"
+  "src/geometries/*.cpp"
   "src/materials/*.cpp"
   "src/navigation/*.cpp"
+  "src/render/*.cpp"
   "src/shaders/*.cpp"
+  "src/vertexes/*.cpp"
 )
 add_executable(main src/main.cpp ${SRC})
-target_link_libraries(main glfw glad imgui)
+target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS})
+target_link_libraries(main glfw glad imgui ${FREETYPE_LIBRARIES})

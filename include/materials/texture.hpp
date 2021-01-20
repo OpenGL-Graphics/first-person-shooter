@@ -14,6 +14,7 @@ public:
   GLenum get_index() const;
   int get_width() const;
   int get_height() const;
+  void attach();
 
 private:
   GLuint m_id;
@@ -23,8 +24,11 @@ private:
   int m_height;
 
   void generate();
+  void configure();
   void from_image(const std::string& path, GLenum type_face=GL_TEXTURE_2D);
   void from_images(const std::vector<std::string>& paths);
+  void bind();
+  void unbind();
 };
 
 // type of texture for a single image (2d) or a vector (3d)

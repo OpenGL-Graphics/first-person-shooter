@@ -1,16 +1,14 @@
 #ifndef PYRAMID_HPP
 #define PYRAMID_HPP
 
-#include <meshes/mesh.hpp>
+#include <geometries/geometry.hpp>
 
-class Pyramid : public Mesh {
+class Pyramid : public Geometry {
 public:
-  Pyramid(const Program& program);
+  virtual std::vector<float> get_vertexes() const;
+  virtual int get_n_vertexes() const;
 
 protected:
-  void set_attribute() override;
-
-private:
   // coord(x,y,z)        normal(nx,ny,nz)
   std::vector<float> m_vertexes {
     // front-right face
@@ -42,9 +40,6 @@ private:
     -1.0f, 0.0f,  0.0f,  0.0f, -1.0f, 0.0f,
   };
   int m_n_vertexes = 6 * 3;
-
-  std::vector<float> get_vertexes() override;
-  int get_n_vertexes() override;
 };
 
 #endif // PYRAMID_HPP

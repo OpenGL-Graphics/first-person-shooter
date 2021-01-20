@@ -1,4 +1,4 @@
-#include <meshes/text.hpp>
+#include <geometries/text.hpp>
 
 Text::Text(const Program& program, const std::string& text, float x, float y):
   m_program(program),

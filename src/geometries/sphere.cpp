@@ -1,27 +1,17 @@
-#include <meshes/sphere.hpp>
+#include <geometries/sphere.hpp>
 #include <iostream>
+#include <cmath>
 
-Sphere::Sphere(const Program& program, int n_longitudes, int n_latitudes):
-  Mesh(program),
-  // works only with even and >= 4 number of corners (not odd)
+Sphere::Sphere(int n_longitudes, int n_latitudes):
   m_n_longitudes(n_longitudes),
   m_n_latitudes(n_latitudes)
 {
-  // initialize vbo buffer
-  init_buffers();
-
-  // get position attribute from shader
-  set_attribute();
+  // calculate vertexes coords on creation
+  set_vertexes();
+  set_n_vertexes();
 }
 
-void Sphere::set_attribute() {
-  // position attribute
-  GLuint attr_position = m_program.define_attribute("position");
-  glVertexAttribPointer(attr_position, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-  glEnableVertexAttribArray(attr_position);
-}
-
-std::vector<float> Sphere::get_vertexes() {
+void Sphere::set_vertexes() {
   // lon in [0, 2pi] and lat in [0, pi]
   float angle_lon = 2*M_PI / m_n_longitudes;
   float angle_lat = M_PI / m_n_latitudes;
@@ -43,12 +33,16 @@ std::vector<float> Sphere::get_vertexes() {
       m_vertexes.insert(m_vertexes.end(), {std::cos(lon_begin)*std::sin(lat_end), std::cos(lat_end), std::sin(lon_begin)*std::sin(lat_end)});
     }
   }
+}
 
+void Sphere::set_n_vertexes() {
+  m_n_vertexes = m_n_longitudes * m_n_latitudes * 2 * 3;
+}
+
+std::vector<float> Sphere::get_vertexes() const {
   return m_vertexes;
 }
 
-int Sphere::get_n_vertexes() {
-  m_n_vertexes = m_n_longitudes * m_n_latitudes * 2 * 3;
-
+int Sphere::get_n_vertexes() const {
   return m_n_vertexes;
 }

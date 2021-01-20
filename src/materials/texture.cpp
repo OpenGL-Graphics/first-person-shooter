@@ -9,7 +9,10 @@ Texture2D::Texture(const std::string& path, GLenum index):
   m_type(GL_TEXTURE_2D)
 {
   generate();
+  bind();
+  configure();
   from_image(path);
+  unbind();
 }
 
 // template specialization for 3d cubic textures
@@ -19,21 +22,31 @@ Texture3D::Texture(const std::vector<std::string>& paths, GLenum index):
   m_type(GL_TEXTURE_CUBE_MAP)
 {
   generate();
+  bind();
+  configure();
   from_images(paths);
+  unbind();
 }
 
 template <class T>
 void Texture<T>::generate() {
-  // generate & bind texture
   glGenTextures(1, &m_id);
-  glActiveTexture(m_index);
-  glBindTexture(m_type, m_id);
+}
 
+template <class T>
+void Texture<T>::configure() {
   // wrap texture around mesh
   glTexParameteri(m_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(m_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(m_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(m_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+template <class T>
+void Texture<T>::attach() {
+  // attach texture object m_id to texture unit m_index before draw
+  glActiveTexture(m_index);
+  bind();
 }
 
 template <class T>
@@ -75,6 +88,16 @@ template <class T>
 int Texture<T>::get_height() const {
   // used to scale HUD
   return m_height;
+}
+
+template <class T>
+void Texture<T>::bind() {
+  glBindTexture(m_type, m_id);
+}
+
+template <class T>
+void Texture<T>::unbind() {
+  glBindTexture(m_type, 0);
 }
 
 // template instantiation to generate class from it (fixes link error)

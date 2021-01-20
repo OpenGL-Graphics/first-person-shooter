@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <glm/gtc/type_ptr.hpp>
+#include <materials/texture.hpp>
 
 Program::Program(const std::string& path_vertex, const std::string& path_fragment) {
   // read shader source codes into strings (newer GLSL version not supported)
@@ -76,6 +77,10 @@ void Program::use() {
   glUseProgram(m_id);
 }
 
+void Program::unuse() {
+  glUseProgram(0);
+}
+
 void Program::free() {
   glDeleteProgram(m_id);
 }
@@ -109,8 +114,12 @@ void Program::set_uniforms(const Uniforms& uniforms) {
       set_vec3(key_uniform, *ptr_value);
     } else if (auto ptr_value = std::get_if<float>(&value_uniform)) {
       set_float(key_uniform, *ptr_value);
-    } else if (auto ptr_value = std::get_if<GLenum>(&value_uniform)) {
-      set_int(key_uniform, *ptr_value);
+    } else if (auto ptr_value = std::get_if<Texture2D>(&value_uniform)) {
+      ptr_value->attach();
+      set_int(key_uniform, ptr_value->get_index());
+    } else if (auto ptr_value = std::get_if<Texture3D>(&value_uniform)) {
+      ptr_value->attach();
+      set_int(key_uniform, ptr_value->get_index());
     } else {
       std::cout << "Incompatible value type" << '\n'; 
     }
