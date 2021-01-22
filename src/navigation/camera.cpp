@@ -6,7 +6,8 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm:
   m_direction(direction),
   m_up(up),
   m_pitch(0.0f),
-  m_yaw(0.0f)
+  m_yaw(0.0f),
+  m_fov(45.0f)
 {
 }
 
@@ -22,6 +23,19 @@ glm::mat4 Camera::get_view() const {
 glm::vec3 Camera::get_position() const {
   // used to calculate specular component of material
   return m_position;
+}
+
+float Camera::get_fov() const {
+  // used to zoom in/out using mouse wheel
+  return m_fov;
+}
+
+void Camera::zoom(Zoom direction) {
+  if (direction == Zoom::IN) {
+    m_fov -= 5.0f;
+  } else if (direction == Zoom::OUT) {
+    m_fov += 5.0f;
+  }
 }
 
 void Camera::move(Direction direction) {

@@ -1,4 +1,3 @@
-// set imgui to use glad
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -10,10 +9,6 @@
 #include <shaders/program.hpp>
 #include <navigation/camera.hpp>
 #include <geometries/cube.hpp>
-#include <geometries/pyramid.hpp>
-#include <geometries/circle.hpp>
-#include <geometries/cylinder.hpp>
-#include <geometries/sphere.hpp>
 #include <geometries/surface.hpp>
 #include <materials/texture.hpp>
 #include <render/renderer.hpp>
@@ -24,13 +19,14 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-// functions headers
+// keys & mouse events listeners
 static void on_key(GLFWwindow* window);
 static void on_mouse_click(GLFWwindow* window, int button, int action, int mods);
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
+static void on_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset);
 
-// camera
-Camera camera(glm::vec3(0.0f, 5.0f, 5.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+// camera (global variable modified inside callbacks)
+Camera camera(glm::vec3(0.0f, 5.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 // last position of mouse cursor (to calculate offset on movement)
 float x_mouse = 0.0f;
@@ -102,8 +98,7 @@ int main() {
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  Program pgm_text("assets/shaders/text.vert", "assets/shaders/text.frag");
-  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
+  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();
     return 1;
@@ -118,84 +113,40 @@ int main() {
     "assets/images/brick2.jpg",
     "assets/images/brick2.jpg",
   };
-  Texture3D texture_brick(paths_textures);
-  Texture2D texture_grass("assets/images/grass.png");
-  Texture2D texture_hud_health("assets/images/health.png");
+  Texture3D texture_brick(paths_textures, GL_TEXTURE0);
+  Texture2D texture_grass("assets/images/grass.png", GL_TEXTURE1);
+  Texture2D texture_hud_health("assets/images/health.png", GL_TEXTURE2);
+  Texture2D texture_glass("assets/images/window.png", GL_TEXTURE3);
 
-  // renderer (encapsulates VAO & VBO) for each object to render
+  // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
-  VBO vbo_surface(Surface{});
+  Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
   Renderer cube_color(pgm_color, vbo_cube, {{0, "position", 3, 12, 0}, {0, "color", 3, 12, 3}});
   Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {0, "texture_coord", 3, 12, 6}});
-  Renderer light(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
   Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
-  Renderer pyramid(pgm_light, VBO(Pyramid()), {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
-  Renderer circle(pgm_basic, VBO(Circle(36)), {{0, "position", 3, 3, 0}});
-  Renderer cylinder(pgm_basic, VBO(Cylinder(36)), {{0, "position", 3, 3, 0}});
-  Renderer sphere(pgm_basic, VBO(Sphere(12, 12)), {{0, "position", 3, 3, 0}});
-  Renderer grass(pgm_texture_surface, vbo_surface, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
-  Renderer hud_health(pgm_texture_surface, vbo_surface, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
-
-  // enable depth testing
-  glEnable(GL_DEPTH_TEST);
+  Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
   // initialize dialog with imgui
   Dialog dialog(window, "Dialog title", "Dialog text");
 
-  // freetype-gl
-  // Text text(pgm_text, "Hello", 0, 0);
+  // enable depth test & blending
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // main loop
   while (!glfwWindowShouldClose(window)) {
     // keyboard input (move camera, quit application)
     on_key(window);
 
-    // before render, clear color buffer in blue & depth buffer
+    // before render, clear color buffer & depth buffer
     glClearColor(background.r, background.g, background.b, background.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // transformation matrices
     glm::mat4 view = camera.get_view();
-    glm::mat4 projection3d = glm::perspective(glm::radians(45.0f), (float) width_monitor / (float) height_monitor, 1.0f, 50.f); 
+    glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) width_monitor / (float) height_monitor, 1.0f, 50.f); 
     glm::mat4 projection2d = glm::ortho(0.0f, (float) width_monitor, 0.0f, (float) height_monitor);
-
-    /*
-    // draw each character using textures
-    pgm_text.use();
-    pgm_text.set_mat4("model", glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f)));
-    pgm_text.set_mat4("view", view);
-    pgm_text.set_mat4("projection", projection3d);
-    pgm_text.set_int("texture_in", 0);
-    pgm_text.set_int("texture_in", index_tex_text - GL_TEXTURE0);
-    text.draw();
-    */
-
-    // draw color cube (one program run at a time)
-    cube_color.draw({
-      {"model", glm::mat4(1.0f)},
-      {"view", view},
-      {"projection", projection3d},
-    });
-
-    // draw 2d hud surface (scaling then translation to lower left corner)
-    glm::mat4 model_hud_health(glm::scale(
-      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)),
-      glm::vec3(texture_hud_health.get_width(), texture_hud_health.get_height(), 1.0f)
-    ));
-    hud_health.draw({
-      {"model", model_hud_health},
-      {"view", glm::mat4(1.0f)},
-      {"projection", projection2d},
-      {"texture2d", texture_hud_health},
-    });
-
-    // draw 2d grass surface (non-centered)
-    grass.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f))},
-      {"view",  view},
-      {"projection", projection3d},
-      {"texture2d", texture_grass},
-    });
 
     // draw 3x texture cubes
     cube_texture.draw({
@@ -220,37 +171,13 @@ int main() {
     // cube & light colors
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
 
-    // draw circle
-    circle.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 3.0f))},
-      {"view", view},
-      {"projection", projection3d},
-      {"color", glm::vec3(1.0f, 1.0f, 0.0f)},
-    });
-
-    // draw cylinder
-    cylinder.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 3.0f))},
-      {"view", view},
-      {"projection", projection3d},
-      {"color", glm::vec3(0.0f, 1.0f, 0.0f)},
-    });
-
-    // draw sphere
-    sphere.draw({
-        {"model", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 3.0f))},
-        {"view", view},
-        {"projection", projection3d},
-        {"color", glm::vec3(0.0f, 0.0f, 1.0f)},
-    });
-
     // draw light cube (scaling then translation)
     glm::vec3 position_light(-2.0f, -1.0f, 2.0f);
     glm::mat4 model_light(glm::scale(
       glm::translate(glm::mat4(1.0f), position_light),
       glm::vec3(0.2f)
     ));
-    light.draw({
+    cube_basic.draw({
       {"model", model_light},
       {"view", view},
       {"projection", projection3d},
@@ -273,20 +200,39 @@ int main() {
       {"position_camera", camera.get_position()},
     });
 
-    // draw illuminated pyramid
-    pyramid.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 2.0f))},
+    // draw 2d hud surface (scaling then translation to lower left corner)
+    glm::mat4 model_hud_health(glm::scale(
+      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)),
+      glm::vec3(texture_hud_health.get_width(), texture_hud_health.get_height(), 1.0f)
+    ));
+    surface.draw({
+      {"model", model_hud_health},
+      {"view", glm::mat4(1.0f)},
+      {"projection", projection2d},
+      {"texture2d", texture_hud_health},
+    });
+
+    // draw color cube
+    cube_color.draw({
+      {"model", glm::mat4(1.0f)},
       {"view", view},
       {"projection", projection3d},
-      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.specular",glm::vec3(0.5f, 0.5f, 0.5f)},
-      {"material.shininess", 32.0f},
-      {"light.position", position_light},
-      {"light.ambiant", 0.2f * color_light},
-      {"light.diffuse", 0.5f * color_light},
-      {"light.specular", color_light},
-      {"position_camera", camera.get_position()},
+    });
+
+    // draw 2d grass surface (non-centered)
+    surface.draw({
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f))},
+      {"view",  view},
+      {"projection", projection3d},
+      {"texture2d", texture_grass},
+    });
+
+    // draw half-transparent objects last
+    surface.draw({
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f))},
+      {"view",  view},
+      {"projection", projection3d},
+      {"texture2d", texture_glass},
     });
 
     // render imgui dialog
@@ -300,21 +246,17 @@ int main() {
   // destroy imgui
   dialog.free();
 
-  // destroy renderers of each mesh (frees vao & vbo)
+  // destroy renderers of each shape (frees vao & vbo)
+  cube_basic.free();
   cube_color.free();
   cube_texture.free();
   cube_light.free();
-  light.free();
-  circle.free();
-  cylinder.free();
-  sphere.free();
-  grass.free();
-  hud_health.free();
-  // text.free();
+  surface.free();
 
   // destroy textures
   texture_brick.free();
   texture_grass.free();
+  texture_glass.free();
   texture_hud_health.free();
 
   // destroy shaders programs
@@ -322,7 +264,6 @@ int main() {
   pgm_color.free();
   pgm_texture_cube.free();
   pgm_texture_surface.free();
-  pgm_text.free();
   pgm_light.free();
 
   // destroy window & terminate glfw
@@ -350,14 +291,16 @@ static void on_key(GLFWwindow* window) {
 }
 
 static void on_mouse_click(GLFWwindow* window, int button, int action, int mods) {
-  // switch mouse mode & listen for mouse movement
+  // switch mouse mode & listen for mouse movement/scroll
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
     if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
       glfwSetCursorPosCallback(window, on_mouse_move);
+      glfwSetScrollCallback(window, on_mouse_scroll);
     } else {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
       glfwSetCursorPosCallback(window, NULL);
+      glfwSetScrollCallback(window, NULL);
     }
   }
 }
@@ -372,4 +315,13 @@ static void on_mouse_move(GLFWwindow* window, double xpos, double ypos) {
   
   // horizontal/vertical rotation around y-axis/x-axis accord. to offset
   camera.rotate(x_offset, y_offset);
+}
+
+static void on_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset) {
+  // zoom in/out using mouse wheel
+  if (yoffset == 1) {
+    camera.zoom(Zoom::IN);
+  } else if (yoffset == -1) {
+    camera.zoom(Zoom::OUT);
+  }
 }
