@@ -2,10 +2,14 @@
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
+#include <stdio.h>
 
-Image::Image(const std::string& path) {
-  // load image from its path
+Image::Image(const std::string& p):
+  path(p)
+{
+ // load image using its path (opengl origin at lower-left corner of image)
   stbi_set_flip_vertically_on_load(true);
+  int n_channels;
   data = stbi_load(path.c_str(), &width, &height, &n_channels, 0);
 
   if (data == nullptr) {
@@ -25,6 +29,19 @@ Image::Image(const std::string& path) {
   }
 }
 
-void Image::free() {
-  stbi_image_free(data);
+Image::Image(int w, int h, GLenum f, unsigned char* ptr):
+  width(w),
+  height(h),
+  format(f),
+  data(ptr)
+{
+  // used to load glyph bitmap for a font into image &
+  // as default constructor (TextRenderer::m_glyphs contains textures that need to be init)
+}
+
+void Image::free() const {
+  // glyph bitmap don't have a path (avoid double free, as freed auto by freetype)
+  if (!path.empty()) {
+    stbi_image_free(data);
+  }
 }

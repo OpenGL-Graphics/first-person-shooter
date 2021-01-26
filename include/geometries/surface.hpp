@@ -6,6 +6,7 @@
 class Surface : public Geometry {
 public:
   Surface();
+  Surface(const std::vector<float>& vertexes);
   virtual std::vector<float> get_vertexes() const;
   virtual int get_n_vertexes() const;
 

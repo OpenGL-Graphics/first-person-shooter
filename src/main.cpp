@@ -6,18 +6,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <shaders/program.hpp>
 #include <navigation/camera.hpp>
 #include <geometries/cube.hpp>
 #include <geometries/surface.hpp>
-#include <materials/texture.hpp>
 #include <render/renderer.hpp>
+#include <render/text_renderer.hpp>
 #include <vertexes/vbo.hpp>
+#include <text/glyphs.hpp>
+#include <text/font.hpp>
 // #include <meshes/text.hpp>
 #include <gui/dialog.hpp>
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <algorithm>
 
 // keys & mouse events listeners
 static void on_key(GLFWwindow* window);
@@ -36,28 +35,6 @@ float y_mouse = 0.0f;
 const glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
 
 int main() {
-  // initialize freetype library
-  FT_Library ft;
-  if (FT_Init_FreeType(&ft)) {
-    std::cout << "Failed to initialize FreeType" << std::endl;
-    return 1;
-  }
-
-  // load roboto font
-  FT_Face face;
-  if (FT_New_Face(ft, "assets/fonts/Roboto.ttf", 0, &face)) {
-    std::cout << "Failed to load font" << std::endl;
-    return 1;
-  }
-
-  // set font pixel size
-  FT_Set_Pixel_Sizes(face, 0, 48);
-
-  // load font character into 8 bits grayscale bitmap
-  FT_Load_Glyph(face, 'X', FT_LOAD_RENDER);
-  std::cout << "font width: " << face->glyph->bitmap.width << std::endl;
-
-
   // initialize glfw
   if (!glfwInit()) {
     std::cout << "Failed to initialize GLFW" << "\n";
@@ -96,16 +73,17 @@ int main() {
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_color("assets/shaders/color.vert", "assets/shaders/color.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
+  Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed()) {
+  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();
     return 1;
   }
 
   // textures
-  std::vector<std::string> paths_textures {
+  std::vector<std::string> paths_images {
     "assets/images/brick1.jpg",
     "assets/images/brick1.jpg",
     "assets/images/roof.jpg",
@@ -113,10 +91,12 @@ int main() {
     "assets/images/brick2.jpg",
     "assets/images/brick2.jpg",
   };
-  Texture3D texture_brick(paths_textures, GL_TEXTURE0);
-  Texture2D texture_grass("assets/images/grass.png", GL_TEXTURE1);
-  Texture2D texture_hud_health("assets/images/health.png", GL_TEXTURE2);
-  Texture2D texture_glass("assets/images/window.png", GL_TEXTURE3);
+  std::vector<Image> images;
+  std::transform(paths_images.begin(), paths_images.end(), std::back_inserter(images), [](const std::string& path) { return Image(path); });
+  Texture3D texture_brick(images);
+  Texture2D texture_grass(Image("assets/images/grass.png"));
+  Texture2D texture_hud_health(Image("assets/images/health.png"));
+  Texture2D texture_glass(Image("assets/images/window.png"));
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
@@ -125,6 +105,11 @@ int main() {
   Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {0, "texture_coord", 3, 12, 6}});
   Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
+
+  // load font & assign its bitmap glyphs to textures
+  VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
+  Font font("assets/fonts/Vera.ttf");
+  TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}, font);
 
   // initialize dialog with imgui
   Dialog dialog(window, "Dialog title", "Dialog text");
@@ -200,9 +185,25 @@ int main() {
       {"position_camera", camera.get_position()},
     });
 
+    // draw color cube
+    cube_color.draw({
+      {"model", glm::mat4(1.0f)},
+      {"view", view},
+      {"projection", projection3d},
+    });
+
+    // transparent surfaces at bottom to ensure blending with background
+    // draw half-transparent 3d window
+    surface.draw({
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f))},
+      {"view",  view},
+      {"projection", projection3d},
+      {"texture2d", texture_glass},
+    });
+
     // draw 2d hud surface (scaling then translation to lower left corner)
     glm::mat4 model_hud_health(glm::scale(
-      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)),
+      glm::translate(glm::mat4(1.0f), glm::vec3(width_monitor - texture_hud_health.get_width(), 0.0f, 0.0f)),
       glm::vec3(texture_hud_health.get_width(), texture_hud_health.get_height(), 1.0f)
     ));
     surface.draw({
@@ -210,13 +211,6 @@ int main() {
       {"view", glm::mat4(1.0f)},
       {"projection", projection2d},
       {"texture2d", texture_hud_health},
-    });
-
-    // draw color cube
-    cube_color.draw({
-      {"model", glm::mat4(1.0f)},
-      {"view", view},
-      {"projection", projection3d},
     });
 
     // draw 2d grass surface (non-centered)
@@ -227,13 +221,13 @@ int main() {
       {"texture2d", texture_grass},
     });
 
-    // draw half-transparent objects last
-    surface.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f))},
-      {"view",  view},
-      {"projection", projection3d},
-      {"texture2d", texture_glass},
-    });
+    // draw 2d text surface (origin: left baseline)
+    Uniforms uniforms = {
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f))},
+      {"view", glm::mat4(1.0f)},
+      {"projection", projection2d},
+    };
+    surface_glyph.draw(uniforms, "Player");
 
     // render imgui dialog
     dialog.render();
@@ -246,18 +240,25 @@ int main() {
   // destroy imgui
   dialog.free();
 
+  // destroy textures
+  texture_brick.free();
+  texture_grass.free();
+  texture_glass.free();
+  texture_hud_health.free();
+
+  Glyphs glyphs(surface_glyph.get_glyphs());
+  for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
+    Glyph glyph(glyphs.at(c));
+    glyph.texture.free();
+  }
+
   // destroy renderers of each shape (frees vao & vbo)
   cube_basic.free();
   cube_color.free();
   cube_texture.free();
   cube_light.free();
   surface.free();
-
-  // destroy textures
-  texture_brick.free();
-  texture_grass.free();
-  texture_glass.free();
-  texture_hud_health.free();
+  surface_glyph.free();
 
   // destroy shaders programs
   pgm_basic.free();
@@ -265,6 +266,7 @@ int main() {
   pgm_texture_cube.free();
   pgm_texture_surface.free();
   pgm_light.free();
+  pgm_text.free();
 
   // destroy window & terminate glfw
   glfwDestroyWindow(window);

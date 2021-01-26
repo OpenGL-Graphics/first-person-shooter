@@ -11,10 +11,10 @@
 class Renderer {
 public:
   Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes);
-  void draw(const Uniforms& uniforms);
+  virtual void draw(const Uniforms& uniforms) final;
   virtual void free() final;
 
-private:
+protected:
   VAO m_vao;
   VBO m_vbo;
   Program m_program;

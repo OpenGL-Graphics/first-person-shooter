@@ -2,14 +2,13 @@
 #define TEXTURE_HPP
 
 #include <glad/glad.h>
-#include <string>
 #include <vector>
 #include <materials/image.hpp>
 
 template <class T>
 class Texture {
 public:
-  Texture(const T&, GLenum index=GL_TEXTURE0);
+  Texture(const T& image=T(), GLenum index=GL_TEXTURE0);
   void free();
   GLenum get_index() const;
   int get_width() const;
@@ -17,6 +16,9 @@ public:
   void attach();
 
 private:
+  // 2d or 3d (6-faced) image
+  T m_image;
+
   GLuint m_id;
   GLuint m_type;
   GLenum m_index;
@@ -25,14 +27,14 @@ private:
 
   void generate();
   void configure();
-  void from_image(const std::string& path, GLenum type_face=GL_TEXTURE_2D);
-  void from_images(const std::vector<std::string>& paths);
   void bind();
   void unbind();
+  void from_image();
+  void from_images();
 };
 
 // type of texture for a single image (2d) or a vector (3d)
-using Texture2D = Texture<std::string>;
-using Texture3D = Texture<std::vector<std::string>>;
+using Texture2D = Texture<Image>;
+using Texture3D = Texture<std::vector<Image>>;
 
 #endif // TEXTURE_HPP

@@ -72,4 +72,4 @@ A table of these components values for different materials can be found on [this
   - Needs to be bound before attaching vertexes data to it with `glBufferData`.
 - **VAO (Vertex Array Object):**
   - Linked to VBO when attributes are defined using `glVertexAttribPointer` (both VAO and VBO being bound).
-  - Then inside the main loop, we'll only need to bind the VAO before drawing the vertexes.
+  - Then inside the main loop, we'll only need to bind the VAO (and to use the appropriate shaders program) before drawing the vertexes.

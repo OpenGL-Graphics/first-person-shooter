@@ -4,7 +4,7 @@ project(VIDEO)
 # debug with gdb
 set(CMAKE_BUILD_TYPE Debug)
 
-# use C++11
+# use C++17 (variants used for uniforms of different types)
 set(CMAKE_CXX_STANDARD 17)
 
 # autocomplete with clang & linting in vim (needed by YCM plugin)
@@ -35,6 +35,7 @@ file(GLOB SRC
   "src/navigation/*.cpp"
   "src/render/*.cpp"
   "src/shaders/*.cpp"
+  "src/text/*.cpp"
   "src/vertexes/*.cpp"
 )
 add_executable(main src/main.cpp ${SRC})
