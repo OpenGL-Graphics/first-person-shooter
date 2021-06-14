@@ -1,14 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
-project(VIDEO)
-
-# debug with gdb
-set(CMAKE_BUILD_TYPE Debug)
+project(FPS)
 
 # use C++17 (variants used for uniforms of different types)
 set(CMAKE_CXX_STANDARD 17)
 
-# autocomplete with clang & linting in vim (needed by YCM plugin)
+# autocomplete with YCM & debug with gdb
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 # copy assets folder
 file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
@@ -16,6 +15,7 @@ file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 # needed packages
 find_package(glfw3 REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(assimp REQUIRED)
 
 # glad shared library (opengl)
 add_library(glad SHARED src/glad/glad.c)
@@ -39,5 +39,7 @@ file(GLOB SRC
   "src/vertexes/*.cpp"
 )
 add_executable(main src/main.cpp ${SRC})
+# target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS})
+# target_link_libraries(main glfw glad imgui ${FREETYPE_LIBRARIES} ${ASSIMP_LIBRARY_DIRS})
 target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(main glfw glad imgui ${FREETYPE_LIBRARIES})

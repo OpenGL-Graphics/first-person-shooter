@@ -13,9 +13,9 @@ void Texture2D::from_image() {
 
 template <>
 Texture2D::Texture(const Image& image, GLenum index):
-  m_index(index),
+  m_image(image),
   m_type(GL_TEXTURE_2D),
-  m_image(image)
+  m_index(index)
 {
   // default constructor needed to init class member TextRenderer::m_glyphs
   if (image.data != NULL) {
@@ -60,9 +60,9 @@ void Texture3D::from_images() {
 
 template <>
 Texture3D::Texture(const std::vector<Image>& image, GLenum index):
-  m_index(index),
+  m_image(image),
   m_type(GL_TEXTURE_CUBE_MAP),
-  m_image(image)
+  m_index(index)
 {
   generate();
   bind();

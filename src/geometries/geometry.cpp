@@ -8,3 +8,7 @@ std::vector<float> Geometry::get_vertexes() const {
 int Geometry::get_n_vertexes() const {
   return m_n_vertexes;
 }
+
+std::vector<unsigned int> Geometry::get_indices() const {
+  return m_indices;
+}

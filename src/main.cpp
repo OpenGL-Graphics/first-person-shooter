@@ -14,7 +14,6 @@
 #include <vertexes/vbo.hpp>
 #include <text/glyphs.hpp>
 #include <text/font.hpp>
-// #include <meshes/text.hpp>
 #include <gui/dialog.hpp>
 #include <algorithm>
 
@@ -130,7 +129,7 @@ int main() {
 
     // transformation matrices
     glm::mat4 view = camera.get_view();
-    glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) width_monitor / (float) height_monitor, 1.0f, 50.f); 
+    glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) width_monitor / (float) height_monitor, 1.0f, 50.f);
     glm::mat4 projection2d = glm::ortho(0.0f, (float) width_monitor, 0.0f, (float) height_monitor);
 
     // draw 3x texture cubes
@@ -192,7 +191,15 @@ int main() {
       {"projection", projection3d},
     });
 
-    // transparent surfaces at bottom to ensure blending with background
+    // draw 2d grass surface (non-centered)
+    surface.draw({
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f))},
+      {"view",  view},
+      {"projection", projection3d},
+      {"texture2d", texture_grass},
+    });
+
+    // last to render: transparent surfaces to ensure blending with background
     // draw half-transparent 3d window
     surface.draw({
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f))},
@@ -201,7 +208,7 @@ int main() {
       {"texture2d", texture_glass},
     });
 
-    // draw 2d hud surface (scaling then translation to lower left corner)
+    // draw 2d health bar HUD surface (scaling then translation to lower left corner)
     glm::mat4 model_hud_health(glm::scale(
       glm::translate(glm::mat4(1.0f), glm::vec3(width_monitor - texture_hud_health.get_width(), 0.0f, 0.0f)),
       glm::vec3(texture_hud_health.get_width(), texture_hud_health.get_height(), 1.0f)
@@ -213,21 +220,13 @@ int main() {
       {"texture2d", texture_hud_health},
     });
 
-    // draw 2d grass surface (non-centered)
-    surface.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f))},
-      {"view",  view},
-      {"projection", projection3d},
-      {"texture2d", texture_grass},
-    });
-
     // draw 2d text surface (origin: left baseline)
     Uniforms uniforms = {
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f))},
       {"view", glm::mat4(1.0f)},
       {"projection", projection2d},
     };
-    surface_glyph.draw(uniforms, "Player");
+    surface_glyph.draw_text(uniforms, "Player");
 
     // render imgui dialog
     dialog.render();
@@ -310,11 +309,11 @@ static void on_mouse_click(GLFWwindow* window, int button, int action, int mods)
 static void on_mouse_move(GLFWwindow* window, double xpos, double ypos) {
   // see: https://www.reddit.com/r/opengl/comments/831vpb/
   // calculate offset in mouse cursor position
-  float x_offset = xpos - x_mouse; 
-  float y_offset = ypos - y_mouse; 
+  float x_offset = xpos - x_mouse;
+  float y_offset = ypos - y_mouse;
   x_mouse = xpos;
   y_mouse = ypos;
-  
+
   // horizontal/vertical rotation around y-axis/x-axis accord. to offset
   camera.rotate(x_offset, y_offset);
 }

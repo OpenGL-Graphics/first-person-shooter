@@ -2,8 +2,8 @@
 #define GLYPHS_HPP
 
 #include <unordered_map>
-#include <materials/texture.hpp>
 #include <glm/glm.hpp>
+#include <materials/texture.hpp>
 
 // glyph origin at left corner of text baseline
 struct Glyph {

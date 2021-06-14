@@ -73,3 +73,12 @@ A table of these components values for different materials can be found on [this
 - **VAO (Vertex Array Object):**
   - Linked to VBO when attributes are defined using `glVertexAttribPointer` (both VAO and VBO being bound).
   - Then inside the main loop, we'll only need to bind the VAO (and to use the appropriate shaders program) before drawing the vertexes.
+
+# Loading 3D models
+[Assimp][assimp] was used to load 3D models in OpenGL:
+
+```
+sudo apt install assimp-utils
+```
+
+[assimp]: https://assimp-docs.readthedocs.io/en/latest/index.html

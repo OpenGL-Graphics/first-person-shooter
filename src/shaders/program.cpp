@@ -90,7 +90,7 @@ bool Program::has_failed() {
 }
 
 GLuint Program::define_attribute(const std::string& attribute) const {
-  // declared as const. bcos program passed by const reference in mesh
+  // declared as const. bcos program passed by const reference in renderer
   return glGetAttribLocation(m_id, attribute.c_str());
 }
 

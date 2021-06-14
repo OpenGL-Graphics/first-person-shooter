@@ -1,9 +1,9 @@
 #include <render/renderer.hpp>
 
 Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes):
-  m_program(program),
+  m_vao(),
   m_vbo(vbo),
-  m_vao()
+  m_program(program)
 {
   // create vertex attributes linking bound VAO & VBO
   m_vao.bind();
@@ -24,7 +24,8 @@ void Renderer::draw(const Uniforms& uniforms) {
 
   // pass shaders uniforms & draw attributes in bound VAO
   m_program.set_uniforms(uniforms);
-  glDrawArrays(GL_TRIANGLES, 0, m_vbo.get_n_vertexes());
+  glDrawElements(GL_TRIANGLES, m_vbo.get_n_vertexes(), GL_UNSIGNED_INT, 0);
+  // glDrawArrays(GL_TRIANGLES, 0, m_vbo.get_n_vertexes());
 
   m_vao.unbind();
   m_program.unuse();

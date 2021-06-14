@@ -2,7 +2,6 @@
 #define UNIFORMS_HPP
 
 #include <variant>
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>

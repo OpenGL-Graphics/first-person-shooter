@@ -3,16 +3,16 @@
 #include <iostream>
 
 TextRenderer::TextRenderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes, const Font& font):
-  m_glyphs(font.extract_glyphs()),
-  Renderer(program, vbo, attributes)
+  Renderer(program, vbo, attributes),
+  m_glyphs(font.extract_glyphs())
 {
 }
 
-void TextRenderer::draw(Uniforms& uniforms, const std::string& text) {
+void TextRenderer::draw_text(Uniforms& uniforms, const std::string& text) {
   // inspired by https://learnopengl.com/In-Practice/Text-Rendering
   float x = 0;
 
-  for (const unsigned char& c : text) {
+  for (const char& c : text) {
     // get glyph texture corresponding to character
     Glyph glyph(m_glyphs.at(c));
     uniforms["texture2d"] = glyph.texture;
@@ -28,10 +28,11 @@ void TextRenderer::draw(Uniforms& uniforms, const std::string& text) {
       x_prime,         bearing_y,             0.0f, 0.0f,
       x_prime + width, bearing_y,             1.0f, 0.0f,
       x_prime + width, -(height - bearing_y), 1.0f, 1.0f,
-      x_prime + width, -(height - bearing_y), 1.0f, 1.0f,
+      // x_prime + width, -(height - bearing_y), 1.0f, 1.0f,
       x_prime,         -(height - bearing_y), 0.0f, 1.0f,
-      x_prime,         bearing_y,             0.0f, 0.0f,
+      // x_prime,         bearing_y,             0.0f, 0.0f,
     };
+    // use EBO to pass vertexes indices
     m_vbo.update(Surface(vertexes));
 
     // render character & advance to following one
