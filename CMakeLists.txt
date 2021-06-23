@@ -38,8 +38,7 @@ file(GLOB SRC
   "src/text/*.cpp"
   "src/vertexes/*.cpp"
 )
+
 add_executable(main src/main.cpp ${SRC})
-# target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS} ${ASSIMP_INCLUDE_DIRS})
-# target_link_libraries(main glfw glad imgui ${FREETYPE_LIBRARIES} ${ASSIMP_LIBRARY_DIRS})
 target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS})
-target_link_libraries(main glfw glad imgui ${FREETYPE_LIBRARIES})
+target_link_libraries(main glfw glad imgui assimp ${FREETYPE_LIBRARIES})

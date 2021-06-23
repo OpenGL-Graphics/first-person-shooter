@@ -63,8 +63,10 @@ A table of these components values for different materials can be found on [this
 
 # Resources
 - [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
+- [Backpack 3D model][backpack]: 3D model in obj ascii format.
 
 [health-bar]: https://opengameart.org/content/rpg-hud-bars
+[backpack]: https://learnopengl.com/Model-Loading/Model
 
 # OpenGL objects
 - **VBO (Vertex Buffer Object):**
@@ -81,4 +83,4 @@ A table of these components values for different materials can be found on [this
 sudo apt install assimp-utils
 ```
 
-[assimp]: https://assimp-docs.readthedocs.io/en/latest/index.html
+[assimp]: http://assimp.sourceforge.net/lib_html/index.html

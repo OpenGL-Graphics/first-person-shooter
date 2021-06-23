@@ -1,21 +1,25 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <navigation/camera.hpp>
-#include <geometries/cube.hpp>
-#include <geometries/surface.hpp>
-#include <render/renderer.hpp>
-#include <render/text_renderer.hpp>
-#include <vertexes/vbo.hpp>
-#include <text/glyphs.hpp>
-#include <text/font.hpp>
-#include <gui/dialog.hpp>
-#include <algorithm>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+#include "navigation/camera.hpp"
+#include "geometries/cube.hpp"
+#include "geometries/surface.hpp"
+#include "render/renderer.hpp"
+#include "render/text_renderer.hpp"
+#include "vertexes/vbo.hpp"
+#include "text/glyphs.hpp"
+#include "text/font.hpp"
+#include "gui/dialog.hpp"
 
 // keys & mouse events listeners
 static void on_key(GLFWwindow* window);
@@ -110,6 +114,64 @@ int main() {
   Font font("assets/fonts/Vera.ttf");
   TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}, font);
 
+
+  // load 3d model in obj ascii format with assimp (flag ensures each face has 3 vertexes indices)
+  Assimp::Importer importer;
+  const aiScene* scene = importer.ReadFile("assets/models/backpack.obj", aiProcess_Triangulate);
+  if (scene == NULL) {
+    std::cout << "Failed to load 3D model" << '\n';
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 1;
+  }
+
+  // get meshes from scene
+  std::vector<float> vertexes;
+  std::vector<unsigned int> indices;
+
+  // for (size_t i_mesh = 0; i_mesh < scene->mNumMeshes; ++i_mesh) {
+  for (size_t i_mesh = 0; i_mesh < 1; ++i_mesh) {
+    aiMesh* mesh = scene->mMeshes[i_mesh];
+    aiVector3D* mesh_positions = mesh->mVertices;
+    aiVector3D* mesh_normals = mesh->mNormals;
+    aiVector3D* mesh_texture_coords = mesh->mTextureCoords[0];
+
+    // get vertexes position/normals/texture coords from each mesh
+    unsigned int n_vertexes = mesh->mNumVertices;
+    std::vector<glm::vec3> positions(n_vertexes);
+    std::vector<glm::vec3> normals(n_vertexes);
+    std::vector<glm::vec2> texture_coords(n_vertexes);
+    vertexes = std::vector<float>(3 * n_vertexes);
+
+    for (size_t i_vertex = 0; i_vertex < n_vertexes; ++i_vertex) {
+      positions[i_vertex] = {mesh_positions[i_vertex].x, mesh_positions[i_vertex].y, mesh_positions[i_vertex].z};
+      normals[i_vertex] = {mesh_normals[i_vertex].x, mesh_normals[i_vertex].y, mesh_normals[i_vertex].z};
+      texture_coords[i_vertex] = {mesh_texture_coords[i_vertex].x, mesh_texture_coords[i_vertex].y};
+
+      vertexes[3*i_vertex] = positions[i_vertex].x;
+      vertexes[3*i_vertex + 1] = positions[i_vertex].y;
+      vertexes[3*i_vertex + 2] = positions[i_vertex].z;
+    }
+
+    // get mesh faces (triangles formed by vertexes indices)
+    unsigned int n_faces = mesh->mNumFaces;
+    indices = std::vector<unsigned int>(3 * n_vertexes);
+
+    for (size_t i_face = 0; i_face < n_faces; ++i_face) {
+      aiFace face = mesh->mFaces[i_face];
+      unsigned int n_indices = face.mNumIndices;
+
+      for (size_t i_indice = 0; i_indice < n_indices; ++i_indice) {
+        indices[i_face*n_indices + i_indice] = face.mIndices[i_indice];
+      }
+    }
+  }
+
+  // renderer for first mesh in model
+  VBO vbo_mesh(Geometry(vertexes, indices));
+  Renderer mesh_renderer(pgm_basic, vbo_mesh, {{0, "position", 3, 3, 0}});
+
+
   // initialize dialog with imgui
   Dialog dialog(window, "Dialog title", "Dialog text");
 
@@ -131,6 +193,15 @@ int main() {
     glm::mat4 view = camera.get_view();
     glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) width_monitor / (float) height_monitor, 1.0f, 50.f);
     glm::mat4 projection2d = glm::ortho(0.0f, (float) width_monitor, 0.0f, (float) height_monitor);
+
+
+    // draw 3d model mesh
+    mesh_renderer.draw({
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f))},
+      {"view", view},
+      {"projection", projection3d},
+    });
+
 
     // draw 3x texture cubes
     cube_texture.draw({
