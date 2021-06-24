@@ -5,7 +5,7 @@ Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Att
   m_vbo(vbo),
   m_program(program)
 {
-  // create vertex attributes linking bound VAO & VBO
+  // create vertex attributes linking bound VAO and VBO (& EBO with it)
   m_vao.bind();
   m_vbo.bind();
 
@@ -21,10 +21,11 @@ Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Att
 void Renderer::draw(const Uniforms& uniforms) {
   m_vao.bind();
   m_program.use();
+  unsigned int n_vertexes = m_vbo.get_n_vertexes();
 
-  // pass shaders uniforms & draw attributes in bound VAO
+  // pass shaders uniforms & draw attributes in bound VAO (using EBO vertexes indices)
   m_program.set_uniforms(uniforms);
-  glDrawElements(GL_TRIANGLES, m_vbo.get_n_vertexes(), GL_UNSIGNED_INT, 0);
+  glDrawElements(GL_TRIANGLES, n_vertexes, GL_UNSIGNED_INT, 0);
   // glDrawArrays(GL_TRIANGLES, 0, m_vbo.get_n_vertexes());
 
   m_vao.unbind();

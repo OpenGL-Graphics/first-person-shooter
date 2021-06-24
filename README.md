@@ -77,10 +77,13 @@ A table of these components values for different materials can be found on [this
   - Then inside the main loop, we'll only need to bind the VAO (and to use the appropriate shaders program) before drawing the vertexes.
 
 # Loading 3D models
-[Assimp][assimp] was used to load 3D models in OpenGL:
+- [Assimp][assimp] was used to load 3D models in `\*.obj` format in OpenGL:
 
 ```
 sudo apt install assimp-utils
 ```
 
+- 3D models in [\*.obj][obj-format] format are ASCII text files that can be exported with Blender.
+
 [assimp]: http://assimp.sourceforge.net/lib_html/index.html
+[obj-format]: https://en.wikipedia.org/wiki/Wavefront_.obj_file
