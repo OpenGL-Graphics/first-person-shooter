@@ -118,9 +118,9 @@ int main() {
   // load 3d model in obj ascii format with assimp
   // flags ensures each face has 3 vertexes indices
   Assimp::Importer importer;
-  // const aiScene* scene = importer.ReadFile("assets/models/backpack.obj", aiProcess_Triangulate);
+  const aiScene* scene = importer.ReadFile("assets/models/backpack.obj", aiProcess_Triangulate);
   // const aiScene* scene = importer.ReadFile("assets/models/cube.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
-  const aiScene* scene = importer.ReadFile("assets/models/cube.obj", aiProcess_Triangulate);
+  // const aiScene* scene = importer.ReadFile("assets/models/cube.obj", aiProcess_Triangulate);
   if (scene == NULL) {
     std::cout << "Failed to load 3D model" << '\n';
     glfwDestroyWindow(window);
@@ -144,16 +144,23 @@ int main() {
     std::vector<glm::vec3> positions(n_vertexes);
     std::vector<glm::vec3> normals(n_vertexes);
     std::vector<glm::vec2> texture_coords(n_vertexes);
-    vertexes.resize(3 * n_vertexes);
+    unsigned int n_coords_position = 3;
+    unsigned int n_coords_normal = 3;
+    unsigned int n_coords_vertex = n_coords_position + n_coords_normal;
+    vertexes.resize(n_coords_vertex * n_vertexes);
 
     for (size_t i_vertex = 0; i_vertex < n_vertexes; ++i_vertex) {
       positions[i_vertex] = {mesh_positions[i_vertex].x, mesh_positions[i_vertex].y, mesh_positions[i_vertex].z};
       normals[i_vertex] = {mesh_normals[i_vertex].x, mesh_normals[i_vertex].y, mesh_normals[i_vertex].z};
       texture_coords[i_vertex] = {mesh_texture_coords[i_vertex].x, mesh_texture_coords[i_vertex].y};
 
-      vertexes[3*i_vertex] = positions[i_vertex].x;
-      vertexes[3*i_vertex + 1] = positions[i_vertex].y;
-      vertexes[3*i_vertex + 2] = positions[i_vertex].z;
+      vertexes[n_coords_vertex*i_vertex] = positions[i_vertex].x;
+      vertexes[n_coords_vertex*i_vertex + 1] = positions[i_vertex].y;
+      vertexes[n_coords_vertex*i_vertex + 2] = positions[i_vertex].z;
+
+      vertexes[n_coords_vertex*i_vertex + 3] = normals[i_vertex].x;
+      vertexes[n_coords_vertex*i_vertex + 4] = normals[i_vertex].y;
+      vertexes[n_coords_vertex*i_vertex + 5] = normals[i_vertex].z;
     }
 
     // get mesh faces (triangles formed by vertexes indices)
@@ -172,7 +179,8 @@ int main() {
 
   // renderer for first mesh in model
   VBO vbo_mesh(Geometry(vertexes, indices));
-  Renderer mesh_renderer(pgm_basic, vbo_mesh, {{0, "position", 3, 3, 0}});
+  // Renderer mesh_renderer(pgm_basic, vbo_mesh, {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
+  Renderer mesh_renderer(pgm_light, vbo_mesh, {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
 
 
   // initialize dialog with imgui
@@ -196,17 +204,6 @@ int main() {
     glm::mat4 view = camera.get_view();
     glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) width_monitor / (float) height_monitor, 1.0f, 50.f);
     glm::mat4 projection2d = glm::ortho(0.0f, (float) width_monitor, 0.0f, (float) height_monitor);
-
-
-    // draw 3d model mesh
-    glm::vec3 color_mesh = {1.0f, 0.0f, 0.0f};
-    mesh_renderer.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f))},
-      {"view", view},
-      {"projection", projection3d},
-      {"color", color_mesh},
-    });
-
 
     // draw 3x texture cubes
     cube_texture.draw({
@@ -246,7 +243,7 @@ int main() {
 
     // draw illuminated cube
     cube_light.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))},
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 4.0f))},
       {"view", view},
       {"projection", projection3d},
       {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
@@ -265,6 +262,31 @@ int main() {
       {"model", glm::mat4(1.0f)},
       {"view", view},
       {"projection", projection3d},
+    });
+
+    // draw 3d model mesh (illuminated with normals)
+    /*
+    glm::vec3 color_mesh = {1.0f, 0.0f, 0.0f};
+    mesh_renderer.draw({
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f))},
+      {"view", view},
+      {"projection", projection3d},
+      {"color", color_mesh},
+    });
+    */
+    mesh_renderer.draw({
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))},
+      {"view", view},
+      {"projection", projection3d},
+      {"material.ambiant", glm::vec3(1.0f, 0.0f, 1.0f)},
+      {"material.diffuse", glm::vec3(1.0f, 0.0f, 1.0f)},
+      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
+      {"material.shininess", 32.0f},
+      {"light.position", position_light},
+      {"light.ambiant", 0.2f * color_light},
+      {"light.diffuse", 0.5f * color_light},
+      {"light.specular", color_light},
+      {"position_camera", camera.get_position()},
     });
 
     // draw 2d grass surface (non-centered)
