@@ -13,6 +13,7 @@
 #include "geometries/surface.hpp"
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
+#include "render/model_renderer.hpp"
 #include "vertexes/vbo.hpp"
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
@@ -113,12 +114,15 @@ int main() {
   Font font("assets/fonts/Vera.ttf");
   TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}, font);
 
+  // accord. to doc: better to reuse importer, & destroys scene (3d model) once out of scope
+  Assimp::Importer importer;
+
   // load 3d model from .obj file & its renderer
-  // Model model_3d("assets/models/cube.obj");
-  Model model_3d("assets/models/two-cubes.obj");
-  VBO vbo_mesh(Geometry(model_3d.vertexes, model_3d.indices));
+  // Model model_3d("assets/models/two-cubes.obj", importer);
+  Model model_3d("assets/models/backpack.obj", importer);
+  // Model model_3d("assets/models/cube.obj", importer);
   // Renderer mesh_renderer(pgm_basic, vbo_mesh, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
-  Renderer mesh_renderer(pgm_light, vbo_mesh, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
+  ModelRenderer model_renderer(pgm_light, model_3d, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
 
   // initialize dialog with imgui
   Dialog dialog(window, "Dialog title", "Dialog text");
@@ -204,14 +208,14 @@ int main() {
     // draw 3d model mesh (illuminated with normals)
     /*
     glm::vec3 color_mesh = {1.0f, 0.0f, 0.0f};
-    mesh_renderer.draw({
+    model_renderer.draw({
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f))},
       {"view", view},
       {"projection", projection3d},
       {"color", color_mesh},
     });
     */
-    mesh_renderer.draw({
+    model_renderer.draw({
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))},
       {"view", view},
       {"projection", projection3d},
@@ -293,6 +297,7 @@ int main() {
   cube_light.free();
   surface.free();
   surface_glyph.free();
+  model_renderer.free();
 
   // destroy shaders programs
   pgm_basic.free();

@@ -4,19 +4,24 @@
 #include <vector>
 #include <string>
 #include <assimp/scene.h>
+#include <assimp/Importer.hpp>
 
 #include "models/mesh.hpp"
 
-/* Wrapper struct around Assimp::aiScene class */
+/**
+ * Wrapper struct around Assimp::aiScene class
+ * Serves as parent of all meshes inside scene (i.e. 3D model in *.obj format)
+ */
 struct Model {
-  std::vector<float> vertexes;
-  std::vector<unsigned int> indices;
+  std::vector<Mesh> meshes;
 
-  Model(const std::string& path);
+  Model(const std::string& path, Assimp::Importer& importer);
 
 private:
   const aiScene* m_scene;
-  std::vector<Mesh> m_meshes;
+  std::string m_path;
+
+  bool load_scene(Assimp::Importer& importer);
 };
 
 #endif // MODEL_HPP

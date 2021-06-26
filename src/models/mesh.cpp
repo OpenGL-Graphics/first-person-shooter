@@ -9,6 +9,7 @@ Mesh::Mesh(aiMesh* mesh):
 {
   set_vertexes();
   set_indices();
+  material = m_mesh->mMaterialIndex;
 }
 
 /* Set mesh vertexes consisting of positions, normals, and texture coord */

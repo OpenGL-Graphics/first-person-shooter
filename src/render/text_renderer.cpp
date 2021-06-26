@@ -1,6 +1,7 @@
-#include <render/text_renderer.hpp>
-#include <geometries/surface.hpp>
 #include <iostream>
+
+#include "render/text_renderer.hpp"
+#include "geometries/surface.hpp"
 
 TextRenderer::TextRenderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes, const Font& font):
   Renderer(program, vbo, attributes),

@@ -1,4 +1,4 @@
-#include <render/renderer.hpp>
+#include "render/renderer.hpp"
 
 Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes):
   m_vao(),

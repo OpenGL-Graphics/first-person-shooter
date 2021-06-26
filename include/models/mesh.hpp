@@ -8,10 +8,12 @@
 /**
  * Wrapper around Assimp::aiMesh used to get vertexes & faces for given mesh
  * Used by `models::Model` to parse meshes within current scene
+ * Accessed publicly from `renderer::ModelRenderer` through `models::Model`
  */
 struct Mesh {
   std::vector<float> vertexes;
   std::vector<unsigned int> indices;
+  unsigned int material;
 
   Mesh();
   Mesh(aiMesh* mesh);

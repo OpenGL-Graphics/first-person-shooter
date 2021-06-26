@@ -1,9 +1,9 @@
 #ifndef TEXT_RENDERER_HPP
 #define TEXT_RENDERER_HPP
 
-#include <render/renderer.hpp>
-#include <text/font.hpp>
-#include <text/glyphs.hpp>
+#include "render/renderer.hpp"
+#include "text/font.hpp"
+#include "text/glyphs.hpp"
 
 class TextRenderer : public Renderer {
 public:

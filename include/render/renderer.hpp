@@ -1,12 +1,13 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
-#include <shaders/program.hpp>
-#include <shaders/uniforms.hpp>
 #include <vector>
-#include <vertexes/attribute.hpp>
-#include <vertexes/vao.hpp>
-#include <vertexes/vbo.hpp>
+
+#include "shaders/program.hpp"
+#include "shaders/uniforms.hpp"
+#include "vertexes/attribute.hpp"
+#include "vertexes/vao.hpp"
+#include "vertexes/vbo.hpp"
 
 class Renderer {
 public:
