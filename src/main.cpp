@@ -7,9 +7,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 #include "navigation/camera.hpp"
 #include "geometries/cube.hpp"
@@ -20,6 +17,8 @@
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
 #include "gui/dialog.hpp"
+#include "models/mesh.hpp"
+#include "models/model.hpp"
 
 // keys & mouse events listeners
 static void on_key(GLFWwindow* window);
@@ -114,74 +113,12 @@ int main() {
   Font font("assets/fonts/Vera.ttf");
   TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}, font);
 
-
-  // load 3d model in obj ascii format with assimp
-  // flags ensures each face has 3 vertexes indices
-  Assimp::Importer importer;
-  const aiScene* scene = importer.ReadFile("assets/models/backpack.obj", aiProcess_Triangulate);
-  // const aiScene* scene = importer.ReadFile("assets/models/cube.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
-  // const aiScene* scene = importer.ReadFile("assets/models/cube.obj", aiProcess_Triangulate);
-  if (scene == NULL) {
-    std::cout << "Failed to load 3D model" << '\n';
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    return 1;
-  }
-
-  // get meshes from scene
-  std::vector<float> vertexes;
-  std::vector<unsigned int> indices;
-
-  // for (size_t i_mesh = 0; i_mesh < scene->mNumMeshes; ++i_mesh) {
-  for (size_t i_mesh = 0; i_mesh < 1; ++i_mesh) {
-    aiMesh* mesh = scene->mMeshes[i_mesh];
-    aiVector3D* mesh_positions = mesh->mVertices;
-    aiVector3D* mesh_normals = mesh->mNormals;
-    aiVector3D* mesh_texture_coords = mesh->mTextureCoords[0];
-
-    // get vertexes position/normals/texture coords from each mesh
-    unsigned int n_vertexes = mesh->mNumVertices;
-    std::vector<glm::vec3> positions(n_vertexes);
-    std::vector<glm::vec3> normals(n_vertexes);
-    std::vector<glm::vec2> texture_coords(n_vertexes);
-    unsigned int n_coords_position = 3;
-    unsigned int n_coords_normal = 3;
-    unsigned int n_coords_vertex = n_coords_position + n_coords_normal;
-    vertexes.resize(n_coords_vertex * n_vertexes);
-
-    for (size_t i_vertex = 0; i_vertex < n_vertexes; ++i_vertex) {
-      positions[i_vertex] = {mesh_positions[i_vertex].x, mesh_positions[i_vertex].y, mesh_positions[i_vertex].z};
-      normals[i_vertex] = {mesh_normals[i_vertex].x, mesh_normals[i_vertex].y, mesh_normals[i_vertex].z};
-      texture_coords[i_vertex] = {mesh_texture_coords[i_vertex].x, mesh_texture_coords[i_vertex].y};
-
-      vertexes[n_coords_vertex*i_vertex] = positions[i_vertex].x;
-      vertexes[n_coords_vertex*i_vertex + 1] = positions[i_vertex].y;
-      vertexes[n_coords_vertex*i_vertex + 2] = positions[i_vertex].z;
-
-      vertexes[n_coords_vertex*i_vertex + 3] = normals[i_vertex].x;
-      vertexes[n_coords_vertex*i_vertex + 4] = normals[i_vertex].y;
-      vertexes[n_coords_vertex*i_vertex + 5] = normals[i_vertex].z;
-    }
-
-    // get mesh faces (triangles formed by vertexes indices)
-    unsigned int n_faces = mesh->mNumFaces;
-    indices.resize(3 * n_faces);
-
-    for (size_t i_face = 0; i_face < n_faces; ++i_face) {
-      aiFace face = mesh->mFaces[i_face];
-      unsigned int n_indices = face.mNumIndices;
-
-      for (size_t i_indice = 0; i_indice < n_indices; ++i_indice) {
-        indices[i_face*n_indices + i_indice] = face.mIndices[i_indice];
-      }
-    }
-  }
-
-  // renderer for first mesh in model
-  VBO vbo_mesh(Geometry(vertexes, indices));
-  // Renderer mesh_renderer(pgm_basic, vbo_mesh, {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
-  Renderer mesh_renderer(pgm_light, vbo_mesh, {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
-
+  // load 3d model from .obj file & its renderer
+  // Model model_3d("assets/models/cube.obj");
+  Model model_3d("assets/models/two-cubes.obj");
+  VBO vbo_mesh(Geometry(model_3d.vertexes, model_3d.indices));
+  // Renderer mesh_renderer(pgm_basic, vbo_mesh, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
+  Renderer mesh_renderer(pgm_light, vbo_mesh, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
 
   // initialize dialog with imgui
   Dialog dialog(window, "Dialog title", "Dialog text");

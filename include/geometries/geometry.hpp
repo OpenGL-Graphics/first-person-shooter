@@ -1,5 +1,5 @@
-#ifndef MESH_HPP
-#define MESH_HPP
+#ifndef GEOMETRY_HPP
+#define GEOMETRY_HPP
 
 #include <vector>
 
@@ -22,4 +22,4 @@ protected:
   std::vector<unsigned int> m_indices;
 };
 
-#endif // MESH_HPP
+#endif // GEOMETRY_HPP

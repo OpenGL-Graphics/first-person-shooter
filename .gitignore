@@ -3,7 +3,7 @@ build
 tags
 .clangd
 .cache
-models/
+assets/models/
 
 # Cmake: https://github.com/github/gitignore
 CMakeLists.txt.user

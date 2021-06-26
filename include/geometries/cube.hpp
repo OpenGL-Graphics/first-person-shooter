@@ -1,7 +1,7 @@
 #ifndef CUBE_HPP
 #define CUBE_HPP
 
-#include <geometries/geometry.hpp>
+#include "geometries/geometry.hpp"
 
 class Cube : public Geometry {
 public:

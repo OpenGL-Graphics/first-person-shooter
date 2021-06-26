@@ -37,6 +37,7 @@ file(GLOB SRC
   "src/shaders/*.cpp"
   "src/text/*.cpp"
   "src/vertexes/*.cpp"
+  "src/models/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})
