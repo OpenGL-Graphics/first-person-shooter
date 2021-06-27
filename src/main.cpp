@@ -118,11 +118,11 @@ int main() {
   Assimp::Importer importer;
 
   // load 3d model from .obj file & its renderer
-  // Model model_3d("assets/models/two-cubes.obj", importer);
-  Model model_3d("assets/models/backpack.obj", importer);
+  Model model_3d("assets/models/two-cubes.obj", importer);
+  // Model model_3d("assets/models/backpack.obj", importer);
   // Model model_3d("assets/models/cube.obj", importer);
-  // Renderer mesh_renderer(pgm_basic, vbo_mesh, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
-  ModelRenderer model_renderer(pgm_light, model_3d, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
+  ModelRenderer model_renderer(pgm_basic, model_3d, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
+  // ModelRenderer model_renderer(pgm_light, model_3d, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
 
   // initialize dialog with imgui
   Dialog dialog(window, "Dialog title", "Dialog text");
@@ -206,15 +206,13 @@ int main() {
     });
 
     // draw 3d model mesh (illuminated with normals)
-    /*
-    glm::vec3 color_mesh = {1.0f, 0.0f, 0.0f};
-    model_renderer.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f))},
+    Uniforms uniforms_model = {
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))},
       {"view", view},
       {"projection", projection3d},
-      {"color", color_mesh},
-    });
-    */
+    };
+    model_renderer.draw(uniforms_model);
+    /*
     model_renderer.draw({
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))},
       {"view", view},
@@ -229,6 +227,7 @@ int main() {
       {"light.specular", color_light},
       {"position_camera", camera.get_position()},
     });
+    */
 
     // draw 2d grass surface (non-centered)
     surface.draw({
@@ -260,12 +259,12 @@ int main() {
     });
 
     // draw 2d text surface (origin: left baseline)
-    Uniforms uniforms = {
+    Uniforms uniforms_text = {
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f))},
       {"view", glm::mat4(1.0f)},
       {"projection", projection2d},
     };
-    surface_glyph.draw_text(uniforms, "Player");
+    surface_glyph.draw_text(uniforms_text, "Player");
 
     // render imgui dialog
     dialog.render();

@@ -13,7 +13,9 @@
 struct Mesh {
   std::vector<float> vertexes;
   std::vector<unsigned int> indices;
+
   unsigned int material;
+  glm::vec3 color;
 
   Mesh();
   Mesh(aiMesh* mesh);

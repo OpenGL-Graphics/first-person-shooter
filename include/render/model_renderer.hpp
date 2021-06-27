@@ -18,11 +18,12 @@
 class ModelRenderer {
 public:
   ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes);
-  void draw(const Uniforms& uniforms);
+  void draw(Uniforms& uniforms);
   void free();
 
 private:
   std::vector<Renderer> m_renderers;
+  Model m_model;
 };
 
 #endif // MODEL_RENDERER_HPP
