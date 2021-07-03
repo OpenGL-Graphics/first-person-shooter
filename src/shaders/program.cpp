@@ -121,7 +121,7 @@ void Program::set_uniforms(const Uniforms& uniforms) {
       ptr_value->attach();
       set_int(key_uniform, ptr_value->get_index());
     } else {
-      std::cout << "Incompatible value type" << '\n'; 
+      std::cout << "Incompatible value type" << '\n';
     }
   }
 }

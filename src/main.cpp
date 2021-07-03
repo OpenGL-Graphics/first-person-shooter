@@ -76,10 +76,12 @@ int main() {
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_color("assets/shaders/color.vert", "assets/shaders/color.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
+  Program pgm_texture_mesh("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
+  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_mesh.has_failed() ||
+      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
     glfwDestroyWindow(window);
     glfwTerminate();
     return 1;
@@ -118,11 +120,10 @@ int main() {
   Assimp::Importer importer;
 
   // load 3d model from .obj file & its renderer
-  Model model_3d("assets/models/two-cubes.obj", importer);
-  // Model model_3d("assets/models/backpack.obj", importer);
-  // Model model_3d("assets/models/cube.obj", importer);
-  ModelRenderer model_renderer(pgm_basic, model_3d, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
-  // ModelRenderer model_renderer(pgm_light, model_3d, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}});
+  Model two_cubes("assets/models/two-cubes.obj", importer);
+  Model backpack("assets/models/backpack.obj", importer);
+  ModelRenderer renderer_two_cubes(pgm_basic, two_cubes, {{0, "position", 3, 8, 0}});
+  ModelRenderer renderer_backpack(pgm_texture_mesh, backpack, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
 
   // initialize dialog with imgui
   Dialog dialog(window, "Dialog title", "Dialog text");
@@ -205,29 +206,21 @@ int main() {
       {"projection", projection3d},
     });
 
-    // draw 3d model mesh (illuminated with normals)
-    Uniforms uniforms_model = {
+    // draw colored two-cubes 3d model
+    Uniforms uniforms_two_cubes = {
+      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f))},
+      {"view", view},
+      {"projection", projection3d},
+    };
+    renderer_two_cubes.draw(uniforms_two_cubes);
+
+    // draw textured backpack 3d model
+    Uniforms uniforms_backpack = {
       {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))},
       {"view", view},
       {"projection", projection3d},
     };
-    model_renderer.draw(uniforms_model);
-    /*
-    model_renderer.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))},
-      {"view", view},
-      {"projection", projection3d},
-      {"material.ambiant", glm::vec3(1.0f, 0.0f, 1.0f)},
-      {"material.diffuse", glm::vec3(1.0f, 0.0f, 1.0f)},
-      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
-      {"material.shininess", 32.0f},
-      {"light.position", position_light},
-      {"light.ambiant", 0.2f * color_light},
-      {"light.diffuse", 0.5f * color_light},
-      {"light.specular", color_light},
-      {"position_camera", camera.get_position()},
-    });
-    */
+    renderer_backpack.draw(uniforms_backpack);
 
     // draw 2d grass surface (non-centered)
     surface.draw({
@@ -296,13 +289,15 @@ int main() {
   cube_light.free();
   surface.free();
   surface_glyph.free();
-  model_renderer.free();
+  renderer_backpack.free();
+  renderer_two_cubes.free();
 
   // destroy shaders programs
   pgm_basic.free();
   pgm_color.free();
   pgm_texture_cube.free();
   pgm_texture_surface.free();
+  pgm_texture_mesh.free();
   pgm_light.free();
   pgm_text.free();
 

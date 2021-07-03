@@ -19,9 +19,17 @@ struct Model {
 
 private:
   const aiScene* m_scene;
+
+  /* Path to model to load & directory from it to get texture images */
   std::string m_path;
+  std::string m_directory;
+
+  /* Optimization: avoid loading a texture image more than once (as it's quite costly) */
+  std::unordered_map<std::string, Texture2D> m_textures_loaded;
 
   bool load_scene(Assimp::Importer& importer);
+  void set_mesh_color(aiMaterial* material, unsigned int index);
+  void set_mesh_texture(aiMaterial* material, unsigned int index);
 };
 
 #endif // MODEL_HPP

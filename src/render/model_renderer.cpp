@@ -15,6 +15,7 @@ void ModelRenderer::draw(Uniforms& uniforms) {
     // retrieve material color from mesh
     Mesh mesh = m_model.meshes[i_renderer];
     uniforms["color"] = mesh.color;
+    uniforms["texture2d"] = mesh.texture;
 
     Renderer renderer = m_renderers[i_renderer];
     renderer.draw(uniforms);

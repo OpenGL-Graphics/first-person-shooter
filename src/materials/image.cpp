@@ -17,13 +17,13 @@ Image::Image(const std::string& p):
   }
 
   switch (n_channels) {
-    case 1: 
+    case 1:
       format = GL_RED;
       break;
-    case 3: 
+    case 3:
       format = GL_RGB;
       break;
-    case 4: 
+    case 4:
       format = GL_RGBA;
       break;
   }

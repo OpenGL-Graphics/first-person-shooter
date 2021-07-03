@@ -1,3 +1,11 @@
+/**
+ * Cubemap texture:
+ *   - 6 x 2D images
+ *   - Texture coords: 3D direction vector (u, v, w) from cube center to vertexes
+ *   - u, v, w: in [0, 1] with point (0, 0) being lower-left corner,
+ *              if outside the range, GL_CLAMP_TO_EDGE can clamp coords in [0, 1]
+ * https://www.khronos.org/opengl/wiki/Cubemap_Texture
+ */
 #include <geometries/cube.hpp>
 
 Cube::Cube():
@@ -68,7 +76,7 @@ const std::vector<float> Cube::VERTEXES = {
    0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
   // 0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
   -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-  // -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f 
+  // -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
 
 

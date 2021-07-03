@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <assimp/mesh.h>
 
+#include "materials/texture.hpp"
+
 /**
  * Wrapper around Assimp::aiMesh used to get vertexes & faces for given mesh
  * Used by `models::Model` to parse meshes within current scene
@@ -16,6 +18,7 @@ struct Mesh {
 
   unsigned int material;
   glm::vec3 color;
+  Texture2D texture;
 
   Mesh();
   Mesh(aiMesh* mesh);
