@@ -87,3 +87,25 @@ sudo apt install assimp-utils
 
 [assimp]: http://assimp.sourceforge.net/lib_html/index.html
 [obj-format]: https://en.wikipedia.org/wiki/Wavefront_.obj_file
+
+
+# Profiling with gprof
+- Install [gprof][gprof]:
+
+```console
+$ ./configure
+$ make -j
+$ sudo make install
+```
+
+- Compile program with profiling support:
+
+```console
+$ cc -pg script.cpp -o app
+```
+
+- Run with gprof and look for function to profile:
+
+```console
+$ gprof -p app | less
+```
