@@ -3,7 +3,6 @@
 #include <iostream>
 #include <algorithm>
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -18,21 +17,9 @@
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
 #include "gui/dialog.hpp"
+#include "gui/window.hpp"
 #include "models/mesh.hpp"
 #include "models/model.hpp"
-
-// keys & mouse events listeners
-static void on_key(GLFWwindow* window);
-static void on_mouse_click(GLFWwindow* window, int button, int action, int mods);
-static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
-static void on_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset);
-
-// camera (global variable modified inside callbacks)
-Camera camera(glm::vec3(0.0f, 5.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-// last position of mouse cursor (to calculate offset on movement)
-float x_mouse = 0.0f;
-float y_mouse = 0.0f;
 
 // background color
 const glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
@@ -44,23 +31,16 @@ int main() {
     return 1;
   }
 
-  // get monitor width/height & init mouse position
-  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-  const int width_monitor = mode->width;
-  const int height_monitor = mode->height;
-  x_mouse = width_monitor / 2.0f;
-  y_mouse = height_monitor / 2.0f;
-
   // create window and OpenGL context
-  GLFWwindow* window = glfwCreateWindow(width_monitor, height_monitor, "OpenGL test", NULL, NULL);
-  if (!window) {
+  Camera camera(glm::vec3(0.0f, 5.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  Window window(&camera);
+  if (window.is_null()) {
     std::cout << "Failed to create window or OpenGL context" << "\n";
     return 1;
   }
 
   // initialize glad before calling gl functions
-  glfwMakeContextCurrent(window);
+  window.make_context();
   if (!gladLoadGL()) {
     std::cout << "Failed to load Glad (OpenGL)" << "\n";
     return 1;
@@ -70,7 +50,7 @@ int main() {
   }
 
   // callback for processing mouse click
-  glfwSetMouseButtonCallback(window, on_mouse_click);
+  window.attach_listeners();
 
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
@@ -82,8 +62,7 @@ int main() {
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_mesh.has_failed() ||
       pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    window.destroy();
     return 1;
   }
 
@@ -126,7 +105,7 @@ int main() {
   ModelRenderer renderer_backpack(pgm_texture_mesh, backpack, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
 
   // initialize dialog with imgui
-  Dialog dialog(window, "Dialog title", "Dialog text");
+  // Dialog dialog(window, "Dialog title", "Dialog text");
 
   // enable depth test & blending
   glEnable(GL_DEPTH_TEST);
@@ -134,9 +113,9 @@ int main() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // main loop
-  while (!glfwWindowShouldClose(window)) {
+  while (!window.is_closed()) {
     // keyboard input (move camera, quit application)
-    on_key(window);
+    window.on_keypress();
 
     // before render, clear color buffer & depth buffer
     glClearColor(background.r, background.g, background.b, background.a);
@@ -144,8 +123,8 @@ int main() {
 
     // transformation matrices
     glm::mat4 view = camera.get_view();
-    glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) width_monitor / (float) height_monitor, 1.0f, 50.f);
-    glm::mat4 projection2d = glm::ortho(0.0f, (float) width_monitor, 0.0f, (float) height_monitor);
+    glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) window.width / (float) window.height, 1.0f, 50.f);
+    glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
 
     // draw 3x texture cubes
     cube_texture.draw({
@@ -241,7 +220,7 @@ int main() {
 
     // draw 2d health bar HUD surface (scaling then translation to lower left corner)
     glm::mat4 model_hud_health(glm::scale(
-      glm::translate(glm::mat4(1.0f), glm::vec3(width_monitor - texture_hud_health.get_width(), 0.0f, 0.0f)),
+      glm::translate(glm::mat4(1.0f), glm::vec3(window.width - texture_hud_health.get_width(), 0.0f, 0.0f)),
       glm::vec3(texture_hud_health.get_width(), texture_hud_health.get_height(), 1.0f)
     ));
     surface.draw({
@@ -260,15 +239,15 @@ int main() {
     surface_glyph.draw_text(uniforms_text, "Player");
 
     // render imgui dialog
-    dialog.render();
+    // dialog.render();
 
     // process events & show rendered buffer
-    glfwPollEvents();
-    glfwSwapBuffers(window);
+    window.process_events();
+    window.render();
   }
 
   // destroy imgui
-  dialog.free();
+  // dialog.free();
 
   // destroy textures
   texture_brick.free();
@@ -302,61 +281,7 @@ int main() {
   pgm_text.free();
 
   // destroy window & terminate glfw
-  glfwDestroyWindow(window);
-  glfwTerminate();
+  window.destroy();
 
   return 0;
-}
-
-static void on_key(GLFWwindow* window) {
-  // close window on escape key press
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
-  }
-
-  // move camera
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    camera.move(Direction::FORWARD);
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    camera.move(Direction::BACKWARD);
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    camera.move(Direction::LEFT);
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    camera.move(Direction::RIGHT);
-}
-
-static void on_mouse_click(GLFWwindow* window, int button, int action, int mods) {
-  // switch mouse mode & listen for mouse movement/scroll
-  if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-    if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-      glfwSetCursorPosCallback(window, on_mouse_move);
-      glfwSetScrollCallback(window, on_mouse_scroll);
-    } else {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-      glfwSetCursorPosCallback(window, NULL);
-      glfwSetScrollCallback(window, NULL);
-    }
-  }
-}
-
-static void on_mouse_move(GLFWwindow* window, double xpos, double ypos) {
-  // see: https://www.reddit.com/r/opengl/comments/831vpb/
-  // calculate offset in mouse cursor position
-  float x_offset = xpos - x_mouse;
-  float y_offset = ypos - y_mouse;
-  x_mouse = xpos;
-  y_mouse = ypos;
-
-  // horizontal/vertical rotation around y-axis/x-axis accord. to offset
-  camera.rotate(x_offset, y_offset);
-}
-
-static void on_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset) {
-  // zoom in/out using mouse wheel
-  if (yoffset == 1) {
-    camera.zoom(Zoom::IN);
-  } else if (yoffset == -1) {
-    camera.zoom(Zoom::OUT);
-  }
 }
