@@ -41,6 +41,7 @@ file(GLOB SRC
   "src/text/*.cpp"
   "src/vertexes/*.cpp"
   "src/models/*.cpp"
+  "src/profiling/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})

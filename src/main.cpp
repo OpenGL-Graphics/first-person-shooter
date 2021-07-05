@@ -20,6 +20,7 @@
 #include "gui/window.hpp"
 #include "models/mesh.hpp"
 #include "models/model.hpp"
+#include "profiling/profiler.hpp"
 
 // background color
 const glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
@@ -99,10 +100,14 @@ int main() {
   Assimp::Importer importer;
 
   // load 3d model from .obj file & its renderer
+  Profiler profiler;
+  profiler.start();
   Model two_cubes("assets/models/two-cubes.obj", importer);
   Model backpack("assets/models/backpack.obj", importer);
   ModelRenderer renderer_two_cubes(pgm_basic, two_cubes, {{0, "position", 3, 8, 0}});
   ModelRenderer renderer_backpack(pgm_texture_mesh, backpack, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
+  profiler.stop();
+  profiler.print("Loading 3D models");
 
   // initialize dialog with imgui
   // Dialog dialog(window, "Dialog title", "Dialog text");
