@@ -26,11 +26,6 @@ private:
   float m_pitch;
   float m_yaw;
 
-  // movement constants
-  const float X_SPEED = 0.1f;
-  const float Z_SPEED = 0.1f;
-  const float SENSITIVITY = 0.01f;
-
   // zoom-in corresponds to lower field-of-view
   float m_fov;
 };

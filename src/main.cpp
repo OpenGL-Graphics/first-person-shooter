@@ -22,19 +22,15 @@
 #include "models/model.hpp"
 #include "profiling/profiler.hpp"
 
-// background color
-const glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
+// global variables modified in `on_keypress()`
+Camera camera(glm::vec3(0.0f, 5.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+Window window(&camera);
+glm::vec3 position_cube(5.0f, 0.0f, 0.0f);
+
+// functions declarations
+void on_keypress();
 
 int main() {
-  // initialize glfw
-  if (!glfwInit()) {
-    std::cout << "Failed to initialize GLFW" << "\n";
-    return 1;
-  }
-
-  // create window and OpenGL context
-  Camera camera(glm::vec3(0.0f, 5.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  Window window(&camera);
   if (window.is_null()) {
     std::cout << "Failed to create window or OpenGL context" << "\n";
     return 1;
@@ -102,10 +98,10 @@ int main() {
   // load 3d model from .obj file & its renderer
   Profiler profiler;
   profiler.start();
-  Model two_cubes("assets/models/two-cubes.obj", importer);
-  Model backpack("assets/models/backpack.obj", importer);
+  Model two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
+  Model cube_textured("assets/models/cube-textured/cube-textured.obj", importer);
   ModelRenderer renderer_two_cubes(pgm_basic, two_cubes, {{0, "position", 3, 8, 0}});
-  ModelRenderer renderer_backpack(pgm_texture_mesh, backpack, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
+  ModelRenderer renderer_cube_textured(pgm_texture_mesh, cube_textured, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
   profiler.stop();
   profiler.print("Loading 3D models");
 
@@ -116,11 +112,12 @@ int main() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
 
   // main loop
   while (!window.is_closed()) {
     // keyboard input (move camera, quit application)
-    window.on_keypress();
+    on_keypress();
 
     // before render, clear color buffer & depth buffer
     glClearColor(background.r, background.g, background.b, background.a);
@@ -198,13 +195,13 @@ int main() {
     };
     renderer_two_cubes.draw(uniforms_two_cubes);
 
-    // draw textured backpack 3d model
-    Uniforms uniforms_backpack = {
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f))},
+    // draw textured cube 3d model
+    Uniforms uniforms_cube_textured = {
+      {"model", glm::translate(glm::mat4(1.0f), position_cube)},
       {"view", view},
       {"projection", projection3d},
     };
-    renderer_backpack.draw(uniforms_backpack);
+    renderer_cube_textured.draw(uniforms_cube_textured);
 
     // draw 2d grass surface (non-centered)
     surface.draw({
@@ -273,8 +270,8 @@ int main() {
   cube_light.free();
   surface.free();
   surface_glyph.free();
-  renderer_backpack.free();
   renderer_two_cubes.free();
+  renderer_cube_textured.free();
 
   // destroy shaders programs
   pgm_basic.free();
@@ -289,4 +286,33 @@ int main() {
   window.destroy();
 
   return 0;
+}
+
+/* Listener for keypress called on every frame of mainloop */
+void on_keypress() {
+  // close window on escape key press (by setting flag & check if set in `is_closed()`)
+  if (window.is_key_pressed(GLFW_KEY_ESCAPE)) {
+    // glfwSetWindowShouldClose(m_window, GLFW_TRUE);
+    window.close();
+  }
+
+  // move camera
+  if (window.is_key_pressed(GLFW_KEY_W))
+    camera.move(Direction::FORWARD);
+  if (window.is_key_pressed(GLFW_KEY_S))
+    camera.move(Direction::BACKWARD);
+  if (window.is_key_pressed(GLFW_KEY_A))
+    camera.move(Direction::LEFT);
+  if (window.is_key_pressed(GLFW_KEY_D))
+    camera.move(Direction::RIGHT);
+
+  // move textured cube
+  if (window.is_key_pressed(GLFW_KEY_UP))
+    position_cube.z -= 0.25;
+  if (window.is_key_pressed(GLFW_KEY_DOWN))
+    position_cube.z += 0.25;
+  if (window.is_key_pressed(GLFW_KEY_LEFT))
+    position_cube.x -= 0.25;
+  if (window.is_key_pressed(GLFW_KEY_RIGHT))
+    position_cube.x += 0.25;
 }

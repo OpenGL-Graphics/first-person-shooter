@@ -1,6 +1,12 @@
 #include <navigation/camera.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// not declared as private members as constants cause class's implicit copy-constructor to be deleted (prevents re-assignment)
+// movement constants
+const float X_SPEED = 0.1f;
+const float Z_SPEED = 0.1f;
+const float SENSITIVITY = 0.01f;
+
 Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up):
   m_position(position),
   m_direction(direction),

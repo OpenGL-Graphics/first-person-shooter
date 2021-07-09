@@ -19,7 +19,8 @@ struct Window {
   bool is_closed();
   void destroy();
   void attach_listeners();
-  void on_keypress();
+  bool is_key_pressed(int key) const;
+  void close() const;
 
 private:
   GLFWwindow* m_window;

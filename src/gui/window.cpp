@@ -38,6 +38,11 @@ bool Window::is_closed() {
   return glfwWindowShouldClose(m_window);
 }
 
+/* Close window by setting flag (& leaving mainloop) */
+void Window::close() const {
+  glfwSetWindowShouldClose(m_window, GLFW_TRUE);
+}
+
 /* Make window's OpenGL context current to draw on it */
 void Window::make_context() {
   glfwMakeContextCurrent(m_window);
@@ -59,26 +64,13 @@ void Window::destroy() {
   glfwTerminate();
 }
 
-/* Listener for keypress called on every frame of mainloop */
-void Window::on_keypress() {
-  // close window on escape key press (by setting flag & check if set in `is_closed()`)
-  if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(m_window, GLFW_TRUE);
-  }
-
-  // move camera
-  if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
-    m_camera->move(Direction::FORWARD);
-  if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
-    m_camera->move(Direction::BACKWARD);
-  if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
-    m_camera->move(Direction::LEFT);
-  if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
-    m_camera->move(Direction::RIGHT);
-}
-
 void Window::attach_listeners() {
   glfwSetMouseButtonCallback(m_window, on_mouse_click);
+}
+
+/* Check if given `key` was pressed */
+bool Window::is_key_pressed(int key) const {
+  return glfwGetKey(m_window, key) == GLFW_PRESS;
 }
 
 void Window::on_mouse_move(GLFWwindow* window, double xpos, double ypos) {
