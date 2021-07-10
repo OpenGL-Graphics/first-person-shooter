@@ -10,6 +10,7 @@
 #include "vertexes/vbo.hpp"
 #include "models/model.hpp"
 #include "render/renderer.hpp"
+#include "navigation/direction.hpp"
 
 /**
  * Each mesh inside 3D model is rendered separately using `Renderer` class,
@@ -17,13 +18,16 @@
  */
 class ModelRenderer {
 public:
-  ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes);
+  ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes, const glm::vec3& position);
   void draw(Uniforms& uniforms);
   void free();
+
+  void move(Direction direction);
 
 private:
   std::vector<Renderer> m_renderers;
   Model m_model;
+  glm::vec3 m_position;
 };
 
 #endif // MODEL_RENDERER_HPP

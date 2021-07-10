@@ -1,6 +1,8 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
+// prevent glfw from including glad (opengl loading library)
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 #include "gui/monitor.hpp"
