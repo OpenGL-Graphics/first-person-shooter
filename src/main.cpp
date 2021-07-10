@@ -16,8 +16,9 @@
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
 #include "gui/dialog.hpp"
-#include "controls/key_handler.hpp"
 #include "gui/window.hpp"
+#include "controls/key_handler.hpp"
+#include "controls/mouse_handler.hpp"
 #include "models/mesh.hpp"
 #include "models/model.hpp"
 #include "profiling/profiler.hpp"
@@ -42,8 +43,9 @@ int main() {
     std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
   }
 
-  // callback for processing mouse click
-  window.attach_listeners();
+  // callback for processing mouse click (after init static members)
+  MouseHandler::init(window.width / 2, window.height / 2, &camera);
+  window.attach_mouse_listener(MouseHandler::on_mouse_click);
 
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
