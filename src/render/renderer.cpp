@@ -1,3 +1,6 @@
+#include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
+
 #include "render/renderer.hpp"
 
 Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes):
@@ -18,15 +21,48 @@ Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Att
   m_vbo.unbind();
 }
 
-void Renderer::draw(const Uniforms& uniforms) {
+/**
+ * Sets initial transformation matrix for model (translation, rotation, scaling)
+ * glm::mat4 used as certain objects in scene require a scaling (besides translation)
+ * @param mat_model Model matrix (i.e. transformation matrix)
+ */
+void Renderer::set_transform(const glm::mat4& mat_model) {
+  m_mat_model = mat_model;
+
+  // calculate bounding box from positions in local coords in vbo
+  // then update bounding box in world coords from model matrix (avoids incremental translation)
+  bounding_box = BoundingBox(m_vbo.positions);
+  bounding_box.transform(mat_model);
+}
+
+/**
+ * Translate from current position (model matrix) by given offset
+ * Note: bounding box is in world coords while vertexes are in local coords,
+ *       hense the different transformation matrices.
+ */
+void Renderer::move(const glm::vec3& offset) {
+  // translation vector at 4th column of transformation matrix (i.e. model matrix)
+  // vertexes in local coords, hence new_position = old_position + offset
+  glm::vec3 position = m_mat_model[3];
+  position += offset;
+  m_mat_model = glm::translate(glm::mat4(1.0f), position);
+
+  // translate bbox instead of reclalculating it each time (like `set_transform()`)
+  // update bounding box in world coords using offset
+  bounding_box.transform(glm::translate(glm::mat4(1.0f), offset));
+}
+
+void Renderer::draw(Uniforms& uniforms) {
+  // 3d position of model
+  uniforms["model"] = m_mat_model;
+
   m_vao.bind();
   m_program.use();
-  unsigned int n_vertexes = m_vbo.get_n_vertexes();
 
   // pass shaders uniforms & draw attributes in bound VAO (using EBO vertexes indices)
   m_program.set_uniforms(uniforms);
-  glDrawElements(GL_TRIANGLES, n_vertexes, GL_UNSIGNED_INT, 0);
-  // glDrawArrays(GL_TRIANGLES, 0, m_vbo.get_n_vertexes());
+  glDrawElements(GL_TRIANGLES, m_vbo.n_vertexes, GL_UNSIGNED_INT, 0);
+  // glDrawArrays(GL_TRIANGLES, 0, m_vbo.n_vertexes);
 
   m_vao.unbind();
   m_program.unuse();

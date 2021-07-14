@@ -1,10 +1,13 @@
 #include <vertexes/vbo.hpp>
 
+/* No polymorphism if `geometry` wasn't passed by ref */
 VBO::VBO(const Geometry& geometry, bool is_empty, GLenum type):
   m_type(type),
   m_vertexes(geometry.get_vertexes()),
-  m_n_vertexes(geometry.get_n_vertexes()),
-  m_indices(geometry.get_indices())
+  m_indices(geometry.get_indices()),
+
+  n_vertexes(geometry.get_n_vertexes()),
+  positions(geometry.get_positions())
 {
   generate();
   bind();
@@ -26,15 +29,10 @@ void VBO::generate() {
   glGenBuffers(1, &m_id_ebo);
 }
 
-int VBO::get_n_vertexes() const {
-  // needed by Render::draw()
-  return m_n_vertexes;
-}
-
 void VBO::update(const Geometry& geometry) {
   // update vbo with vertexes from geometery (used for rendering glyphs)
   m_vertexes = geometry.get_vertexes();
-  m_n_vertexes = geometry.get_n_vertexes();
+  n_vertexes = geometry.get_n_vertexes();
   bind();
   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * m_vertexes.size(), m_vertexes.data());
   unbind();

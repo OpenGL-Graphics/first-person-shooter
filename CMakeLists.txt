@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # autocomplete with YCM & debug with gdb
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 # profiling flag
@@ -43,6 +43,7 @@ file(GLOB SRC
   "src/models/*.cpp"
   "src/profiling/*.cpp"
   "src/controls/*.cpp"
+  "src/physics/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})

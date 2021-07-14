@@ -13,8 +13,7 @@ KeyHandler::KeyHandler(const Window& window, Camera& camera, ModelRenderer& pc):
  */
 void KeyHandler::on_keypress() {
   // close window on escape key press (by setting flag & check if set in `is_closed()`)
-  if (m_window.is_key_pressed(GLFW_KEY_ESCAPE)) {
-    // glfwSetWindowShouldClose(m_window, GLFW_TRUE);
+  if (m_window.is_key_pressed(GLFW_KEY_ESCAPE) || m_window.is_key_pressed(GLFW_KEY_Q)) {
     m_window.close();
   }
 

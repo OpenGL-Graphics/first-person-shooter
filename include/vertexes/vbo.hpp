@@ -4,15 +4,17 @@
 #include <glad/glad.h>
 #include <geometries/geometry.hpp>
 
-// manage VBO & EBO and encapsulate mesh vertexes & their indices
-class VBO {
-public:
+/* Manage VBO & EBO and encapsulate mesh vertexes & their indices */
+struct VBO {
+  /* needed by `Render` class */
+  int n_vertexes;
+  std::vector<glm::vec3> positions;
+
   VBO(const Geometry& geometry, bool is_empty=false, GLenum type=GL_STATIC_DRAW);
   void free();
   void bind();
   void unbind();
   void generate();
-  int get_n_vertexes() const;
   void update(const Geometry& geometry);
 
 private:
@@ -22,7 +24,6 @@ private:
 
   // polymorphism enabled with virtual methods (in descendents classes of Geometry)
   std::vector<float> m_vertexes;
-  int m_n_vertexes;
   std::vector<unsigned int> m_indices;
 };
 

@@ -16,18 +16,20 @@
  * Each mesh inside 3D model is rendered separately using `Renderer` class,
  * as vertexes indices start from 0 for all meshes (otherwise they would overwrite)
  */
-class ModelRenderer {
-public:
-  ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes, const glm::vec3& position);
+struct ModelRenderer {
+  BoundingBox bounding_box;
+
+  ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes);
   void draw(Uniforms& uniforms);
   void free();
 
   void move(Direction direction);
+  void set_transform(const glm::mat4& mat_model);
+  void calculate_bounding_box();
 
 private:
   std::vector<Renderer> m_renderers;
   Model m_model;
-  glm::vec3 m_position;
 };
 
 #endif // MODEL_RENDERER_HPP

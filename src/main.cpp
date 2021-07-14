@@ -98,17 +98,21 @@ int main() {
   profiler.start();
   Model two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
   Model cube_textured("assets/models/cube-textured/cube-textured.obj", importer);
-  ModelRenderer renderer_two_cubes(pgm_basic, two_cubes, {{0, "position", 3, 8, 0}}, glm::vec3(-7.0f, 0.0f, 0.0f));
-  ModelRenderer renderer_cube_textured(
-      pgm_texture_mesh, cube_textured, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}}, glm::vec3(5.0f, 0.0f, 0.0f));
+  ModelRenderer renderer_two_cubes(pgm_basic, two_cubes, {{0, "position", 3, 8, 0}});
+  ModelRenderer pc(
+      pgm_texture_mesh, cube_textured, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
   profiler.stop();
   profiler.print("Loading 3D models");
+
+  // position 3D models
+  renderer_two_cubes.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)));
+  pc.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)));
 
   // initialize dialog with imgui
   // Dialog dialog(window, "Dialog title", "Dialog text");
 
   // handler for keyboard inputs
-  KeyHandler key_handler(window, camera, renderer_cube_textured);
+  KeyHandler key_handler(window, camera, pc);
 
   // enable depth test & blending
   glEnable(GL_DEPTH_TEST);
@@ -131,24 +135,19 @@ int main() {
     glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
 
     // draw 3x texture cubes
-    cube_texture.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f))},
+    Uniforms uniforms_cube_texture = {
       {"view", view},
       {"projection", projection3d},
       {"texture3d", texture_brick},
-    });
-    cube_texture.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -1.0f))},
-      {"view", view},
-      {"projection", projection3d},
-      {"texture3d", texture_brick},
-    });
-    cube_texture.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f))},
-      {"view", view},
-      {"projection", projection3d},
-      {"texture3d", texture_brick},
-    });
+    };
+    cube_texture.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
+    cube_texture.draw(uniforms_cube_texture);
+
+    cube_texture.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -1.0f)));
+    cube_texture.draw(uniforms_cube_texture);
+
+    cube_texture.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f)));
+    cube_texture.draw(uniforms_cube_texture);
 
     // cube & light colors
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
@@ -159,16 +158,17 @@ int main() {
       glm::translate(glm::mat4(1.0f), position_light),
       glm::vec3(0.2f)
     ));
-    cube_basic.draw({
-      {"model", model_light},
+    cube_basic.set_transform(model_light);
+    Uniforms uniforms_cube_basic = {
       {"view", view},
       {"projection", projection3d},
       {"color", color_light},
-    });
+    };
+    cube_basic.draw(uniforms_cube_basic);
 
     // draw illuminated cube
-    cube_light.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 4.0f))},
+    cube_light.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 4.0f)));
+    Uniforms uniforms_cube_light = {
       {"view", view},
       {"projection", projection3d},
       {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
@@ -180,18 +180,19 @@ int main() {
       {"light.diffuse", 0.5f * color_light},
       {"light.specular", color_light},
       {"position_camera", camera.get_position()},
-    });
+    };
+    cube_light.draw(uniforms_cube_light);
 
     // draw color cube
-    cube_color.draw({
-      {"model", glm::mat4(1.0f)},
+    cube_color.set_transform(glm::mat4(1.0f));
+    Uniforms uniform_cube_color = {
       {"view", view},
       {"projection", projection3d},
-    });
+    };
+    cube_color.draw(uniform_cube_color);
 
     // draw colored two-cubes 3d model
     Uniforms uniforms_two_cubes = {
-      // {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f))},
       {"view", view},
       {"projection", projection3d},
     };
@@ -199,44 +200,53 @@ int main() {
 
     // draw textured cube 3d model
     Uniforms uniforms_cube_textured = {
-      // {"model", glm::translate(glm::mat4(1.0f), position_cube)},
       {"view", view},
       {"projection", projection3d},
     };
-    renderer_cube_textured.draw(uniforms_cube_textured);
+    pc.draw(uniforms_cube_textured);
+
+
+    // check for collisions between moving PC & static textured cube (last one)
+    if (pc.bounding_box.check_collision(cube_texture.bounding_box)) {
+      std::cout << "Collision!" << '\n';
+    }
+
 
     // draw 2d grass surface (non-centered)
-    surface.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f))},
+    surface.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f)));
+    Uniforms uniform_grass = {
       {"view",  view},
       {"projection", projection3d},
       {"texture2d", texture_grass},
-    });
+    };
+    surface.draw(uniform_grass);
 
     // last to render: transparent surfaces to ensure blending with background
     // draw half-transparent 3d window
-    surface.draw({
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f))},
+    surface.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f)));
+    Uniforms uniform_glass = {
       {"view",  view},
       {"projection", projection3d},
       {"texture2d", texture_glass},
-    });
+    };
+    surface.draw(uniform_glass);
 
     // draw 2d health bar HUD surface (scaling then translation to lower left corner)
     glm::mat4 model_hud_health(glm::scale(
       glm::translate(glm::mat4(1.0f), glm::vec3(window.width - texture_hud_health.get_width(), 0.0f, 0.0f)),
       glm::vec3(texture_hud_health.get_width(), texture_hud_health.get_height(), 1.0f)
     ));
-    surface.draw({
-      {"model", model_hud_health},
+    surface.set_transform(model_hud_health);
+    Uniforms uniform_hud = {
       {"view", glm::mat4(1.0f)},
       {"projection", projection2d},
       {"texture2d", texture_hud_health},
-    });
+    };
+    surface.draw(uniform_hud);
 
     // draw 2d text surface (origin: left baseline)
+    surface_glyph.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)));
     Uniforms uniforms_text = {
-      {"model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f))},
       {"view", glm::mat4(1.0f)},
       {"projection", projection2d},
     };
@@ -273,7 +283,7 @@ int main() {
   surface.free();
   surface_glyph.free();
   renderer_two_cubes.free();
-  renderer_cube_textured.free();
+  pc.free();
 
   // destroy shaders programs
   pgm_basic.free();

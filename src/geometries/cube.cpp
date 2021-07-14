@@ -8,11 +8,12 @@
  */
 #include <geometries/cube.hpp>
 
-Cube::Cube():
-  m_vertexes(VERTEXES),
-  m_n_vertexes(6 * 2 * 3),
-  m_indices(INDICES)
-{
+Cube::Cube() {
+  // cannot be init in constructor's member initalizer list as they're members of base class
+  m_vertexes = VERTEXES;
+  m_n_vertexes = 6 * 2 * 3;
+  m_indices = INDICES;
+  m_positions = POSITIONS;
 }
 
 std::vector<float> Cube::get_vertexes() const {
@@ -27,6 +28,10 @@ std::vector<unsigned int> Cube::get_indices() const {
   return m_indices;
 }
 
+std::vector<glm::vec3> Cube::get_positions() const {
+  return m_positions;
+}
+
 // origin: center of gravity
 // coord(x,y,z)        color(r,g,b)      texture(u,v,w)       normal(nx,ny,nz)
 const std::vector<float> Cube::VERTEXES = {
@@ -34,51 +39,38 @@ const std::vector<float> Cube::VERTEXES = {
   -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f, -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
   -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f, -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
   -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
-  // -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
   -0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
-  // -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f, -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
 
    // positive-x (right face)
    0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
    0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
    0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-   // 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
    0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
-   // 0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
 
    // negative-y (bottom face)
   -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
    0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
    0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
-   // 0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
   -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
-  // -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
 
   // positive-y (top face)
   -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
    0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
    0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-  //  0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
   -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f, -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-  // -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
 
   // negative-z (back face)
   -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
    0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
    0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-  // 0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
   -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-  // -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
 
   // positive-z (front face)
   -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
    0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
    0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-  // 0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
   -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-  // -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f
 };
-
 
 const std::vector<unsigned int> Cube::INDICES {
   // negative-x (left face)
@@ -104,4 +96,43 @@ const std::vector<unsigned int> Cube::INDICES {
   // positive-z (front face)
   20, 21, 22,
   22, 23, 20,
+};
+
+// copy of vertexes above containing only (x, y, z) coords
+const std::vector<glm::vec3> Cube::POSITIONS = {
+  // negative-x (left face)
+  {-0.5f,  0.5f,  0.5f},
+  {-0.5f,  0.5f, -0.5f},
+  {-0.5f, -0.5f, -0.5f},
+  {-0.5f, -0.5f,  0.5f},
+
+  // positive-x (right face)
+  {0.5f,  0.5f,  0.5f},
+  {0.5f,  0.5f, -0.5f},
+  {0.5f, -0.5f, -0.5f},
+  {0.5f, -0.5f,  0.5f},
+
+  // negative-y (bottom face)
+  {-0.5f, -0.5f, -0.5f},
+  { 0.5f, -0.5f, -0.5f},
+  { 0.5f, -0.5f,  0.5f},
+  {-0.5f, -0.5f,  0.5f},
+
+  // positive-y (top face)
+  {-0.5f,  0.5f, -0.5f},
+  { 0.5f,  0.5f, -0.5f},
+  { 0.5f,  0.5f,  0.5f},
+  {-0.5f,  0.5f,  0.5f},
+
+  // negative-z (back face)
+  {-0.5f, -0.5f, -0.5f},
+  { 0.5f, -0.5f, -0.5f},
+  { 0.5f,  0.5f, -0.5f},
+  {-0.5f,  0.5f, -0.5f},
+
+  // positive-z (front face)
+  {-0.5f, -0.5f,  0.5f},
+  { 0.5f, -0.5f,  0.5f},
+  { 0.5f,  0.5f,  0.5f},
+  {-0.5f,  0.5f,  0.5f},
 };

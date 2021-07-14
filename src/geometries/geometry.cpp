@@ -5,9 +5,10 @@ Geometry::Geometry() {
 }
 
 /* generic geometry used to render assimp meshes */
-Geometry::Geometry(const std::vector<float>& vertexes, const std::vector<unsigned int>& indices):
+Geometry::Geometry(const std::vector<float>& vertexes, const std::vector<unsigned int>& indices, const std::vector<glm::vec3>& positions):
   m_vertexes(vertexes),
-  m_indices(indices)
+  m_indices(indices),
+  m_positions(positions)
 {
 }
 
@@ -21,4 +22,8 @@ int Geometry::get_n_vertexes() const {
 
 std::vector<unsigned int> Geometry::get_indices() const {
   return m_indices;
+}
+
+std::vector<glm::vec3> Geometry::get_positions() const {
+  return m_positions;
 }

@@ -16,6 +16,9 @@ struct Mesh {
   std::vector<float> vertexes;
   std::vector<unsigned int> indices;
 
+  /* used to calculate bounding box for 3d model (for collision detection) */
+  std::vector<glm::vec3> positions;
+
   unsigned int material;
   glm::vec3 color;
   Texture2D texture;
