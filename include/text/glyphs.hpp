@@ -19,7 +19,7 @@ using ValueGlyph = Glyph;
 using Glyphs = std::unordered_map<KeyGlyph, ValueGlyph>;
 
 // characters to extract from font
-const unsigned char CHAR_START = 'A';
+const unsigned char CHAR_START = ' ';
 const unsigned char CHAR_END = 'z';
 
 #endif // GLYPHS_HPP

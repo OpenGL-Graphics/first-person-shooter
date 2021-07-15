@@ -57,3 +57,18 @@ bool BoundingBox::check_collision(const BoundingBox& bounding_box) {
 
   return true;
 }
+
+/**
+ * Check for collision against multiple objects
+ * @param bounding_boxes Bounding boxes to check for collision against
+ * @return index of collided bbox or -1 for no collision
+ */
+int BoundingBox::check_collision(const std::vector<BoundingBox>& bounding_boxes) {
+  for (size_t i_bbox = 0; i_bbox < bounding_boxes.size(); ++i_bbox) {
+    if (check_collision(bounding_boxes[i_bbox])) {
+        return i_bbox;
+    }
+  }
+
+  return NO_COLLISION;
+}

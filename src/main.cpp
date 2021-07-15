@@ -96,17 +96,25 @@ int main() {
   // load 3d model from .obj file & its renderer
   Profiler profiler;
   profiler.start();
-  Model two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
-  Model cube_textured("assets/models/cube-textured/cube-textured.obj", importer);
-  ModelRenderer renderer_two_cubes(pgm_basic, two_cubes, {{0, "position", 3, 8, 0}});
+  Model model_two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
+  Model model_cube("assets/models/cube-textured/cube-textured.obj", importer);
+  ModelRenderer renderer_two_cubes(pgm_basic, model_two_cubes, {{0, "position", 3, 8, 0}});
   ModelRenderer pc(
-      pgm_texture_mesh, cube_textured, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
+      pgm_texture_mesh, model_cube, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
   profiler.stop();
   profiler.print("Loading 3D models");
 
   // position 3D models
   renderer_two_cubes.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)));
   pc.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)));
+
+  // cubes to collide with (cube_texture)
+  std::vector<glm::vec3> positions = {
+    glm::vec3(2.0f, 0.0f, 0.0f),
+    glm::vec3(2.0f, 0.0f, -1.0f),
+    glm::vec3(2.0f, 0.0f, -2.0f),
+  };
+  unsigned int score = 0;
 
   // initialize dialog with imgui
   // Dialog dialog(window, "Dialog title", "Dialog text");
@@ -133,21 +141,6 @@ int main() {
     glm::mat4 view = camera.get_view();
     glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) window.width / (float) window.height, 1.0f, 50.f);
     glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
-
-    // draw 3x texture cubes
-    Uniforms uniforms_cube_texture = {
-      {"view", view},
-      {"projection", projection3d},
-      {"texture3d", texture_brick},
-    };
-    cube_texture.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
-    cube_texture.draw(uniforms_cube_texture);
-
-    cube_texture.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -1.0f)));
-    cube_texture.draw(uniforms_cube_texture);
-
-    cube_texture.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, -2.0f)));
-    cube_texture.draw(uniforms_cube_texture);
 
     // cube & light colors
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
@@ -198,6 +191,19 @@ int main() {
     };
     renderer_two_cubes.draw(uniforms_two_cubes);
 
+    // draw 3x texture cubes
+    Uniforms uniforms_cube_texture = {
+      {"view", view},
+      {"projection", projection3d},
+      {"texture3d", texture_brick},
+    };
+    std::vector<BoundingBox> bounding_boxes;
+    for (const glm::vec3& position : positions) {
+      cube_texture.set_transform(glm::translate(glm::mat4(1.0f), position));
+      cube_texture.draw(uniforms_cube_texture);
+      bounding_boxes.push_back(cube_texture.bounding_box);
+    }
+
     // draw textured cube 3d model
     Uniforms uniforms_cube_textured = {
       {"view", view},
@@ -206,9 +212,12 @@ int main() {
     pc.draw(uniforms_cube_textured);
 
 
-    // check for collisions between moving PC & static textured cube (last one)
-    if (pc.bounding_box.check_collision(cube_texture.bounding_box)) {
-      std::cout << "Collision!" << '\n';
+    // remove static textured cubes on collision with moving PC & increment score
+    int i_bounding_box;
+    if ((i_bounding_box = pc.bounding_box.check_collision(bounding_boxes)) != BoundingBox::NO_COLLISION) {
+      std::cout << "Collision with " << i_bounding_box << '\n';
+      positions.erase(positions.begin() + i_bounding_box);
+      ++score;
     }
 
 
@@ -250,7 +259,7 @@ int main() {
       {"view", glm::mat4(1.0f)},
       {"projection", projection2d},
     };
-    surface_glyph.draw_text(uniforms_text, "Player");
+    surface_glyph.draw_text(uniforms_text, "Score: " + std::to_string(score));
 
     // render imgui dialog
     // dialog.render();
