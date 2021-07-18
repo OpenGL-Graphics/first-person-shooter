@@ -9,6 +9,7 @@
 #include "navigation/camera.hpp"
 #include "geometries/cube.hpp"
 #include "geometries/surface.hpp"
+#include "geometries/terrain.hpp"
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
 #include "render/model_renderer.hpp"
@@ -85,6 +86,9 @@ int main() {
   Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
+  // horizontal terrain from triangle strips
+  Renderer terrain(pgm_color, VBO(Terrain(5, 5)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
+
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
   Font font("assets/fonts/Vera.ttf");
@@ -141,6 +145,14 @@ int main() {
     glm::mat4 view = camera.get_view();
     glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) window.width / (float) window.height, 1.0f, 50.f);
     glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
+
+    // draw terrain using triangle strips
+    terrain.set_transform(glm::mat4(1.0f));
+    Uniforms uniform_terrain = {
+      {"view", view},
+      {"projection", projection3d},
+    };
+    terrain.draw(uniform_terrain, GL_TRIANGLE_STRIP);
 
     // cube & light colors
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
@@ -285,6 +297,7 @@ int main() {
   }
 
   // destroy renderers of each shape (frees vao & vbo)
+  terrain.free();
   cube_basic.free();
   cube_color.free();
   cube_texture.free();

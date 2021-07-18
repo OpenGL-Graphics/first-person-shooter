@@ -14,7 +14,7 @@ struct Renderer {
   BoundingBox bounding_box;
 
   Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes);
-  virtual void draw(Uniforms& uniforms) final;
+  virtual void draw(Uniforms& uniforms, GLenum mode=GL_TRIANGLES) final;
   virtual void free() final;
   void set_transform(const glm::mat4& mat_model);
   void move(const glm::vec3& offset);

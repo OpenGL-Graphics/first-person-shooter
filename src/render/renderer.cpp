@@ -52,7 +52,12 @@ void Renderer::move(const glm::vec3& offset) {
   bounding_box.transform(glm::translate(glm::mat4(1.0f), offset));
 }
 
-void Renderer::draw(Uniforms& uniforms) {
+/**
+ * Draw vertexes given to `m_vbo`
+ * @param Uniforms Unordered map (key, values) of vars to pass to shader
+ * @param mode GL_TRIANGLES for most meshes, GL_TRIANGLE_STRIP for terrains
+ */
+void Renderer::draw(Uniforms& uniforms, GLenum mode) {
   // 3d position of model
   uniforms["model"] = m_mat_model;
 
@@ -61,15 +66,15 @@ void Renderer::draw(Uniforms& uniforms) {
 
   // pass shaders uniforms & draw attributes in bound VAO (using EBO vertexes indices)
   m_program.set_uniforms(uniforms);
-  glDrawElements(GL_TRIANGLES, m_vbo.n_vertexes, GL_UNSIGNED_INT, 0);
+  glDrawElements(mode, m_vbo.n_vertexes, GL_UNSIGNED_INT, 0);
   // glDrawArrays(GL_TRIANGLES, 0, m_vbo.n_vertexes);
 
   m_vao.unbind();
   m_program.unuse();
 }
 
+/* Free used vertex buffers (VAO & VBO lifecycles managed by renderer) */
 void Renderer::free() {
-  // VAO & VBO lifecycles managed by renderer
   m_vao.free();
   m_vbo.free();
 }
