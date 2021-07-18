@@ -10,12 +10,14 @@
 class Terrain : public Geometry {
 public:
   Terrain(unsigned int n_vertexes_x, unsigned int n_vertexes_y);
+  unsigned int get_n_elements() const override;
 
 private:
   /* # of vertexes in horizontal & vertical directions */
   unsigned int m_n_vertexes_x;
   unsigned int m_n_vertexes_y;
 
+  void set_n_elements();
   void set_vertexes();
   void set_indices();
 };

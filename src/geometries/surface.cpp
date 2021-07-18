@@ -3,23 +3,29 @@
 Surface::Surface() {
   // cannot be init in constructor's member initalizer list as they're members of base class
   m_vertexes = VERTEXES;
-  m_n_vertexes = 6;
   m_indices = INDICES;
   m_positions = POSITIONS;
+  set_n_elements();
 }
 
+/* Init its vertexes with glyph dimensions */
 Surface::Surface(const std::vector<float>& vertexes) {
-  // init its vertexes with glyph dimensions
   m_vertexes = vertexes;
-  m_n_vertexes = 6;
+  set_n_elements();
+}
+
+/* Vertexes duplicated between two triangles */
+void Surface::set_n_elements() {
+  unsigned int n_triangles = 2;
+  m_n_elements = 3 * n_triangles;
 }
 
 std::vector<float> Surface::get_vertexes() const {
   return m_vertexes;
 }
 
-int Surface::get_n_vertexes() const {
-  return m_n_vertexes;
+unsigned int Surface::get_n_elements() const {
+  return m_n_elements;
 }
 
 std::vector<unsigned int> Surface::get_indices() const {

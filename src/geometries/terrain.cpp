@@ -4,9 +4,9 @@ Terrain::Terrain(unsigned int n_vertexes_x, unsigned int n_vertexes_y):
   m_n_vertexes_x(n_vertexes_x),
   m_n_vertexes_y(n_vertexes_y)
 {
-  m_n_vertexes = m_n_vertexes_x * m_n_vertexes_y;
   set_vertexes();
   set_indices();
+  set_n_elements();
 }
 
 /**
@@ -40,4 +40,17 @@ void Terrain::set_indices() {
       m_indices.push_back((i_vertex_y + 1) * m_n_vertexes_x);
     }
   }
+}
+
+/**
+ * Number of elements to draw (i.e. # of indices in triangle strip mode)
+ * https://stackoverflow.com/a/14842779/2228912
+ */
+void Terrain::set_n_elements() {
+  m_n_elements = m_indices.size();
+}
+
+/* Needed by `VBO()` otherwise would call `Geometry::get_n_vertexes()` */
+unsigned int Terrain::get_n_elements() const {
+  return m_n_elements;
 }

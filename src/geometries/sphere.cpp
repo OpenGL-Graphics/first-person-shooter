@@ -8,7 +8,7 @@ Sphere::Sphere(int n_longitudes, int n_latitudes):
 {
   // calculate vertexes coords on creation
   set_vertexes();
-  set_n_vertexes();
+  set_n_elements();
 }
 
 void Sphere::set_vertexes() {
@@ -35,14 +35,14 @@ void Sphere::set_vertexes() {
   }
 }
 
-void Sphere::set_n_vertexes() {
-  m_n_vertexes = m_n_longitudes * m_n_latitudes * 2 * 3;
+void Sphere::set_n_elements() {
+  m_n_elements = m_n_longitudes * m_n_latitudes * 2 * 3;
 }
 
 std::vector<float> Sphere::get_vertexes() const {
   return m_vertexes;
 }
 
-int Sphere::get_n_vertexes() const {
-  return m_n_vertexes;
+unsigned int Sphere::get_n_elements() const {
+  return m_n_elements;
 }

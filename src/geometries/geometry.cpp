@@ -16,7 +16,7 @@ std::vector<float> Geometry::get_vertexes() const {
   return m_vertexes;
 }
 
-int Geometry::get_n_vertexes() const {
+unsigned int Geometry::get_n_elements() const {
   return m_vertexes.size();
 }
 

@@ -11,17 +11,21 @@
 Cube::Cube() {
   // cannot be init in constructor's member initalizer list as they're members of base class
   m_vertexes = VERTEXES;
-  m_n_vertexes = 6 * 2 * 3;
   m_indices = INDICES;
   m_positions = POSITIONS;
+
+  // duplicated vertexes across triangles
+  unsigned int n_faces = 6;
+  unsigned int n_triangles = 2 * n_faces;
+  m_n_elements = 3 * n_triangles;
 }
 
 std::vector<float> Cube::get_vertexes() const {
   return m_vertexes;
 }
 
-int Cube::get_n_vertexes() const {
-  return m_n_vertexes;
+unsigned int Cube::get_n_elements() const {
+  return m_n_elements;
 }
 
 std::vector<unsigned int> Cube::get_indices() const {

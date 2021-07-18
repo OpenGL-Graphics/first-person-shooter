@@ -61,12 +61,15 @@ void Renderer::draw(Uniforms& uniforms, GLenum mode) {
   // 3d position of model
   uniforms["model"] = m_mat_model;
 
+  // wireframe mode
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
   m_vao.bind();
   m_program.use();
 
   // pass shaders uniforms & draw attributes in bound VAO (using EBO vertexes indices)
   m_program.set_uniforms(uniforms);
-  glDrawElements(mode, m_vbo.n_vertexes, GL_UNSIGNED_INT, 0);
+  glDrawElements(mode, m_vbo.n_elements, GL_UNSIGNED_INT, 0);
   // glDrawArrays(GL_TRIANGLES, 0, m_vbo.n_vertexes);
 
   m_vao.unbind();

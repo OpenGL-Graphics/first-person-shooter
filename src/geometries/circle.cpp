@@ -6,7 +6,7 @@ Circle::Circle(int n_corners):
 {
   // calculate vertexes coords on creation
   set_vertexes();
-  set_n_vertexes();
+  set_n_elements();
 }
 
 void Circle::set_vertexes() {
@@ -23,14 +23,14 @@ void Circle::set_vertexes() {
   }
 }
 
-void Circle::set_n_vertexes() {
-  m_n_vertexes = m_n_corners * 3;
+void Circle::set_n_elements() {
+  m_n_elements = m_n_corners * 3;
 }
 
 std::vector<float> Circle::get_vertexes() const {
   return m_vertexes;
 }
 
-int Circle::get_n_vertexes() const {
-  return m_n_vertexes;
+unsigned int Circle::get_n_elements() const {
+  return m_n_elements;
 }

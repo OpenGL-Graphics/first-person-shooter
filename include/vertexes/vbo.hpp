@@ -7,7 +7,7 @@
 /* Manage VBO & EBO and encapsulate mesh vertexes & their indices */
 struct VBO {
   /* needed by `Render` class */
-  int n_vertexes;
+  unsigned int n_elements;
   std::vector<glm::vec3> positions;
 
   VBO(const Geometry& geometry, bool is_empty=false, GLenum type=GL_STATIC_DRAW);

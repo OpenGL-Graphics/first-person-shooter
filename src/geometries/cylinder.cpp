@@ -7,7 +7,7 @@ Cylinder::Cylinder(int n_corners):
 {
   // calculate vertexes coords on creation
   set_vertexes();
-  set_n_vertexes();
+  set_n_elements();
 }
 
 void Cylinder::set_vertexes() {
@@ -39,10 +39,10 @@ void Cylinder::set_vertexes() {
   }
 }
 
-void Cylinder::set_n_vertexes() {
+void Cylinder::set_n_elements() {
   int n_vertexes_circles = 2 * (m_n_corners * 3);
   int n_vertexes_sides = m_n_corners * 2 * 3;
-  m_n_vertexes = n_vertexes_circles + n_vertexes_sides;
+  m_n_elements = n_vertexes_circles + n_vertexes_sides;
 }
 
 
@@ -50,6 +50,6 @@ std::vector<float> Cylinder::get_vertexes() const {
   return m_vertexes;
 }
 
-int Cylinder::get_n_vertexes() const {
-  return m_n_vertexes;
+unsigned int Cylinder::get_n_elements() const {
+  return m_n_elements;
 }

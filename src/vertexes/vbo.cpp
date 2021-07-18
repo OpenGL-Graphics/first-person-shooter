@@ -6,7 +6,7 @@ VBO::VBO(const Geometry& geometry, bool is_empty, GLenum type):
   m_vertexes(geometry.get_vertexes()),
   m_indices(geometry.get_indices()),
 
-  n_vertexes(geometry.get_n_vertexes()),
+  n_elements(geometry.get_n_elements()),
   positions(geometry.get_positions())
 {
   generate();
@@ -29,10 +29,10 @@ void VBO::generate() {
   glGenBuffers(1, &m_id_ebo);
 }
 
+/* Update vbo with vertexes from geometery (used for rendering glyphs) */
 void VBO::update(const Geometry& geometry) {
-  // update vbo with vertexes from geometery (used for rendering glyphs)
   m_vertexes = geometry.get_vertexes();
-  n_vertexes = geometry.get_n_vertexes();
+  n_elements = geometry.get_n_elements();
   bind();
   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * m_vertexes.size(), m_vertexes.data());
   unbind();

@@ -6,14 +6,14 @@
 class Sphere : public Geometry {
 public:
   Sphere(int n_longitudes, int n_latitudes);
-  virtual std::vector<float> get_vertexes() const;
-  virtual int get_n_vertexes() const;
+  virtual std::vector<float> get_vertexes() const override;
+  virtual unsigned int get_n_elements() const override;
 
 private:
   int m_n_longitudes;
   int m_n_latitudes;
   void set_vertexes();
-  void set_n_vertexes();
+  void set_n_elements();
 };
 
 #endif // SPHERE_HPP
