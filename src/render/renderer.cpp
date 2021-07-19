@@ -62,7 +62,7 @@ void Renderer::draw(Uniforms& uniforms, GLenum mode) {
   uniforms["model"] = m_mat_model;
 
   // wireframe mode
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   m_vao.bind();
   m_program.use();

@@ -87,7 +87,7 @@ int main() {
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
   // horizontal terrain from triangle strips
-  Renderer terrain(pgm_color, VBO(Terrain(5, 5)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
+  Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
 
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
@@ -189,7 +189,7 @@ int main() {
     cube_light.draw(uniforms_cube_light);
 
     // draw color cube
-    cube_color.set_transform(glm::mat4(1.0f));
+    cube_color.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)));
     Uniforms uniform_cube_color = {
       {"view", view},
       {"projection", projection3d},

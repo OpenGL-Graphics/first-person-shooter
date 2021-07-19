@@ -18,8 +18,10 @@ private:
   unsigned int m_n_vertexes_y;
 
   void set_n_elements();
-  void set_vertexes();
   void set_indices();
+  void set_vertexes_from_plan();
+  void set_vertexes_from_paraboloid();
+  void print_indices();
 };
 
 #endif // TERRAIN_HPP
