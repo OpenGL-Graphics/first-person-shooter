@@ -1,6 +1,7 @@
-#include <geometries/sphere.hpp>
 #include <iostream>
 #include <cmath>
+
+#include "geometries/sphere.hpp"
 
 Sphere::Sphere(int n_longitudes, int n_latitudes):
   m_n_longitudes(n_longitudes),

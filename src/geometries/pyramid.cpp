@@ -1,4 +1,4 @@
-#include <geometries/pyramid.hpp>
+#include "geometries/pyramid.hpp"
 
 std::vector<float> Pyramid::get_vertexes() const {
   return m_vertexes;

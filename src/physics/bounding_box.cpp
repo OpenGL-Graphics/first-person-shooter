@@ -9,7 +9,7 @@ BoundingBox::BoundingBox() {
 
 BoundingBox::BoundingBox(const std::vector<glm::vec3>& positions) {
   if (positions.size() == 0) {
-    std::cout << "Empty positions vector" << '\n';
+    // std::cout << "Empty positions vector" << '\n';
     return;
   }
 

@@ -6,7 +6,7 @@
  *              if outside the range, GL_CLAMP_TO_EDGE can clamp coords in [0, 1]
  * https://www.khronos.org/opengl/wiki/Cubemap_Texture
  */
-#include <geometries/cube.hpp>
+#include "geometries/cube.hpp"
 
 Cube::Cube() {
   // cannot be init in constructor's member initalizer list as they're members of base class

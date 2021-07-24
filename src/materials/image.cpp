@@ -1,8 +1,8 @@
-#include <materials/image.hpp>
 #include <iostream>
+
+#include "materials/image.hpp"
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-#include <stdio.h>
+#include "stb/stb_image.h"
 
 Image::Image(const std::string& p):
   path(p)

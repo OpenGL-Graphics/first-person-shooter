@@ -1,4 +1,4 @@
-#include <geometries/geometry.hpp>
+#include "geometries/geometry.hpp"
 
 /* default constructor needed by classes inheriting from Geometry */
 Geometry::Geometry() {

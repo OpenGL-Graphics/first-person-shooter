@@ -1,16 +1,45 @@
-#include <geometries/terrain.hpp>
 #include <cmath>
 #include <iostream>
+
+#include "geometries/terrain.hpp"
+#include "materials/heightmap.hpp"
 
 Terrain::Terrain(unsigned int n_vertexes_x, unsigned int n_vertexes_y):
   m_n_vertexes_x(n_vertexes_x),
   m_n_vertexes_y(n_vertexes_y)
 {
-  // set_vertexes_from_plan();
-  set_vertexes_from_paraboloid();
+  // reserve space for position & normal coords for every vertex
+  m_vertexes.resize(m_n_coords * m_n_vertexes_x * m_n_vertexes_y);
+
+  // set vertexes positions/normals & triangles faces
+  set_positions_from_perlin();
   set_indices();
+  set_normals();
   set_n_elements();
-  print_indices();
+  // print_indices();
+}
+
+/**
+ * Set vertexes positions from 2D perlin noise
+ * y-axis is the vertical axis in OpenGL (whereas for terrain plan z=0 is the ground)
+ */
+void Terrain::set_positions_from_perlin() {
+  Heightmap heightmap(m_n_vertexes_x, m_n_vertexes_y);
+  std::vector<std::vector<float>> elevations =  heightmap.elevations;
+
+  for (size_t i_vertex_y = 0; i_vertex_y < m_n_vertexes_y; ++i_vertex_y) {
+    for (size_t i_vertex_x = 0; i_vertex_x < m_n_vertexes_x; ++i_vertex_x) {
+      float z = elevations[i_vertex_y][i_vertex_x] * 10.0f;
+      unsigned int i_vertex = i_vertex_y * m_n_vertexes_x + i_vertex_x;
+
+      // vertex's xyz position
+      m_vertexes[m_n_coords * i_vertex] = i_vertex_x;
+      m_vertexes[m_n_coords * i_vertex + 1] = z;
+      m_vertexes[m_n_coords * i_vertex + 2] = i_vertex_y;
+
+      std::cout << "row, col: " << i_vertex_y << ", " << i_vertex_x << ", " << z << '\n';
+    }
+  }
 }
 
 /**
@@ -50,6 +79,68 @@ void Terrain::set_vertexes_from_paraboloid() {
       m_vertexes.insert(m_vertexes.end(), {(float) i_vertex_x, z, (float) i_vertex_y});
       m_vertexes.insert(m_vertexes.end(), {0xff, 0x00, 0x00});
     }
+  }
+}
+
+/**
+ * Calculate normal for each triangle from the cross-product of its two edges
+ * then consider vertex's normal the average of normals of triangles that have this vertex as a corner
+ */
+void Terrain::set_normals() {
+  // print_indices();
+  unsigned int n_vertexes = m_n_vertexes_x * m_n_vertexes_y;
+  std::vector<glm::vec3> normals(n_vertexes, glm::vec3(0.0f));
+  std::vector<unsigned int> n_adjacent_triangles(n_vertexes, 0);
+
+  // loop over all triangles
+  for (size_t i_indice = 0; i_indice < m_indices.size() - 2; ++i_indice) {
+    unsigned int i_vertex0 = m_indices[i_indice];
+    unsigned int i_vertex1 = m_indices[i_indice + 1];
+    unsigned int i_vertex2 = m_indices[i_indice + 2];
+
+    // skip degenerate triangles
+    if (i_vertex0 == i_vertex1 || i_vertex1 == i_vertex2) {
+      continue;
+    }
+
+    glm::vec3 vertex0 = {m_vertexes[m_n_coords * i_vertex0], m_vertexes[m_n_coords * i_vertex0 + 1], m_vertexes[m_n_coords * i_vertex0 + 2]};
+    glm::vec3 vertex1 = {m_vertexes[m_n_coords * i_vertex1], m_vertexes[m_n_coords * i_vertex1 + 1], m_vertexes[m_n_coords * i_vertex1 + 2]};
+    glm::vec3 vertex2 = {m_vertexes[m_n_coords * i_vertex2], m_vertexes[m_n_coords * i_vertex2 + 1], m_vertexes[m_n_coords * i_vertex2 + 2]};
+
+    // calculate triangle's normal (invert normal for even-positionned triangles)
+    glm::vec3 v0 = vertex1 - vertex0;
+    glm::vec3 v1 = vertex2 - vertex0;
+    glm::vec3 normal = (i_indice % 2 == 0 ? glm::cross(v0, v1) : glm::cross(v1, v0));
+
+    // add up triangles's normals & assign to each vertex in triangle
+    normal = glm::normalize(normal);
+    normals[i_vertex0] += normal;
+    normals[i_vertex1] += normal;
+    normals[i_vertex2] += normal;
+    ++n_adjacent_triangles[i_vertex0];
+    ++n_adjacent_triangles[i_vertex1];
+    ++n_adjacent_triangles[i_vertex2];
+  }
+
+  // average out sum of normals accord. to # of triangles adjacent to vertex & set its normal
+  std::cout << "nvertexes: " << n_vertexes << '\n';
+  for (size_t i_vertex = 0; i_vertex < n_vertexes; ++i_vertex) {
+    glm::vec3 normal = glm::normalize(normals[i_vertex] / (float) n_adjacent_triangles[i_vertex]);
+
+    // vertex's normal coords inserted after its xyz coords
+    m_vertexes[m_n_coords * i_vertex + 3] = normal.x;
+    m_vertexes[m_n_coords * i_vertex + 4] = normal.y;
+    m_vertexes[m_n_coords * i_vertex + 5] = normal.z;
+
+    /*
+    std::cout << " nx: " << normal.x
+              << " ny: " << normal.y
+              << " nz: " << normal.z
+              << " norm: " << glm::length(normal)
+              << " ivertex: " << i_vertex
+              << " n_triangles: " << n_adjacent_triangles[i_vertex]
+              << '\n';
+    */
   }
 }
 

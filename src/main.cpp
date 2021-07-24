@@ -87,7 +87,8 @@ int main() {
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
   // horizontal terrain from triangle strips
-  Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
+  // Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
+  Renderer terrain(pgm_light, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
 
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
@@ -147,18 +148,25 @@ int main() {
     glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
 
     // draw terrain using triangle strips
+    glm::vec3 color_light(1.0f, 1.0f, 1.0f);
+    glm::vec3 position_light(8.0f, 6.0f, 6.0f);
     terrain.set_transform(glm::mat4(1.0f));
     Uniforms uniform_terrain = {
       {"view", view},
       {"projection", projection3d},
+      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
+      {"material.shininess", 32.0f},
+      {"light.position", position_light},
+      {"light.ambiant", 0.2f * color_light},
+      {"light.diffuse", 0.5f * color_light},
+      {"light.specular", color_light},
+      {"position_camera", camera.get_position()},
     };
     terrain.draw(uniform_terrain, GL_TRIANGLE_STRIP);
 
-    // cube & light colors
-    glm::vec3 color_light(1.0f, 1.0f, 1.0f);
-
     // draw light cube (scaling then translation)
-    glm::vec3 position_light(-2.0f, -1.0f, 2.0f);
     glm::mat4 model_light(glm::scale(
       glm::translate(glm::mat4(1.0f), position_light),
       glm::vec3(0.2f)
