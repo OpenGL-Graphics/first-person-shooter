@@ -36,8 +36,6 @@ void Terrain::set_positions_from_perlin() {
       m_vertexes[m_n_coords * i_vertex] = i_vertex_x;
       m_vertexes[m_n_coords * i_vertex + 1] = z;
       m_vertexes[m_n_coords * i_vertex + 2] = i_vertex_y;
-
-      std::cout << "row, col: " << i_vertex_y << ", " << i_vertex_x << ", " << z << '\n';
     }
   }
 }
@@ -123,7 +121,6 @@ void Terrain::set_normals() {
   }
 
   // average out sum of normals accord. to # of triangles adjacent to vertex & set its normal
-  std::cout << "nvertexes: " << n_vertexes << '\n';
   for (size_t i_vertex = 0; i_vertex < n_vertexes; ++i_vertex) {
     glm::vec3 normal = glm::normalize(normals[i_vertex] / (float) n_adjacent_triangles[i_vertex]);
 
@@ -131,16 +128,6 @@ void Terrain::set_normals() {
     m_vertexes[m_n_coords * i_vertex + 3] = normal.x;
     m_vertexes[m_n_coords * i_vertex + 4] = normal.y;
     m_vertexes[m_n_coords * i_vertex + 5] = normal.z;
-
-    /*
-    std::cout << " nx: " << normal.x
-              << " ny: " << normal.y
-              << " nz: " << normal.z
-              << " norm: " << glm::length(normal)
-              << " ivertex: " << i_vertex
-              << " n_triangles: " << n_adjacent_triangles[i_vertex]
-              << '\n';
-    */
   }
 }
 

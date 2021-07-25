@@ -26,7 +26,7 @@
 
 int main() {
   // glfw window & its camera
-  Camera camera(glm::vec3(0.0f, 5.0f, 10.0f), glm::vec3(0.0f, -0.5f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   Window window(&camera);
 
   if (window.is_null()) {
@@ -111,7 +111,7 @@ int main() {
 
   // position 3D models
   renderer_two_cubes.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)));
-  pc.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, 0.0f)));
+  pc.set_transform(glm::mat4(1.0f));
 
   // cubes to collide with (cube_texture)
   std::vector<glm::vec3> positions = {
@@ -135,6 +135,19 @@ int main() {
 
   // main loop
   while (!window.is_closed()) {
+    // negated yaw as pc's look angle follows camera rotation (i.e. inverse of scene's view matrix)
+    float yaw_camera = -camera.yaw;
+
+    // update pc's forward movement direction accord. to camera's yaw angle (around y-axis)
+    if (yaw_camera >= glm::radians(-45.0f) && yaw_camera <= glm::radians(45.0f)) {
+      pc.forward_dir = {0.0f, 0.0f, -1.0f};
+    } else if (yaw_camera <= glm::radians(-45.0f)) {
+      pc.forward_dir = {1.0f, 0.0f, 0.0f};
+    } else if (yaw_camera >= glm::radians(45.0f)) {
+      pc.forward_dir = {-1.0f, 0.0f, 0.0f};
+    }
+
+
     // keyboard input (move camera, quit application)
     key_handler.on_keypress();
 
@@ -149,8 +162,8 @@ int main() {
 
     // draw terrain using triangle strips
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
-    glm::vec3 position_light(8.0f, 6.0f, 6.0f);
-    terrain.set_transform(glm::mat4(1.0f));
+    glm::vec3 position_light(10.0f, 6.0f, 6.0f);
+    terrain.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f)));
     Uniforms uniform_terrain = {
       {"view", view},
       {"projection", projection3d},
@@ -242,7 +255,7 @@ int main() {
 
 
     // draw 2d grass surface (non-centered)
-    surface.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f)));
+    surface.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)));
     Uniforms uniform_grass = {
       {"view",  view},
       {"projection", projection3d},

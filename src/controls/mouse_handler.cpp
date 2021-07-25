@@ -6,7 +6,7 @@ int MouseHandler::m_xmouse;
 int MouseHandler::m_ymouse;
 
 /**
- * Initialize static members 
+ * Initialize static members
  * @param xmouse Inital mouse x-position
  * @param ymouse Inital mouse y-position
  * @param camera Pointer to camera to control with mouse

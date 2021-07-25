@@ -4,11 +4,11 @@
 
 // not declared as private members as constants cause class's implicit copy-constructor to be deleted (prevents re-assignment)
 // movement constants
-const float X_SPEED = 0.1f;
-const float Z_SPEED = 0.1f;
+const float SPEED = 0.1f;
 
 ModelRenderer::ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes):
-  m_model(model)
+  m_model(model),
+  forward_dir(0.0f, 0.0f, -1.0f)
 {
   // one renderer by mesh (to avoid mixing up meshes indices)
   for (const Mesh& mesh : m_model.meshes) {
@@ -59,17 +59,21 @@ void ModelRenderer::free() {
 /* Move 3D model in either of the four directions accord to given `direction` */
 void ModelRenderer::move(Direction direction) {
   glm::vec3 offset;
+  glm::vec3 up_dir(0.0f, 1.0f, 0.0f);
+
   if (direction == Direction::FORWARD) {
-    offset = -Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
+    offset = SPEED * forward_dir;
   }
   if (direction == Direction::BACKWARD) {
-    offset = Z_SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
+    offset = SPEED * -forward_dir;
   }
   if (direction == Direction::LEFT) {
-    offset = -X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 left_dir = glm::normalize(glm::cross(up_dir, forward_dir));
+    offset = SPEED * left_dir;
   }
   if (direction == Direction::RIGHT) {
-    offset = X_SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 right_dir = glm::normalize(glm::cross(forward_dir, up_dir));
+    offset = SPEED * right_dir;
   }
 
   // move meshes & recalculate model's bounding box

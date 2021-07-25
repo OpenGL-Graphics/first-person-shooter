@@ -19,6 +19,9 @@
 struct ModelRenderer {
   BoundingBox bounding_box;
 
+  /* defines direction of movement forward */
+  glm::vec3 forward_dir;
+
   ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes);
   void draw(Uniforms& uniforms);
   void free();
