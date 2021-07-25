@@ -56,8 +56,9 @@ int main() {
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
+  Program pgm_light_terrain("assets/shaders/light.vert", "assets/shaders/light_terrain.frag");
   if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_mesh.has_failed() ||
-      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
+      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_light_terrain.has_failed()) {
     window.destroy();
     return 1;
   }
@@ -88,7 +89,7 @@ int main() {
 
   // horizontal terrain from triangle strips
   // Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
-  Renderer terrain(pgm_light, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
+  Renderer terrain(pgm_light_terrain, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
 
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
@@ -335,6 +336,7 @@ int main() {
   pgm_texture_surface.free();
   pgm_texture_mesh.free();
   pgm_light.free();
+  pgm_light_terrain.free();
   pgm_text.free();
 
   // destroy window & terminate glfw

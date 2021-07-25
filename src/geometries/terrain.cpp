@@ -36,6 +36,7 @@ void Terrain::set_positions_from_perlin() {
       m_vertexes[m_n_coords * i_vertex] = i_vertex_x;
       m_vertexes[m_n_coords * i_vertex + 1] = z;
       m_vertexes[m_n_coords * i_vertex + 2] = i_vertex_y;
+      std::cout << "z: " << z << '\n';
     }
   }
 }
