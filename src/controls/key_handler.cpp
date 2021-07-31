@@ -1,6 +1,6 @@
 #include "controls/key_handler.hpp"
 
-KeyHandler::KeyHandler(const Window& window, Camera& camera, ModelRenderer& pc):
+KeyHandler::KeyHandler(const Window& window, Camera& camera, Player& pc):
   m_window(window),
   m_camera(camera),
   m_pc(pc)

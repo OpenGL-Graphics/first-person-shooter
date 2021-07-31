@@ -45,6 +45,7 @@ file(GLOB SRC
   "src/controls/*.cpp"
   "src/physics/*.cpp"
   "src/perlin/*.cpp"
+  "src/characters/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})

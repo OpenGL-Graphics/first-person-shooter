@@ -2,7 +2,7 @@
 #define KEY_HANDLER_HPP
 
 #include "gui/window.hpp"
-#include "render/model_renderer.hpp"
+#include "characters/player.hpp"
 
 /**
  * Subject class in the Observer design pattern
@@ -10,7 +10,7 @@
  */
 class KeyHandler {
 public:
-  KeyHandler(const Window& window, Camera& camera, ModelRenderer& pc);
+  KeyHandler(const Window& window, Camera& camera, Player& pc);
   void on_keypress();
 
 private:
@@ -18,7 +18,7 @@ private:
 
   /* Observers (references so they can be modified) */
   Camera& m_camera;
-  ModelRenderer& m_pc;
+  Player& m_pc;
 };
 
 #endif // KEY_HANDLER_HPP

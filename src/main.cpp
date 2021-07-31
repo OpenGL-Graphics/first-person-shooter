@@ -63,21 +63,29 @@ int main() {
     return 1;
   }
 
-  // textures
+  // 3D cube texture
   std::vector<std::string> paths_images {
-    "assets/images/brick1.jpg",
-    "assets/images/brick1.jpg",
-    "assets/images/roof.jpg",
-    "assets/images/roof.jpg",
-    "assets/images/brick2.jpg",
-    "assets/images/brick2.jpg",
+    "assets/images/cube/brick1.jpg",
+    "assets/images/cube/brick1.jpg",
+    "assets/images/cube/roof.jpg",
+    "assets/images/cube/roof.jpg",
+    "assets/images/cube/brick2.jpg",
+    "assets/images/cube/brick2.jpg",
   };
   std::vector<Image> images;
   std::transform(paths_images.begin(), paths_images.end(), std::back_inserter(images), [](const std::string& path) { return Image(path); });
-  Texture3D texture_brick(images);
-  Texture2D texture_grass(Image("assets/images/grass.png"));
-  Texture2D texture_hud_health(Image("assets/images/health.png"));
-  Texture2D texture_glass(Image("assets/images/window.png"));
+  Texture3D texture_cube(images);
+
+  // 2D surface textures
+  Texture2D texture_surface_grass(Image("assets/images/surfaces/grass.png"));
+  Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
+  Texture2D texture_surface_glass(Image("assets/images/surfaces/window.png"));
+
+  // terrain textures
+  Texture2D texture_terrain_sand(Image("assets/images/terrain/sand.jpg"));
+  Texture2D texture_terrain_grass(Image("assets/images/terrain/grass.jpg"));
+  Texture2D texture_terrain_water(Image("assets/images/terrain/water.jpg"));
+  Texture2D texture_terrain_rock(Image("assets/images/terrain/rock.jpg"));
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
@@ -105,7 +113,7 @@ int main() {
   Model model_two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
   Model model_cube("assets/models/cube-textured/cube-textured.obj", importer);
   ModelRenderer renderer_two_cubes(pgm_basic, model_two_cubes, {{0, "position", 3, 8, 0}});
-  ModelRenderer pc(
+  Player pc(
       pgm_texture_mesh, model_cube, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
   profiler.stop();
   profiler.print("Loading 3D models");
@@ -113,6 +121,7 @@ int main() {
   // position 3D models
   renderer_two_cubes.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)));
   pc.set_transform(glm::mat4(1.0f));
+  pc.calculate_bounding_box();
 
   // cubes to collide with (cube_texture)
   std::vector<glm::vec3> positions = {
@@ -136,18 +145,8 @@ int main() {
 
   // main loop
   while (!window.is_closed()) {
-    // negated yaw as pc's look angle follows camera rotation (i.e. inverse of scene's view matrix)
-    float yaw_camera = -camera.yaw;
-
-    // update pc's forward movement direction accord. to camera's yaw angle (around y-axis)
-    if (yaw_camera >= glm::radians(-45.0f) && yaw_camera <= glm::radians(45.0f)) {
-      pc.forward_dir = {0.0f, 0.0f, -1.0f};
-    } else if (yaw_camera <= glm::radians(-45.0f)) {
-      pc.forward_dir = {1.0f, 0.0f, 0.0f};
-    } else if (yaw_camera >= glm::radians(45.0f)) {
-      pc.forward_dir = {-1.0f, 0.0f, 0.0f};
-    }
-
+    // orient player's movements relative to camera horizontal angle (yaw)
+    pc.orient(camera);
 
     // keyboard input (move camera, quit application)
     key_handler.on_keypress();
@@ -229,7 +228,7 @@ int main() {
     Uniforms uniforms_cube_texture = {
       {"view", view},
       {"projection", projection3d},
-      {"texture3d", texture_brick},
+      {"texture3d", texture_cube},
     };
     std::vector<BoundingBox> bounding_boxes;
     for (const glm::vec3& position : positions) {
@@ -260,7 +259,7 @@ int main() {
     Uniforms uniform_grass = {
       {"view",  view},
       {"projection", projection3d},
-      {"texture2d", texture_grass},
+      {"texture2d", texture_surface_grass},
     };
     surface.draw(uniform_grass);
 
@@ -270,20 +269,20 @@ int main() {
     Uniforms uniform_glass = {
       {"view",  view},
       {"projection", projection3d},
-      {"texture2d", texture_glass},
+      {"texture2d", texture_surface_glass},
     };
     surface.draw(uniform_glass);
 
     // draw 2d health bar HUD surface (scaling then translation to lower left corner)
     glm::mat4 model_hud_health(glm::scale(
-      glm::translate(glm::mat4(1.0f), glm::vec3(window.width - texture_hud_health.get_width(), 0.0f, 0.0f)),
-      glm::vec3(texture_hud_health.get_width(), texture_hud_health.get_height(), 1.0f)
+      glm::translate(glm::mat4(1.0f), glm::vec3(window.width - texture_surface_hud.get_width(), 0.0f, 0.0f)),
+      glm::vec3(texture_surface_hud.get_width(), texture_surface_hud.get_height(), 1.0f)
     ));
     surface.set_transform(model_hud_health);
     Uniforms uniform_hud = {
       {"view", glm::mat4(1.0f)},
       {"projection", projection2d},
-      {"texture2d", texture_hud_health},
+      {"texture2d", texture_surface_hud},
     };
     surface.draw(uniform_hud);
 
@@ -307,10 +306,14 @@ int main() {
   // dialog.free();
 
   // destroy textures
-  texture_brick.free();
-  texture_grass.free();
-  texture_glass.free();
-  texture_hud_health.free();
+  texture_cube.free();
+  texture_surface_grass.free();
+  texture_surface_glass.free();
+  texture_surface_hud.free();
+  texture_terrain_sand.free();
+  texture_terrain_grass.free();
+  texture_terrain_water.free();
+  texture_terrain_rock.free();
 
   Glyphs glyphs(surface_glyph.get_glyphs());
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
