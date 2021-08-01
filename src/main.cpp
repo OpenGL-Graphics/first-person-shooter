@@ -52,13 +52,15 @@ int main() {
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_color("assets/shaders/color.vert", "assets/shaders/color.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
+  Program pgm_texture_surface_mix("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface_mix.frag");
   Program pgm_texture_mesh("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   Program pgm_light_terrain("assets/shaders/light.vert", "assets/shaders/light_terrain.frag");
-  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_mesh.has_failed() ||
-      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_light_terrain.has_failed()) {
+  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_surface_mix.has_failed() ||
+      pgm_texture_mesh.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() ||
+      pgm_light_terrain.has_failed()) {
     window.destroy();
     return 1;
   }
@@ -87,6 +89,10 @@ int main() {
   Texture2D texture_terrain_water(Image("assets/images/terrain/water.jpg"));
   Texture2D texture_terrain_rock(Image("assets/images/terrain/rock.jpg"));
 
+  // multiple textures in same shader (by attaching them to texture units GL_TEXTURE0/1)
+  Texture2D texture_panda(Image("assets/images/panda.jpg"), GL_TEXTURE0);
+  Texture2D texture_cat(Image("assets/images/cat.jpg"), GL_TEXTURE1);
+
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
   Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
@@ -94,6 +100,7 @@ int main() {
   Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {0, "texture_coord", 3, 12, 6}});
   Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
+  Renderer surface_mix(pgm_texture_surface_mix, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
   // horizontal terrain from triangle strips
   // Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
@@ -253,6 +260,15 @@ int main() {
       ++score;
     }
 
+    // draw surface with two blending textures
+    surface_mix.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f)));
+    Uniforms uniform_mix = {
+      {"view",  view},
+      {"projection", projection3d},
+      {"texture2d_1", texture_panda},
+      {"texture2d_2", texture_cat},
+    };
+    surface_mix.draw(uniform_mix);
 
     // draw 2d grass surface (non-centered)
     surface.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)));
@@ -307,13 +323,18 @@ int main() {
 
   // destroy textures
   texture_cube.free();
+
   texture_surface_grass.free();
   texture_surface_glass.free();
   texture_surface_hud.free();
+
   texture_terrain_sand.free();
   texture_terrain_grass.free();
   texture_terrain_water.free();
   texture_terrain_rock.free();
+
+  texture_cat.free();
+  texture_panda.free();
 
   Glyphs glyphs(surface_glyph.get_glyphs());
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
@@ -337,6 +358,7 @@ int main() {
   pgm_color.free();
   pgm_texture_cube.free();
   pgm_texture_surface.free();
+  pgm_texture_surface_mix.free();
   pgm_texture_mesh.free();
   pgm_light.free();
   pgm_light_terrain.free();

@@ -51,7 +51,7 @@ void Texture2D::free() {
  */
 template <>
 void Texture3D::from_images() {
-  // 6-sided texture cube using given images 
+  // 6-sided texture cube using given images
   for (size_t i_texture = 0; i_texture < m_image.size(); i_texture++) {
     Image image(m_image[i_texture]);
     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i_texture, 0, image.format, image.width, image.height, 0, image.format, GL_UNSIGNED_BYTE, image.data);
@@ -107,9 +107,9 @@ void Texture<T>::unbind() {
   glBindTexture(m_type, 0);
 }
 
+/* Attach texture object m_id to texture unit m_index before `Renderer::draw()` */
 template <class T>
 void Texture<T>::attach() {
-  // attach texture object m_id to texture unit m_index before draw
   glActiveTexture(m_index);
   bind();
 }
