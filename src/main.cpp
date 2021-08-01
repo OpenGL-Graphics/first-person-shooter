@@ -57,7 +57,7 @@ int main() {
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  Program pgm_light_terrain("assets/shaders/light.vert", "assets/shaders/light_terrain.frag");
+  Program pgm_light_terrain("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag");
   if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_surface_mix.has_failed() ||
       pgm_texture_mesh.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() ||
       pgm_light_terrain.has_failed()) {
@@ -83,11 +83,11 @@ int main() {
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
   Texture2D texture_surface_glass(Image("assets/images/surfaces/window.png"));
 
-  // terrain textures
-  Texture2D texture_terrain_sand(Image("assets/images/terrain/sand.jpg"));
-  Texture2D texture_terrain_grass(Image("assets/images/terrain/grass.jpg"));
-  Texture2D texture_terrain_water(Image("assets/images/terrain/water.jpg"));
-  Texture2D texture_terrain_rock(Image("assets/images/terrain/rock.jpg"));
+  // terrain textures need to be attached to different texture units
+  Texture2D texture_terrain_sand(Image("assets/images/terrain/sand.jpg"), GL_TEXTURE0);
+  Texture2D texture_terrain_grass(Image("assets/images/terrain/grass.jpg"), GL_TEXTURE1);
+  Texture2D texture_terrain_water(Image("assets/images/terrain/water.jpg"), GL_TEXTURE2);
+  Texture2D texture_terrain_rock(Image("assets/images/terrain/rock.jpg"), GL_TEXTURE3);
 
   // multiple textures in same shader (by attaching them to texture units GL_TEXTURE0/1)
   Texture2D texture_panda(Image("assets/images/panda.jpg"), GL_TEXTURE0);
@@ -104,7 +104,7 @@ int main() {
 
   // horizontal terrain from triangle strips
   // Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
-  Renderer terrain(pgm_light_terrain, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
+  Renderer terrain(pgm_light_terrain, VBO(Terrain(10, 10)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
 
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
@@ -174,15 +174,14 @@ int main() {
     Uniforms uniform_terrain = {
       {"view", view},
       {"projection", projection3d},
-      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
-      {"material.shininess", 32.0f},
+      {"texture2d_sand", texture_terrain_sand},
+      {"texture2d_grass", texture_terrain_grass},
+      {"texture2d_water", texture_terrain_water},
+      {"texture2d_rock", texture_terrain_rock},
       {"light.position", position_light},
       {"light.ambiant", 0.2f * color_light},
       {"light.diffuse", 0.5f * color_light},
       {"light.specular", color_light},
-      {"position_camera", camera.get_position()},
     };
     terrain.draw(uniform_terrain, GL_TRIANGLE_STRIP);
 

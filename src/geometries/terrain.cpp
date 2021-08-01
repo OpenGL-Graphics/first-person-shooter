@@ -15,6 +15,7 @@ Terrain::Terrain(unsigned int n_vertexes_x, unsigned int n_vertexes_y):
   set_positions_from_perlin();
   set_indices();
   set_normals();
+  set_texture_coords();
   set_n_elements();
   // print_indices();
 }
@@ -37,6 +38,24 @@ void Terrain::set_positions_from_perlin() {
       m_vertexes[m_n_coords * i_vertex + 1] = z;
       m_vertexes[m_n_coords * i_vertex + 2] = i_vertex_y;
       std::cout << "z: " << z << '\n';
+    }
+  }
+}
+
+/**
+ * Set vertexes 2D texture coordinates
+ * Texture coords in [0, 1] with (0, 0) being lower-left corner of texture image
+ */
+void Terrain::set_texture_coords() {
+  for (size_t i_vertex_y = 0; i_vertex_y < m_n_vertexes_y; ++i_vertex_y) {
+    for (size_t i_vertex_x = 0; i_vertex_x < m_n_vertexes_x; ++i_vertex_x) {
+      unsigned int i_vertex = i_vertex_y * m_n_vertexes_x + i_vertex_x;
+      float coord_x = (float) i_vertex_x / (m_n_vertexes_x - 1);
+      float coord_y = (float) i_vertex_y / (m_n_vertexes_y - 1);
+
+      // vertex's texture coords (skip coords for xyz & normal)
+      m_vertexes[m_n_coords * i_vertex + 6] = coord_x;
+      m_vertexes[m_n_coords * i_vertex + 7] = coord_y;
     }
   }
 }

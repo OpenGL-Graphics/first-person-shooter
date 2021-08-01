@@ -17,12 +17,13 @@ private:
   unsigned int m_n_vertexes_x;
   unsigned int m_n_vertexes_y;
 
-  /* # of coords by vertex (xyz & normal) */
-  const unsigned int m_n_coords = 6;
+  /* # of coords by vertex (xyz & normal & texture coords) */
+  const unsigned int m_n_coords = 8;
 
   void set_n_elements();
   void set_indices();
   void set_normals();
+  void set_texture_coords();
   void set_positions_from_perlin();
   void set_vertexes_from_plan();
   void set_vertexes_from_paraboloid();

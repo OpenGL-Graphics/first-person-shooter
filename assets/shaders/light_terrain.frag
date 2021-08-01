@@ -1,13 +1,6 @@
 #version 130
 
-// different colors for each material & light components
-struct Material {
-  vec3 ambiant;
-  vec3 diffuse;
-  vec3 specular;
-  float shininess;
-};
-
+// light components
 struct Light {
   vec3 position;
   vec3 ambiant;
@@ -15,12 +8,19 @@ struct Light {
   vec3 specular;
 };
 
+// input coords passed from vertex shader
 in vec3 normal_vert;
 in vec3 position_vert;
+in vec2 texture_coord_vert;
 
-uniform Material material;
+// light-specific
 uniform Light light;
-uniform vec3 position_camera;
+
+// multiply textures for grass/rock/water/sand
+uniform sampler2D texture2d_sand;
+uniform sampler2D texture2d_grass;
+uniform sampler2D texture2d_water;
+uniform sampler2D texture2d_rock;
 
 out vec4 color_out;
 
@@ -28,25 +28,25 @@ out vec4 color_out;
 vec4 colormap(in float x);
 
 void main() {
+  // textures
+  vec4 color_sand = texture(texture2d_sand, texture_coord_vert);
+  vec4 color_grass = texture(texture2d_grass, texture_coord_vert);
+  vec4 color_water = texture(texture2d_water, texture_coord_vert);
+  vec4 color_rock = texture(texture2d_rock, texture_coord_vert);
+
   // ambiant light constant
-  // vec3 ambiant = material.ambiant * light.ambiant;
-  vec3 ambiant = vec3(colormap(position_vert.y / 10.0)) * light.ambiant;
+  vec3 ambiant = color_grass.xyz * light.ambiant;
+  // vec3 ambiant = vec3(colormap(position_vert.y / 10.0)) * light.ambiant;
 
   // diffuse light depends on light beam & fragment normal
   vec3 normal_vec = normalize(normal_vert);
   vec3 light_vec = normalize(light.position - position_vert);
   float strength_diffuse = max(dot(light_vec, normal_vec), 0.0);
-  // vec3 diffuse = (strength_diffuse * material.diffuse) * light.diffuse;
-  vec3 diffuse = (strength_diffuse * vec3(colormap(position_vert.y / 10.0))) * light.diffuse;
-
-  // specular light depends on reflected light beam on fragment & camera position
-  vec3 camera_vec = normalize(position_camera - position_vert);
-  vec3 light_reflect_vec = reflect(-light_vec, normal_vec);
-  float strength_specular = pow(max(dot(light_reflect_vec, camera_vec), 0.0), material.shininess);
-  vec3 specular = (strength_specular * material.specular) * light.specular;
+  vec3 diffuse = (strength_diffuse * color_grass.xyz) * light.diffuse;
+  // vec3 diffuse = (strength_diffuse * vec3(colormap(position_vert.y / 10.0))) * light.diffuse;
 
   // combine material components
-  color_out = vec4(ambiant + diffuse + specular, 1.0);
+  color_out = vec4(ambiant + diffuse, 1.0);
 }
 
 /**
