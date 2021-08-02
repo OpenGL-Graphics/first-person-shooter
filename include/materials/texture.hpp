@@ -3,7 +3,8 @@
 
 #include <glad/glad.h>
 #include <vector>
-#include <materials/image.hpp>
+
+#include "materials/image.hpp"
 
 template <class T>
 class Texture {

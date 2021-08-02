@@ -4,13 +4,18 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
-Image::Image(const std::string& p):
+/**
+ * Load image
+ * @param p Image path
+ * @param desired_channels =1: load image in grayscale mode (heightmap), =0: no preference
+ */
+Image::Image(const std::string& p, int desired_channels):
   path(p)
 {
  // load image using its path (opengl origin at lower-left corner of image)
   stbi_set_flip_vertically_on_load(true);
   int n_channels;
-  data = stbi_load(path.c_str(), &width, &height, &n_channels, 0);
+  data = stbi_load(path.c_str(), &width, &height, &n_channels, desired_channels);
 
   if (data == nullptr) {
     std::cout << "Image " << path << " doesn't exist" << std::endl;

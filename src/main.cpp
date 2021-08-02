@@ -104,7 +104,9 @@ int main() {
 
   // horizontal terrain from triangle strips
   // Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
-  Renderer terrain(pgm_light_terrain, VBO(Terrain(10, 10)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
+  // Renderer terrain(pgm_light_terrain, VBO(Terrain(10, 10)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
+  VBO vbo_terrain(Terrain(Image("assets/images/terrain/heightmap.png")));
+  Renderer terrain(pgm_light_terrain, vbo_terrain, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
 
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);

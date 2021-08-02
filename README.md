@@ -109,3 +109,9 @@ $ cc -pg script.cpp -o app
 ```console
 $ gprof -p app | less
 ```
+
+
+# Heightmap
+Downloaded from [Wikipedia][wikipedia-heightmap].
+
+[wikipedia-heightmap]: https://en.wikipedia.org/wiki/Heightmap

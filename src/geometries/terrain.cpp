@@ -1,9 +1,11 @@
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 #include "geometries/terrain.hpp"
 #include "materials/heightmap.hpp"
 
+/* Construct random terrain using Perlin noise values */
 Terrain::Terrain(unsigned int n_vertexes_x, unsigned int n_vertexes_y):
   m_n_vertexes_x(n_vertexes_x),
   m_n_vertexes_y(n_vertexes_y)
@@ -18,6 +20,47 @@ Terrain::Terrain(unsigned int n_vertexes_x, unsigned int n_vertexes_y):
   set_texture_coords();
   set_n_elements();
   // print_indices();
+}
+
+/* Construct terrain from heightmap image */
+Terrain::Terrain(const Image& heightmap):
+  m_n_vertexes_x(heightmap.width),
+  m_n_vertexes_y(heightmap.height),
+  m_image(heightmap)
+{
+  // reserve space for position & normal coords for every vertex
+  m_vertexes.resize(m_n_coords * m_n_vertexes_x * m_n_vertexes_y);
+
+  // set vertexes positions/normals & triangles faces
+  set_positions_from_image();
+  set_indices();
+  set_normals();
+  set_texture_coords();
+  set_n_elements();
+  // print_indices();
+}
+
+/**
+ * Each image pixel corresponds to a terrain vertex
+ */
+void Terrain::set_positions_from_image() {
+  std::vector<unsigned char> vec(m_image.data, m_image.data + m_image.width*m_image.height);
+  unsigned char min = *std::min_element(vec.begin(), vec.end());
+  unsigned char max = *std::max_element(vec.begin(), vec.end());
+  std::cout << "min intensity: " << (int) min << '\n';
+  std::cout << "max intensity: " << (int) max << '\n';
+
+  for (size_t i_row = 0; i_row < m_image.height; ++i_row) {
+    for (size_t i_col = 0; i_col < m_image.width; ++i_col) {
+      unsigned int i_vertex = i_row * m_image.width + i_col;
+      unsigned char pixel_value = m_image.data[i_vertex];
+
+      // set vertex elevation from pixel intensity
+      m_vertexes[m_n_coords * i_vertex] = i_col / 10.0f;
+      m_vertexes[m_n_coords * i_vertex + 1] = pixel_value / 50.0f;
+      m_vertexes[m_n_coords * i_vertex + 2] = i_row / 10.0f;
+    }
+  }
 }
 
 /**

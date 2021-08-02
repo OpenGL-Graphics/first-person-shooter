@@ -2,6 +2,7 @@
 #define TERRAIN_HPP
 
 #include "geometries/geometry.hpp"
+#include "materials/image.hpp"
 
 /**
  * Inspired by triangle-strip terrain from this tutorial:
@@ -10,12 +11,16 @@
 class Terrain : public Geometry {
 public:
   Terrain(unsigned int n_vertexes_x, unsigned int n_vertexes_y);
+  Terrain(const Image& heightmap);
   unsigned int get_n_elements() const override;
 
 private:
   /* # of vertexes in horizontal & vertical directions */
   unsigned int m_n_vertexes_x;
   unsigned int m_n_vertexes_y;
+
+  /* heightmap image */
+  Image m_image;
 
   /* # of coords by vertex (xyz & normal & texture coords) */
   const unsigned int m_n_coords = 8;
@@ -25,6 +30,7 @@ private:
   void set_normals();
   void set_texture_coords();
   void set_positions_from_perlin();
+  void set_positions_from_image();
   void set_vertexes_from_plan();
   void set_vertexes_from_paraboloid();
   void print_indices();
