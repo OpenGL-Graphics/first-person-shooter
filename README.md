@@ -17,7 +17,7 @@ Shaders are written in GLSL (OpenGL Shading Language). The following two shaders
 # Credit
 Useful tutorials:
 
-- Getting started with GLFW: [GLFW tutorial] 
+- Getting started with GLFW: [GLFW tutorial]
 - Learn OpenGL tutorial: [learnopengl.com]
 - Opengl-tutorial: [opengl-tutorial.org]
 - OpenGL tutorial series on Youtube: [TheCherno]
@@ -39,7 +39,7 @@ Useful tutorials:
 - Source and header files for imgui were copied directly from [imgui-repo] into this project.
 - Follow [imgui-example] to include imgui in an opengl/glsw project.
 
-[imgui-repo]: https://github.com/ocornut/imgui/ 
+[imgui-repo]: https://github.com/ocornut/imgui/
 [imgui-example]: https://github.com/ocornut/imgui/tree/master/examples/example_glfw_opengl3
 
 # Texture image
@@ -109,9 +109,3 @@ $ cc -pg script.cpp -o app
 ```console
 $ gprof -p app | less
 ```
-
-
-# Heightmap
-Downloaded from [Wikipedia][wikipedia-heightmap].
-
-[wikipedia-heightmap]: https://en.wikipedia.org/wiki/Heightmap

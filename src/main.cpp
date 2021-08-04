@@ -83,11 +83,11 @@ int main() {
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
   Texture2D texture_surface_glass(Image("assets/images/surfaces/window.png"));
 
-  // terrain textures need to be attached to different texture units
-  Texture2D texture_terrain_sand(Image("assets/images/terrain/sand.jpg"), GL_TEXTURE0);
+  // terrain textures (used by same shader) need to be attached to different texture units
+  Texture2D texture_terrain_water(Image("assets/images/terrain/water.jpg"), GL_TEXTURE0);
   Texture2D texture_terrain_grass(Image("assets/images/terrain/grass.jpg"), GL_TEXTURE1);
-  Texture2D texture_terrain_water(Image("assets/images/terrain/water.jpg"), GL_TEXTURE2);
-  Texture2D texture_terrain_rock(Image("assets/images/terrain/rock.jpg"), GL_TEXTURE3);
+  Texture2D texture_terrain_rock(Image("assets/images/terrain/rock.jpg"), GL_TEXTURE2);
+  Texture2D texture_terrain_splatmap(Image("assets/images/terrain/splatmap.png"), GL_TEXTURE3);
 
   // multiple textures in same shader (by attaching them to texture units GL_TEXTURE0/1)
   Texture2D texture_panda(Image("assets/images/panda.jpg"), GL_TEXTURE0);
@@ -176,10 +176,10 @@ int main() {
     Uniforms uniform_terrain = {
       {"view", view},
       {"projection", projection3d},
-      {"texture2d_sand", texture_terrain_sand},
-      {"texture2d_grass", texture_terrain_grass},
       {"texture2d_water", texture_terrain_water},
+      {"texture2d_grass", texture_terrain_grass},
       {"texture2d_rock", texture_terrain_rock},
+      {"texture2d_splatmap", texture_terrain_splatmap},
       {"light.position", position_light},
       {"light.ambiant", 0.2f * color_light},
       {"light.diffuse", 0.5f * color_light},
@@ -329,10 +329,10 @@ int main() {
   texture_surface_glass.free();
   texture_surface_hud.free();
 
-  texture_terrain_sand.free();
-  texture_terrain_grass.free();
   texture_terrain_water.free();
+  texture_terrain_grass.free();
   texture_terrain_rock.free();
+  texture_terrain_splatmap.free();
 
   texture_cat.free();
   texture_panda.free();
