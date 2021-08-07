@@ -10,7 +10,7 @@
  */
 struct ModelRenderer {
   ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes);
-  void draw(Uniforms& uniforms);
+  void draw(Uniforms& uniforms, bool with_outlines=false);
   void set_transform(const glm::mat4& mat_model);
   void free();
 

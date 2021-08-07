@@ -146,9 +146,10 @@ int main() {
   // handler for keyboard inputs
   KeyHandler key_handler(window, camera, pc);
 
-  // enable depth test & blending
+  // enable depth test & blending & stencil test (for outlines)
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
+  glEnable(GL_STENCIL_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -160,19 +161,29 @@ int main() {
     // keyboard input (move camera, quit application)
     key_handler.on_keypress();
 
-    // before render, clear color buffer & depth buffer
+    // clear color & depth & stencil buffers before rendering every frame
     glClearColor(background.r, background.g, background.b, background.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // transformation matrices
     glm::mat4 view = camera.get_view();
     glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) window.width / (float) window.height, 1.0f, 50.f);
     glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
 
+    // cube with outline using two-passes rendering & stencil buffer
+    glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f)));
+    cube_basic.set_transform(model_cube_outline);
+    Uniforms uniforms_cube_outline = {
+      {"view", view},
+      {"projection", projection3d},
+      {"color", glm::vec3(0.0f, 0.0f, 1.0f)},
+    };
+    cube_basic.draw_with_outlines(uniforms_cube_outline);
+
     // draw terrain using triangle strips
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
     glm::vec3 position_light(10.0f, 6.0f, 6.0f);
-    terrain.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -10.0f)));
+    terrain.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -10.0f)));
     Uniforms uniform_terrain = {
       {"view", view},
       {"projection", projection3d},
@@ -187,7 +198,8 @@ int main() {
     };
     terrain.draw(uniform_terrain, GL_TRIANGLE_STRIP);
 
-    // draw light cube (scaling then translation)
+    // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
+    // https://stackoverflow.com/a/38425832/2228912
     glm::mat4 model_light(glm::scale(
       glm::translate(glm::mat4(1.0f), position_light),
       glm::vec3(0.2f)

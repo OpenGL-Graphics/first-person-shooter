@@ -24,15 +24,20 @@ void ModelRenderer::set_transform(const glm::mat4& mat_model) {
   }
 }
 
-void ModelRenderer::draw(Uniforms& uniforms) {
+/* Rendering of model relies on `Renderer::draw() applied to each mesh */
+void ModelRenderer::draw(Uniforms& uniforms, bool with_outlines) {
   for (size_t i_renderer = 0; i_renderer < m_renderers.size(); ++i_renderer) {
     // retrieve material color from mesh
     Mesh mesh = m_model.meshes[i_renderer];
     uniforms["color"] = mesh.color;
     uniforms["texture2d"] = mesh.texture;
-
     Renderer renderer = m_renderers[i_renderer];
-    renderer.draw(uniforms);
+
+    if (with_outlines) {
+      renderer.draw(uniforms);
+    } else {
+      renderer.draw_with_outlines(uniforms);
+    }
   }
 }
 

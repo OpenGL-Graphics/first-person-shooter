@@ -76,6 +76,27 @@ void Renderer::draw(Uniforms& uniforms, GLenum mode) {
   m_program.unuse();
 }
 
+/**
+ * Draw vertexes with outlines using stencil buffer & multipass drawing
+ * @param Uniforms Unordered map (key, values) of vars to pass to shader
+ */
+void Renderer::draw_with_outlines(Uniforms& uniforms) {
+  // 1st render pass: always pass the stencil test & set ref=1 in stencil buffer for drawn fragments (pixels)
+  glStencilFunc(GL_ALWAYS, 1, 0xff);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+  draw(uniforms);
+
+  // 2nd render pass: only fragments that weren't assigned 1s in previous step are rendered (pass the test)
+  // white outlines & scaling
+  glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+  set_transform(glm::scale(m_mat_model, glm::vec3(1.1f, 1.1f, 1.1f)));
+  uniforms["color"] = glm::vec3(1.0f, 1.0f, 1.0f);
+  draw(uniforms);
+
+  // reset stencil test to always pass (for further rendering in same frame)
+  glStencilFunc(GL_ALWAYS, 1, 0xff);
+}
+
 /* Free used vertex buffers (VAO & VBO lifecycles managed by renderer) */
 void Renderer::free() {
   m_vao.free();

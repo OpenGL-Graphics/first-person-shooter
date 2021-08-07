@@ -15,6 +15,7 @@ struct Renderer {
 
   Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes);
   virtual void draw(Uniforms& uniforms, GLenum mode=GL_TRIANGLES) final;
+  void draw_with_outlines(Uniforms& uniforms);
   virtual void free() final;
   void set_transform(const glm::mat4& mat_model);
   void move(const glm::vec3& offset);
