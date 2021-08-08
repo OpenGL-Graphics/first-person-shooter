@@ -2,9 +2,10 @@
 #define FONT_HPP
 
 #include <string>
-#include <text/glyphs.hpp>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#include "text/glyphs.hpp"
 
 class Font {
 public:

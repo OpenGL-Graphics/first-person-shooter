@@ -3,7 +3,8 @@
 
 #include <unordered_map>
 #include <glm/glm.hpp>
-#include <materials/texture.hpp>
+
+#include "materials/texture.hpp"
 
 // glyph origin at left corner of text baseline
 struct Glyph {

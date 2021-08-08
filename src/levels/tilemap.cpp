@@ -1,0 +1,6 @@
+#include "levels/tilemap.hpp"
+#include "utils/file.hpp"
+
+Tilemap::Tilemap(const std::string& path) {
+  map = File::get_chars(path);
+}

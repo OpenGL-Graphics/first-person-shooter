@@ -1,16 +1,16 @@
-#include <shaders/program.hpp>
-#include <shaders/shader.hpp>
 #include <vector>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <glm/gtc/type_ptr.hpp>
-#include <materials/texture.hpp>
+
+#include "materials/texture.hpp"
+#include "shaders/program.hpp"
+#include "shaders/shader.hpp"
+#include "utils/file.hpp"
 
 Program::Program(const std::string& path_vertex, const std::string& path_fragment) {
   // read shader source codes into strings (newer GLSL version not supported)
-  std::string source_vertex = read_file(path_vertex);
-  std::string source_fragment = read_file(path_fragment);
+  std::string source_vertex = File::get_content(path_vertex);
+  std::string source_fragment = File::get_content(path_fragment);
 
   // create vertex & fragment shaders
   Shader shader_vertex(source_vertex, GL_VERTEX_SHADER);
@@ -92,14 +92,6 @@ bool Program::has_failed() {
 GLuint Program::define_attribute(const std::string& attribute) const {
   // declared as const. bcos program passed by const reference in renderer
   return glGetAttribLocation(m_id, attribute.c_str());
-}
-
-std::string Program::read_file(const std::string& filename) {
-  std::ifstream f(filename.c_str());
-  std::stringstream buffer;
-  buffer << f.rdbuf();
-
-  return buffer.str();
 }
 
 void Program::set_uniforms(const Uniforms& uniforms) {

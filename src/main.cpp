@@ -23,8 +23,13 @@
 #include "models/mesh.hpp"
 #include "models/model.hpp"
 #include "profiling/profiler.hpp"
+#include "levels/tilemap.hpp"
 
 int main() {
+  // load tilemap by parsing text file
+  Tilemap tilemap("assets/levels/map.txt");
+  Map map = tilemap.map;
+
   // glfw window & its camera
   Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   Window window(&camera);

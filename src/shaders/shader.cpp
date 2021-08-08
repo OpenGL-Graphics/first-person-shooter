@@ -1,6 +1,7 @@
-#include <shaders/shader.hpp>
 #include <vector>
 #include <iostream>
+
+#include "shaders/shader.hpp"
 
 Shader::Shader(const std::string& source, GLenum type) {
   // The Cherno: https://www.youtube.com/watch?v=71BLZwRGUJE

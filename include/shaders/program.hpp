@@ -5,7 +5,8 @@
 #include <glad/glad.h>
 #include <string>
 #include <glm/glm.hpp>
-#include <shaders/uniforms.hpp>
+
+#include "shaders/uniforms.hpp"
 
 class Program {
   public:
@@ -23,8 +24,6 @@ class Program {
 
   private:
     GLuint m_id;
-
-    std::string read_file(const std::string& filename);
 };
 
 #endif // PROGRAM_HPP
