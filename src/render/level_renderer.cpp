@@ -21,7 +21,7 @@ void LevelRenderer::draw(Uniforms& uniforms) {
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
     for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
       Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
-      glm::vec3 position = {i_col, 0, i_row};
+      glm::vec3 position_surface = {i_col, 0, i_row};
       float angle = 0.0f;
 
       switch (tile) {
@@ -44,14 +44,24 @@ void LevelRenderer::draw(Uniforms& uniforms) {
       }
 
       // rotation around y-axis before translation & render tile surface
+      position_surface += m_position;
       m_renderer.set_transform(glm::rotate(
-        glm::translate(glm::mat4(1.0f), position),
+        glm::translate(glm::mat4(1.0f), position_surface),
         angle,
         glm::vec3(0.0f, 1.0f, 0.0f)
       ));
       m_renderer.draw(uniforms);
     }
   }
+}
+
+/**
+ * Set model matrix (translation/rotation/scaling)
+ * `m_position` serves as an offset when translating surfaces tiles in `draw()`
+ */
+void LevelRenderer::set_transform(const glm::mat4& mat_model) {
+  m_renderer.set_transform(mat_model);
+  m_position = m_renderer.model_mat[3];
 }
 
 void LevelRenderer::free() {

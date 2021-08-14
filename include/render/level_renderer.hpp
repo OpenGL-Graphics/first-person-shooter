@@ -13,6 +13,7 @@
 struct LevelRenderer {
   LevelRenderer(const Program& program, const Tilemap& tilemap);
   void draw(Uniforms& uniforms);
+  void set_transform(const glm::mat4& mat_model);
   void free();
 
 protected:
@@ -20,6 +21,8 @@ protected:
 private:
   /* same renderer for all tiles */
   Renderer m_renderer;
+  /* position of level */
+  glm::vec3 m_position;
   Tilemap m_tilemap;
   std::unordered_map<std::string, Texture2D> m_textures;
 };

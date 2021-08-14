@@ -191,6 +191,7 @@ int main() {
       {"view", view},
       {"projection", projection3d},
     };
+    level.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 10.0f)));
     level.draw(uniforms_level);
 
     // draw terrain using triangle strips

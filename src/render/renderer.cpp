@@ -24,15 +24,15 @@ Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Att
 /**
  * Sets initial transformation matrix for model (translation, rotation, scaling)
  * glm::mat4 used as certain objects in scene require a scaling (besides translation)
- * @param mat_model Model matrix (i.e. transformation matrix)
+ * @param model Model matrix (i.e. transformation matrix)
  */
-void Renderer::set_transform(const glm::mat4& mat_model) {
-  m_mat_model = mat_model;
+void Renderer::set_transform(const glm::mat4& model) {
+  model_mat = model;
 
   // calculate bounding box from positions in local coords in vbo
   // then update bounding box in world coords from model matrix (avoids incremental translation)
   bounding_box = BoundingBox(m_vbo.positions);
-  bounding_box.transform(mat_model);
+  bounding_box.transform(model_mat);
 }
 
 /**
@@ -43,9 +43,9 @@ void Renderer::set_transform(const glm::mat4& mat_model) {
 void Renderer::move(const glm::vec3& offset) {
   // translation vector at 4th column of transformation matrix (i.e. model matrix)
   // vertexes in local coords, hence new_position = old_position + offset
-  glm::vec3 position = m_mat_model[3];
+  glm::vec3 position = model_mat[3];
   position += offset;
-  m_mat_model = glm::translate(glm::mat4(1.0f), position);
+  model_mat = glm::translate(glm::mat4(1.0f), position);
 
   // translate bbox instead of reclalculating it each time (like `set_transform()`)
   // update bounding box in world coords using offset
@@ -59,7 +59,7 @@ void Renderer::move(const glm::vec3& offset) {
  */
 void Renderer::draw(Uniforms& uniforms, GLenum mode) {
   // 3d position of model
-  uniforms["model"] = m_mat_model;
+  uniforms["model"] = model_mat;
 
   // wireframe mode
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -89,7 +89,7 @@ void Renderer::draw_with_outlines(Uniforms& uniforms) {
   // 2nd render pass: only fragments that weren't assigned 1s in previous step are rendered (pass the test)
   // white outlines & scaling
   glStencilFunc(GL_NOTEQUAL, 1, 0xff);
-  set_transform(glm::scale(m_mat_model, glm::vec3(1.1f, 1.1f, 1.1f)));
+  set_transform(glm::scale(model_mat, glm::vec3(1.1f, 1.1f, 1.1f)));
   uniforms["color"] = glm::vec3(1.0f, 1.0f, 1.0f);
   draw(uniforms);
 

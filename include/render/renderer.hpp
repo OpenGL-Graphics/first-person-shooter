@@ -12,12 +12,14 @@
 
 struct Renderer {
   BoundingBox bounding_box;
+  /* Used to translate level's surfaces (i.e. tiles) */
+  glm::mat4 model_mat;
 
   Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes);
   virtual void draw(Uniforms& uniforms, GLenum mode=GL_TRIANGLES) final;
   void draw_with_outlines(Uniforms& uniforms);
   virtual void free() final;
-  void set_transform(const glm::mat4& mat_model);
+  void set_transform(const glm::mat4& model);
   void move(const glm::vec3& offset);
 
 protected:
@@ -27,7 +29,6 @@ protected:
 private:
   VAO m_vao;
   Program m_program;
-  glm::mat4 m_mat_model;
 };
 
 #endif // RENDERER_HPP
