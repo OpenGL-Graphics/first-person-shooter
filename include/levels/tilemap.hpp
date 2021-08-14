@@ -10,10 +10,11 @@ struct Tilemap {
   // types & enums constants
   using Map = std::vector<std::vector<char>>;
   enum class Tiles : char {
-    WALL_H = '_',
+    WALL_H = '-',
     WALL_V = '|',
     DOOR_H = '=',
     DOOR_V = '#',
+    CORNER = '+',
     SPACE = ' ',
   };
 

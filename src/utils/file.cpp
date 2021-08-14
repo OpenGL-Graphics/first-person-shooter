@@ -27,8 +27,7 @@ std::vector<std::vector<char>> File::get_chars(const std::string& path) {
   std::string line;
 
   while (std::getline(f, line)) {
-    const char* line_ptr = line.c_str();
-    std::vector<char> line_vec(line_ptr, line_ptr + line.size());
+    std::vector<char> line_vec(line.begin(), line.end());
     map.push_back(line_vec);
   }
 

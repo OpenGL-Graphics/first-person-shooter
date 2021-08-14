@@ -28,7 +28,7 @@
 
 int main() {
   // glfw window & its camera
-  Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  Camera camera(glm::vec3(0.0f, 5.0f, 30.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   Window window(&camera);
 
   if (window.is_null()) {
