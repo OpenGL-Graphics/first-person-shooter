@@ -15,6 +15,7 @@ struct ModelRenderer {
   void free();
 
 protected:
+  // inherited by child class `characters/Player`
   std::vector<Renderer> m_renderers;
 private:
   Model m_model;

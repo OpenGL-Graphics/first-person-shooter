@@ -1,7 +1,7 @@
 #ifndef SURFACE_HPP
 #define SURFACE_HPP
 
-#include <geometries/geometry.hpp>
+#include "geometries/geometry.hpp"
 
 class Surface : public Geometry {
 public:

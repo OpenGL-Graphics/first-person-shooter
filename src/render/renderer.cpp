@@ -38,7 +38,7 @@ void Renderer::set_transform(const glm::mat4& mat_model) {
 /**
  * Translate from current position (model matrix) by given offset
  * Note: bounding box is in world coords while vertexes are in local coords,
- *       hense the different transformation matrices.
+ *       hence the different transformation matrices.
  */
 void Renderer::move(const glm::vec3& offset) {
   // translation vector at 4th column of transformation matrix (i.e. model matrix)

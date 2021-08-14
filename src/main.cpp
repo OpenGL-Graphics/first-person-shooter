@@ -13,6 +13,7 @@
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
 #include "render/model_renderer.hpp"
+#include "render/level_renderer.hpp"
 #include "vertexes/vbo.hpp"
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
@@ -26,10 +27,6 @@
 #include "levels/tilemap.hpp"
 
 int main() {
-  // load tilemap by parsing text file
-  Tilemap tilemap("assets/levels/map.txt");
-  Map map = tilemap.map;
-
   // glfw window & its camera
   Camera camera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   Window window(&camera);
@@ -95,8 +92,8 @@ int main() {
   Texture2D texture_terrain_splatmap(Image("assets/images/terrain/splatmap.png"), GL_TEXTURE3);
 
   // multiple textures in same shader (by attaching them to texture units GL_TEXTURE0/1)
-  Texture2D texture_panda(Image("assets/images/panda.jpg"), GL_TEXTURE0);
-  Texture2D texture_cat(Image("assets/images/cat.jpg"), GL_TEXTURE1);
+  Texture2D texture_panda(Image("assets/images/surfaces/panda.jpg"), GL_TEXTURE0);
+  Texture2D texture_cat(Image("assets/images/surfaces/cat.jpg"), GL_TEXTURE1);
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
@@ -112,6 +109,10 @@ int main() {
   // Renderer terrain(pgm_light_terrain, VBO(Terrain(10, 10)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
   VBO vbo_terrain(Terrain(Image("assets/images/terrain/heightmap.png")));
   Renderer terrain(pgm_light_terrain, vbo_terrain, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
+
+  // load tilemap by parsing text file
+  Tilemap tilemap("assets/levels/map.txt");
+  LevelRenderer level(pgm_texture_surface, tilemap);
 
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
@@ -184,6 +185,13 @@ int main() {
       {"color", glm::vec3(0.0f, 0.0f, 1.0f)},
     };
     cube_basic.draw_with_outlines(uniforms_cube_outline);
+
+    // draw level tiles surfaces
+    Uniforms uniforms_level = {
+      {"view", view},
+      {"projection", projection3d},
+    };
+    level.draw(uniforms_level);
 
     // draw terrain using triangle strips
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
@@ -361,6 +369,7 @@ int main() {
   }
 
   // destroy renderers of each shape (frees vao & vbo)
+  level.free();
   terrain.free();
   cube_basic.free();
   cube_color.free();

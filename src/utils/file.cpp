@@ -18,7 +18,7 @@ std::string File::get_content(const std::string& path) {
 
 /**
  * Parse file to get each of its characters into 2D array.
- * Used to get tilemap file content.
+ * Used to get tilemap file content (see `levels/Tilemap`).
  * @param path Path to file to read
  */
 std::vector<std::vector<char>> File::get_chars(const std::string& path) {

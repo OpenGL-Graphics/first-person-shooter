@@ -4,16 +4,21 @@
 #include <string>
 #include <vector>
 
-using Map = std::vector<std::vector<char>>;
-
-/*
-// dictionary type for heteregenous uniform values
-using KeyUniform = std::string;
-using ValueUniform = std::variant<glm::mat4, glm::vec3, float, Texture2D, Texture3D>;
-using Uniforms = std::unordered_map<KeyUniform, ValueUniform>;
-*/
+#include "materials/texture.hpp"
 
 struct Tilemap {
+  // types & enums constants
+  using Map = std::vector<std::vector<char>>;
+  enum class Tiles : char {
+    WALL_H = '_',
+    WALL_V = '|',
+    DOOR_H = '=',
+    DOOR_V = '#',
+    SPACE = ' ',
+  };
+
+  unsigned int n_rows;
+  unsigned int n_cols;
   Map map;
 
   Tilemap(const std::string& path);
