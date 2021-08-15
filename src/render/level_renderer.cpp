@@ -9,7 +9,10 @@ LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap):
   m_textures {
     {"wall", Texture2D(Image("assets/images/level/wall.jpg"))},
     {"door", Texture2D(Image("assets/images/level/door.jpg"))},
-  }
+    {"floor", Texture2D(Image("assets/images/level/floor.jpg"))},
+    {"ceiling", Texture2D(Image("assets/images/level/ceiling.jpg"))},
+  },
+  m_height(5.0f)
 {
 }
 
@@ -18,6 +21,10 @@ LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap):
  * @param uniforms Uniforms passed to shader
  */
 void LevelRenderer::draw(Uniforms& uniforms) {
+  // draw floor & ceiling
+  draw_floor(uniforms);
+  draw_ceiling(uniforms);
+
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
     for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
       Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
@@ -63,13 +70,45 @@ void LevelRenderer::draw(Uniforms& uniforms) {
             angle[i_surface],
             glm::vec3(0.0f, 1.0f, 0.0f)
           ),
-          glm::vec3(1.0f, 5.0f, 1.0f)
+          glm::vec3(1.0f, m_height, 1.0f)
         ));
 
         m_renderer.draw(uniforms);
       }
     }
   }
+}
+
+/**
+ * Draw horizontal surface at given height
+ * @param size Amount by which to scale surface on xy vertical plan
+ * @param height Elevation of surface (i.e. translation on y-axis)
+ */
+void LevelRenderer::draw_horizontal_surface(Uniforms& uniforms, const glm::vec2& size, float height) {
+  // xy scaling then rotation around x-axis then translation
+  float angle = glm::radians(90.0f);
+  m_renderer.set_transform(glm::scale(
+    glm::rotate(
+      glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
+      angle,
+      glm::vec3(1.0f, 0.0f, 0.0f)
+    ),
+    glm::vec3(size.x, size.y, 1.0f)
+  ));
+
+  m_renderer.draw(uniforms);
+}
+
+/* Draw horizontal floor covering bottom of tilemap */
+void LevelRenderer::draw_floor(Uniforms& uniforms) {
+  uniforms["texture2d"] = m_textures["floor"];
+  draw_horizontal_surface(uniforms, {m_tilemap.n_cols - 1, m_tilemap.n_rows - 1}, 0.0f);
+}
+
+/* Draw horizontal floor covering top of tilemap */
+void LevelRenderer::draw_ceiling(Uniforms& uniforms) {
+  uniforms["texture2d"] = m_textures["ceiling"];
+  draw_horizontal_surface(uniforms, {m_tilemap.n_cols - 1, m_tilemap.n_rows - 1}, m_height);
 }
 
 /**
