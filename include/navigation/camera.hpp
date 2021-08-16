@@ -3,8 +3,9 @@
 #define CAMERA_HPP
 
 #include <glm/glm.hpp>
-#include <navigation/direction.hpp>
-#include <navigation/zoom.hpp>
+
+#include "navigation/direction.hpp"
+#include "navigation/zoom.hpp"
 
 struct Camera {
   /**
@@ -15,7 +16,7 @@ struct Camera {
   float yaw;
 
   Camera(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up);
-  glm::mat4 get_view() const;
+  glm::mat4 get_view();
   glm::vec3 get_position() const;
   float get_fov() const;
   void move(Direction direction);

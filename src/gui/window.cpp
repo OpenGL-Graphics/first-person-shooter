@@ -3,7 +3,7 @@
 #include "gui/window.hpp"
 
 /* Create window & initilialize its OpenGL context */
-Window::Window(Camera* camera) {
+Window::Window() {
   // initialize glfw library
   if (!glfwInit()) {
     m_window = NULL;

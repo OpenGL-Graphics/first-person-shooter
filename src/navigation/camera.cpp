@@ -1,10 +1,12 @@
-#include <navigation/camera.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <algorithm>
+
+#include "navigation/camera.hpp"
 
 // not declared as private members as constants cause class's implicit copy-constructor to be deleted (prevents re-assignment)
 // movement constants
 const float SPEED = 0.1f;
-const float SENSITIVITY = 0.01f;
+const float SENSITIVITY = 0.25e-2;
 
 Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up):
   m_position(position),
@@ -22,11 +24,11 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm:
  * i.e. translation/rotation of scene in opposite directions to camera
  * Important: pitch/yaw angles rotate scene's object not camera
  */
-glm::mat4 Camera::get_view() const {
-  // consider rotation due to mouse (yaw & pitch)
+glm::mat4 Camera::get_view() {
+  // only camera direction is rotated by mouse in `rotate()`
   glm::mat4 view = glm::lookAt(m_position, m_position + m_direction, m_up);
-  view = glm::rotate(view, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-  view = glm::rotate(view, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+  // view = glm::rotate(view, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+  // view = glm::rotate(view, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
   return view;
 }
@@ -61,12 +63,22 @@ void Camera::move(Direction direction) {
 }
 
 void Camera::rotate(float x_offset, float y_offset) {
-  yaw += SENSITIVITY * x_offset;
-  pitch += SENSITIVITY * y_offset;
+  float yaw_offset = SENSITIVITY * x_offset;
+  yaw += yaw_offset;
 
   // limit horizontal/vertical rotation angle
-  yaw = (yaw > glm::radians(90.0f)) ? glm::radians(90.0f): yaw;
-  yaw = (yaw < glm::radians(-90.0f)) ? glm::radians(-90.0f): yaw;
+  yaw = std::clamp(yaw, glm::radians(-90.0f), glm::radians(90.0f));
+
+  // fps camera navigation by rotating its direction vector around y-axis
+  if (yaw != glm::radians(-90.0f) && yaw != glm::radians(90.0f)) {
+    glm::mat4 rotation_mat = glm::rotate(glm::mat4(1.0f), SENSITIVITY * x_offset, glm::vec3(0.0f, 1.0f, 0.0f));
+    m_direction = glm::vec3(rotation_mat * glm::vec4(m_direction, 1.0f));
+  }
+
+  /* no vertical camera rotation for the moment
+  pitch += pitch_offset;
+  float pitch_offset = SENSITIVITY * y_offset;
   pitch = (pitch > glm::radians(90.0f)) ? glm::radians(90.0f): pitch;
   pitch = (pitch < glm::radians(-90.0f)) ? glm::radians(-90.0f): pitch;
+  */
 }

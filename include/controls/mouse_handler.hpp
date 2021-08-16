@@ -3,6 +3,7 @@
 
 #include "gui/window.hpp"
 #include "render/model_renderer.hpp"
+#include "navigation/camera.hpp"
 
 /**
  * Static class (all its members are static) because it contains only callbacks (function pointers)

@@ -27,9 +27,8 @@
 #include "levels/tilemap.hpp"
 
 int main() {
-  // glfw window & its camera
-  Camera camera(glm::vec3(0.0f, 5.0f, 30.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  Window window(&camera);
+  // glfw window
+  Window window;
 
   if (window.is_null()) {
     std::cout << "Failed to create window or OpenGL context" << "\n";
@@ -47,6 +46,7 @@ int main() {
   }
 
   // callback for processing mouse click (after init static members)
+  Camera camera(glm::vec3(0.0f, 2.5f, 30.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   MouseHandler::init(window.width / 2, window.height / 2, &camera);
   window.attach_mouse_listener(MouseHandler::on_mouse_click);
 

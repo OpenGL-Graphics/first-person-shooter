@@ -37,7 +37,7 @@ void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, in
 void MouseHandler::on_mouse_move(GLFWwindow* window, double xpos, double ypos) {
   // see: https://www.reddit.com/r/opengl/comments/831vpb/
   // calculate offset in mouse cursor position
-  float x_offset = xpos - m_xmouse;
+  float x_offset = -(xpos - m_xmouse);
   float y_offset = ypos - m_ymouse;
   m_xmouse = xpos;
   m_ymouse = ypos;

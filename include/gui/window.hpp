@@ -6,14 +6,13 @@
 #include <GLFW/glfw3.h>
 
 #include "gui/monitor.hpp"
-#include "navigation/camera.hpp"
 
 /* Wrapper struct for GLFW windows */
 struct Window {
   int width;
   int height;
 
-  Window(Camera* camera);
+  Window();
   void make_context();
   void render();
   void process_events();
