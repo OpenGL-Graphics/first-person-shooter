@@ -16,7 +16,7 @@ struct Player : ModelRenderer {
 
 private:
   /* defines direction of movement forward */
-  glm::vec3 forward_dir;
+  glm::vec3 m_forward_dir;
 };
 
 #endif // PLAYER_HPP

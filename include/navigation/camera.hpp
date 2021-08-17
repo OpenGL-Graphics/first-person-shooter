@@ -31,6 +31,9 @@ private:
 
   // zoom-in corresponds to lower field-of-view
   float m_fov;
+
+  // direction of movement
+  glm::vec3 m_forward_dir;
 };
 
 #endif // CAMERA_HPP

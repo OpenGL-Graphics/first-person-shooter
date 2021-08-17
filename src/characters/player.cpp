@@ -6,7 +6,7 @@ const float SPEED = 0.1f;
 
 Player::Player(const Program& program, const Model& model, const std::vector<Attribute>& attributes):
   ModelRenderer(program, model, attributes),
-  forward_dir(0.0f, 0.0f, -1.0f)
+  m_forward_dir(0.0f, 0.0f, -1.0f)
 {
 }
 
@@ -27,17 +27,17 @@ void Player::move(Direction direction) {
   glm::vec3 up_dir(0.0f, 1.0f, 0.0f);
 
   if (direction == Direction::FORWARD) {
-    offset = SPEED * forward_dir;
+    offset = SPEED * m_forward_dir;
   }
   if (direction == Direction::BACKWARD) {
-    offset = SPEED * -forward_dir;
+    offset = SPEED * -m_forward_dir;
   }
   if (direction == Direction::LEFT) {
-    glm::vec3 left_dir = glm::normalize(glm::cross(up_dir, forward_dir));
+    glm::vec3 left_dir = glm::normalize(glm::cross(up_dir, m_forward_dir));
     offset = SPEED * left_dir;
   }
   if (direction == Direction::RIGHT) {
-    glm::vec3 right_dir = glm::normalize(glm::cross(forward_dir, up_dir));
+    glm::vec3 right_dir = glm::normalize(glm::cross(m_forward_dir, up_dir));
     offset = SPEED * right_dir;
   }
 
@@ -58,10 +58,10 @@ void Player::orient(const Camera& camera) {
 
     // update pc's forward movement direction accord. to camera's yaw angle (around y-axis)
     if (yaw_camera >= glm::radians(-45.0f) && yaw_camera <= glm::radians(45.0f)) {
-      forward_dir = {0.0f, 0.0f, -1.0f};
+      m_forward_dir = {0.0f, 0.0f, -1.0f};
     } else if (yaw_camera <= glm::radians(-45.0f)) {
-      forward_dir = {1.0f, 0.0f, 0.0f};
+      m_forward_dir = {1.0f, 0.0f, 0.0f};
     } else if (yaw_camera >= glm::radians(45.0f)) {
-      forward_dir = {-1.0f, 0.0f, 0.0f};
+      m_forward_dir = {-1.0f, 0.0f, 0.0f};
     }
 }

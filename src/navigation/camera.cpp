@@ -1,4 +1,5 @@
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/constants.hpp>
 #include <algorithm>
 
 #include "navigation/camera.hpp"
@@ -13,6 +14,7 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm:
   m_direction(direction),
   m_up(up),
   m_fov(45.0f),
+  m_forward_dir(m_direction),
 
   pitch(0.0f),
   yaw(0.0f)
@@ -27,8 +29,6 @@ Camera::Camera(const glm::vec3& position, const glm::vec3& direction, const glm:
 glm::mat4 Camera::get_view() {
   // only camera direction is rotated by mouse in `rotate()`
   glm::mat4 view = glm::lookAt(m_position, m_position + m_direction, m_up);
-  // view = glm::rotate(view, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-  // view = glm::rotate(view, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
   return view;
 }
@@ -52,33 +52,39 @@ void Camera::zoom(Zoom direction) {
 }
 
 void Camera::move(Direction direction) {
+  glm::vec3 right_dir = glm::normalize(glm::cross(m_forward_dir, m_up));
+
   if (direction == Direction::FORWARD)
-    m_position -= SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
+    m_position += SPEED * m_forward_dir;
   if (direction == Direction::BACKWARD)
-    m_position += SPEED * glm::vec3(0.0f, 0.0f, 1.0f);
-  if (direction == Direction::LEFT)
-    m_position -= SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
+    m_position -= SPEED * m_forward_dir;
   if (direction == Direction::RIGHT)
-    m_position += SPEED * glm::vec3(1.0f, 0.0f, 0.0f);
+    m_position += SPEED * right_dir;
+  if (direction == Direction::LEFT)
+    m_position -= SPEED * right_dir;
 }
 
 void Camera::rotate(float x_offset, float y_offset) {
+  // increment angles accord. to 2D mouse movement
+  float PI = glm::pi<float>();
   float yaw_offset = SENSITIVITY * x_offset;
+  float pitch_offset = SENSITIVITY * y_offset;
   yaw += yaw_offset;
+  pitch += pitch_offset;
 
-  // limit horizontal/vertical rotation angle
-  yaw = std::clamp(yaw, glm::radians(-90.0f), glm::radians(90.0f));
-
-  // fps camera navigation by rotating its direction vector around y-axis
-  if (yaw != glm::radians(-90.0f) && yaw != glm::radians(90.0f)) {
-    glm::mat4 rotation_mat = glm::rotate(glm::mat4(1.0f), SENSITIVITY * x_offset, glm::vec3(0.0f, 1.0f, 0.0f));
-    m_direction = glm::vec3(rotation_mat * glm::vec4(m_direction, 1.0f));
+  // yaw in [-2pi, 2pi] & clamp pitch angle to prevent weird rotation of camera when pitch ~ pi/2
+  yaw = std::fmod(yaw, 2 * PI);
+  pitch = std::clamp(pitch, glm::radians(-60.0f), glm::radians(60.0f));
+  if (pitch == glm::radians(-60.0f) || pitch == glm::radians(60.0f)) {
+    return;
   }
 
-  /* no vertical camera rotation for the moment
-  pitch += pitch_offset;
-  float pitch_offset = SENSITIVITY * y_offset;
-  pitch = (pitch > glm::radians(90.0f)) ? glm::radians(90.0f): pitch;
-  pitch = (pitch < glm::radians(-90.0f)) ? glm::radians(-90.0f): pitch;
-  */
+  // fps camera navigation by rotating its direction vector around x/y-axis
+  glm::vec3 right_dir = glm::normalize(glm::cross(m_forward_dir, m_up));
+  glm::mat4 rotation_yaw_mat = glm::rotate(glm::mat4(1.0f), yaw_offset, glm::vec3(0.0f, 1.0f, 0.0f));
+  glm::mat4 rotation_pitch_mat = glm::rotate(glm::mat4(1.0f), pitch_offset, right_dir);
+  m_direction = glm::vec3(rotation_pitch_mat * rotation_yaw_mat * glm::vec4(m_direction, 1.0f));
+
+  // forward dir. of movement unaffected by vertical angle (sticks camera to ground)
+  m_forward_dir = {m_direction.x, 0.0f, m_direction.z};
 }
