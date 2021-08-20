@@ -125,8 +125,12 @@ int main() {
   // load 3d model from .obj file & its renderer
   Profiler profiler;
   profiler.start();
+  Model model_revolver("assets/models/revolver/Revolver.obj", importer);
   Model model_two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
   Model model_cube("assets/models/cube-textured/cube-textured.obj", importer);
+
+  // renderers for 3d models
+  ModelRenderer renderer_revolver(pgm_texture_mesh, model_revolver, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
   ModelRenderer renderer_two_cubes(pgm_basic, model_two_cubes, {{0, "position", 3, 8, 0}});
   Player pc(
       pgm_texture_mesh, model_cube, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
@@ -316,6 +320,18 @@ int main() {
     };
     surface.draw(uniform_glass);
 
+    // draw textured revolver 3d model (view = I, as revolver keeps its position rel. to camera) 
+    // also with projection = I, model coords in NDC [-1, 1]
+    renderer_revolver.set_transform(glm::scale(
+      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+      glm::vec3(0.5f)
+    ));
+    Uniforms uniforms_revolver = {
+      {"view", glm::mat4(1.0f)},
+      {"projection", glm::mat4(1.0f)},
+    };
+    renderer_revolver.draw(uniforms_revolver);
+
     // draw 2d health bar HUD surface (scaling then translation to lower left corner)
     glm::mat4 model_hud_health(glm::scale(
       glm::translate(glm::mat4(1.0f), glm::vec3(window.width - texture_surface_hud.get_width(), 0.0f, 0.0f)),
@@ -378,6 +394,7 @@ int main() {
   cube_light.free();
   surface.free();
   surface_glyph.free();
+  renderer_revolver.free();
   renderer_two_cubes.free();
   pc.free();
 
