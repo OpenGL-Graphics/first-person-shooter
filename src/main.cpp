@@ -28,7 +28,7 @@
 
 int main() {
   // glfw window
-  Window window;
+  Window window("FPS game");
 
   if (window.is_null()) {
     std::cout << "Failed to create window or OpenGL context" << "\n";
@@ -84,6 +84,7 @@ int main() {
   Texture2D texture_surface_grass(Image("assets/images/surfaces/grass.png"));
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
   Texture2D texture_surface_glass(Image("assets/images/surfaces/window.png"));
+  Texture2D texture_surface_crosshair(Image("assets/images/surfaces/crosshair.png"));
 
   // terrain textures (used by same shader) need to be attached to different texture units
   Texture2D texture_terrain_water(Image("assets/images/terrain/water.jpg"), GL_TEXTURE0);
@@ -128,9 +129,11 @@ int main() {
   Model model_revolver("assets/models/revolver/Revolver.obj", importer);
   Model model_two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
   Model model_cube("assets/models/cube-textured/cube-textured.obj", importer);
+  Model model_trapezoid("assets/models/trapezoid/trapezoid.obj", importer);
 
   // renderers for 3d models
   ModelRenderer renderer_revolver(pgm_texture_mesh, model_revolver, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
+  ModelRenderer renderer_trapezoid(pgm_basic, model_trapezoid, {{0, "position", 3, 8, 0}});
   ModelRenderer renderer_two_cubes(pgm_basic, model_two_cubes, {{0, "position", 3, 8, 0}});
   Player pc(
       pgm_texture_mesh, model_cube, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
@@ -138,6 +141,7 @@ int main() {
   profiler.print("Loading 3D models");
 
   // position 3D models
+  renderer_trapezoid.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 25.0f)));
   renderer_two_cubes.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)));
   pc.set_transform(glm::mat4(1.0f));
   pc.calculate_bounding_box();
@@ -247,6 +251,13 @@ int main() {
     };
     cube_light.draw(uniforms_cube_light);
 
+    // draw colored trapezoid 3d model
+    Uniforms uniforms_trapezoid = {
+      {"view", view},
+      {"projection", projection3d},
+    };
+    renderer_trapezoid.draw(uniforms_trapezoid);
+
     // draw color cube
     cube_color.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)));
     Uniforms uniform_cube_color = {
@@ -310,6 +321,23 @@ int main() {
     };
     surface.draw(uniform_grass);
 
+    // draw textured revolver 3d model with position fixed rel. to camera
+    // view = I => fixed translation with camera as origin
+    renderer_revolver.set_transform(glm::scale(
+      glm::rotate(
+        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.35f, -1.0f)),
+        glm::radians(90.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+      ),
+      glm::vec3(0.25f)
+    ));
+    Uniforms uniforms_revolver = {
+      // {"view", view},
+      {"view", glm::mat4(1.0f)},
+      {"projection", projection3d},
+    };
+    renderer_revolver.draw(uniforms_revolver);
+
     // last to render: transparent surfaces to ensure blending with background
     // draw half-transparent 3d window
     surface.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f)));
@@ -319,18 +347,6 @@ int main() {
       {"texture2d", texture_surface_glass},
     };
     surface.draw(uniform_glass);
-
-    // draw textured revolver 3d model (view = I, as revolver keeps its position rel. to camera) 
-    // also with projection = I, model coords in NDC [-1, 1]
-    renderer_revolver.set_transform(glm::scale(
-      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
-      glm::vec3(0.5f)
-    ));
-    Uniforms uniforms_revolver = {
-      {"view", glm::mat4(1.0f)},
-      {"projection", glm::mat4(1.0f)},
-    };
-    renderer_revolver.draw(uniforms_revolver);
 
     // draw 2d health bar HUD surface (scaling then translation to lower left corner)
     glm::mat4 model_hud_health(glm::scale(
@@ -344,6 +360,23 @@ int main() {
       {"texture2d", texture_surface_hud},
     };
     surface.draw(uniform_hud);
+
+    // draw crosshair gun target surface at center of screen
+    glm::mat4 model_crosshair(glm::scale(
+      glm::translate(glm::mat4(1.0f), glm::vec3(
+        window.width / 2.0f - texture_surface_crosshair.get_width() / 2.0f,
+        window.height / 2.0f - texture_surface_crosshair.get_height() / 2.0f,
+        0.0f
+      )),
+      glm::vec3(texture_surface_crosshair.get_width(), texture_surface_crosshair.get_height(), 1.0f)
+    ));
+    surface.set_transform(model_crosshair);
+    Uniforms uniform_crosshair = {
+      {"view", glm::mat4(1.0f)},
+      {"projection", projection2d},
+      {"texture2d", texture_surface_crosshair},
+    };
+    surface.draw(uniform_crosshair);
 
     // draw 2d text surface (origin: left baseline)
     surface_glyph.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)));
@@ -370,6 +403,7 @@ int main() {
   texture_surface_grass.free();
   texture_surface_glass.free();
   texture_surface_hud.free();
+  texture_surface_crosshair.free();
 
   texture_terrain_water.free();
   texture_terrain_grass.free();
@@ -395,6 +429,7 @@ int main() {
   surface.free();
   surface_glyph.free();
   renderer_revolver.free();
+  renderer_trapezoid.free();
   renderer_two_cubes.free();
   pc.free();
 

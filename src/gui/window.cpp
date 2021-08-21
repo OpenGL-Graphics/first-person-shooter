@@ -3,7 +3,7 @@
 #include "gui/window.hpp"
 
 /* Create window & initilialize its OpenGL context */
-Window::Window() {
+Window::Window(const std::string& title) {
   // initialize glfw library
   if (!glfwInit()) {
     m_window = NULL;
@@ -15,7 +15,7 @@ Window::Window() {
   Monitor monitor;
   width = monitor.width;
   height = monitor.height;
-  m_window = glfwCreateWindow(width, height, "OpenGL test", NULL, NULL);
+  m_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
 }
 
 /* Whether window failed to be created */
