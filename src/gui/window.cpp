@@ -11,11 +11,12 @@ Window::Window(const std::string& title) {
     return;
   }
 
-  // windowed mode covering all monitor screen
+  // window in full-screen mode
   Monitor monitor;
-  width = monitor.width;
-  height = monitor.height;
-  m_window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+  m_window = glfwCreateWindow(monitor.width, monitor.height, title.c_str(), monitor.m, NULL);
+
+  // get window size (same as monitor in full-screen mode)
+  glfwGetWindowSize(m_window, &width, &height);
 }
 
 /* Whether window failed to be created */

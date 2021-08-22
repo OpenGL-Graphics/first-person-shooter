@@ -90,9 +90,12 @@ void Texture<T>::generate() {
 
 template <class T>
 void Texture<T>::configure() {
+  // repeat texture by default (suitable for small revolver textures)
+  glTexParameteri(m_type, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(m_type, GL_TEXTURE_WRAP_T, GL_REPEAT);
   // wrap texture around mesh
-  glTexParameteri(m_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(m_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // glTexParameteri(m_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  // glTexParameteri(m_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(m_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(m_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }

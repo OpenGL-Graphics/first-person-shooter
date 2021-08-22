@@ -126,13 +126,13 @@ int main() {
   // load 3d model from .obj file & its renderer
   Profiler profiler;
   profiler.start();
-  Model model_revolver("assets/models/revolver/Revolver.obj", importer);
+  Model model_gun("assets/models/sniper/sniper.obj", importer);
   Model model_two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
   Model model_cube("assets/models/cube-textured/cube-textured.obj", importer);
   Model model_trapezoid("assets/models/trapezoid/trapezoid.obj", importer);
 
   // renderers for 3d models
-  ModelRenderer renderer_revolver(pgm_texture_mesh, model_revolver, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
+  ModelRenderer renderer_gun(pgm_texture_mesh, model_gun, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
   ModelRenderer renderer_trapezoid(pgm_basic, model_trapezoid, {{0, "position", 3, 8, 0}});
   ModelRenderer renderer_two_cubes(pgm_basic, model_two_cubes, {{0, "position", 3, 8, 0}});
   Player pc(
@@ -321,22 +321,25 @@ int main() {
     };
     surface.draw(uniform_grass);
 
-    // draw textured revolver 3d model with position fixed rel. to camera
+    // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin
-    renderer_revolver.set_transform(glm::scale(
+    renderer_gun.set_transform(glm::scale(
       glm::rotate(
-        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.35f, -1.0f)),
-        glm::radians(90.0f),
-        glm::vec3(0.0f, 1.0f, 0.0f)
+        glm::rotate(
+          glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, -0.7f, -2.0f)),
+          glm::radians(25.0f),
+          glm::vec3(0.0f, 1.0f, 0.0f)
+        ),
+        glm::radians(15.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f)
       ),
-      glm::vec3(0.25f)
+      glm::vec3(0.15f)
     ));
     Uniforms uniforms_revolver = {
-      // {"view", view},
       {"view", glm::mat4(1.0f)},
       {"projection", projection3d},
     };
-    renderer_revolver.draw(uniforms_revolver);
+    renderer_gun.draw(uniforms_revolver);
 
     // last to render: transparent surfaces to ensure blending with background
     // draw half-transparent 3d window
@@ -348,9 +351,12 @@ int main() {
     };
     surface.draw(uniform_glass);
 
-    // draw 2d health bar HUD surface (scaling then translation to lower left corner)
+    // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
     glm::mat4 model_hud_health(glm::scale(
-      glm::translate(glm::mat4(1.0f), glm::vec3(window.width - texture_surface_hud.get_width(), 0.0f, 0.0f)),
+      glm::translate(
+        glm::mat4(1.0f),
+        glm::vec3(window.width - texture_surface_hud.get_width(), window.height - texture_surface_hud.get_height(), 0.0f)
+      ),
       glm::vec3(texture_surface_hud.get_width(), texture_surface_hud.get_height(), 1.0f)
     ));
     surface.set_transform(model_hud_health);
@@ -428,7 +434,7 @@ int main() {
   cube_light.free();
   surface.free();
   surface_glyph.free();
-  renderer_revolver.free();
+  renderer_gun.free();
   renderer_trapezoid.free();
   renderer_two_cubes.free();
   pc.free();

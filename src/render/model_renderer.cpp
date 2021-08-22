@@ -34,9 +34,9 @@ void ModelRenderer::draw(Uniforms& uniforms, bool with_outlines) {
     Renderer renderer = m_renderers[i_renderer];
 
     if (with_outlines) {
-      renderer.draw(uniforms);
-    } else {
       renderer.draw_with_outlines(uniforms);
+    } else {
+      renderer.draw(uniforms);
     }
   }
 }
