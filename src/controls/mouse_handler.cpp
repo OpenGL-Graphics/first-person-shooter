@@ -1,4 +1,7 @@
+#include <iostream>
+
 #include "controls/mouse_handler.hpp"
+#include "math/transformation.hpp"
 
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 Camera* MouseHandler::m_camera;
@@ -11,25 +14,27 @@ int MouseHandler::m_ymouse;
  * @param ymouse Inital mouse y-position
  * @param camera Pointer to camera to control with mouse
  */
-void MouseHandler::init(int xmouse, int ymouse, Camera* camera) {
+void MouseHandler::init(int xmouse, int ymouse, const Window& window, Camera* camera) {
   // init static members: initial mouse's xy-coords at center of screen
   m_xmouse = xmouse;
   m_ymouse = ymouse;
   m_camera = camera;
 }
 
-/* Switch mouse mode & listen for mouse movement/scroll */
+/**
+ * listener for click on mouse buttons
+ * Raycasting theory: https://antongerdelan.net/opengl/raycasting.html
+ */
 void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, int mods) {
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-    if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-      glfwSetCursorPosCallback(window, on_mouse_move);
-      glfwSetScrollCallback(window, on_mouse_scroll);
-    } else {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-      glfwSetCursorPosCallback(window, NULL);
-      glfwSetScrollCallback(window, NULL);
-    }
+    // gun crosshair at center of screen in clip space (NDC)
+    glm::vec4 position_ndc(0.0f, 0.0f, -1.0f, 1.0f);
+    // glm::vec4 position_world = transformation.transform_inv(position_ndc);
+
+    std::cout << "LMB clicked! "
+              << " xmouse: " << m_xmouse
+              << " ymouse: " << m_ymouse
+              << '\n';
   }
 }
 

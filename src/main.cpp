@@ -47,8 +47,11 @@ int main() {
 
   // callback for processing mouse click (after init static members)
   Camera camera(glm::vec3(0.0f, 2.5f, 30.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  MouseHandler::init(window.width / 2, window.height / 2, &camera);
-  window.attach_mouse_listener(MouseHandler::on_mouse_click);
+  MouseHandler::init(window.width / 2, window.height / 2, window, &camera);
+  window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
+  std::cout << "window.width: " << window.width
+            << " window.height: " << window.height
+            << '\n';
 
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");

@@ -12,6 +12,7 @@
 struct Window {
   int width;
   int height;
+  GLFWwindow* w;
 
   Window(const std::string& title);
   void make_context();
@@ -20,12 +21,9 @@ struct Window {
   bool is_null();
   bool is_closed();
   void destroy();
-  void attach_mouse_listener(GLFWmousebuttonfun	on_mouse_click);
+  void attach_mouse_listeners(GLFWcursorposfun on_mouse_move, GLFWmousebuttonfun on_mouse_click, GLFWscrollfun on_mouse_scroll);
   bool is_key_pressed(int key) const;
   void close() const;
-
-private:
-  GLFWwindow* m_window;
 };
 
 #endif // WINDOW_HPP

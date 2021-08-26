@@ -6,42 +6,42 @@
 Window::Window(const std::string& title) {
   // initialize glfw library
   if (!glfwInit()) {
-    m_window = NULL;
+    w = NULL;
     std::cout << "Failed to initialize GLFW" << "\n";
     return;
   }
 
   // window in full-screen mode
   Monitor monitor;
-  m_window = glfwCreateWindow(monitor.width, monitor.height, title.c_str(), monitor.m, NULL);
+  w = glfwCreateWindow(monitor.width, monitor.height, title.c_str(), monitor.m, NULL);
 
   // get window size (same as monitor in full-screen mode)
-  glfwGetWindowSize(m_window, &width, &height);
+  glfwGetWindowSize(w, &width, &height);
 }
 
 /* Whether window failed to be created */
 bool Window::is_null() {
-  return m_window == NULL;
+  return w == NULL;
 }
 
 /* Whether window should be created (by leaving mainloop) */
 bool Window::is_closed() {
-  return glfwWindowShouldClose(m_window);
+  return glfwWindowShouldClose(w);
 }
 
 /* Close window by setting flag (& leaving mainloop) */
 void Window::close() const {
-  glfwSetWindowShouldClose(m_window, GLFW_TRUE);
+  glfwSetWindowShouldClose(w, GLFW_TRUE);
 }
 
 /* Make window's OpenGL context current to draw on it */
 void Window::make_context() {
-  glfwMakeContextCurrent(m_window);
+  glfwMakeContextCurrent(w);
 }
 
 /* Swap front and back buffers when rendering with OpenGL */
 void Window::render() {
-  glfwSwapBuffers(m_window);
+  glfwSwapBuffers(w);
 }
 
 /* Process events by calling associated callbacks */
@@ -51,19 +51,25 @@ void Window::process_events() {
 
 /* Destroy window & its context and free its resources */
 void Window::destroy() {
-  glfwDestroyWindow(m_window);
+  glfwDestroyWindow(w);
   glfwTerminate();
 }
 
 /* Check if given `key` was pressed */
 bool Window::is_key_pressed(int key) const {
-  return glfwGetKey(m_window, key) == GLFW_PRESS;
+  return glfwGetKey(w, key) == GLFW_PRESS;
 }
 
 /**
- * Attach `on_mouse_click` callback on mouse click
- * Used by `MouseHandler`
+ * Attach mouse move/click/scroll callbacks
+ * Listeners implemented inside `MouseHandler`
  */
-void Window::attach_mouse_listener(GLFWmousebuttonfun	on_mouse_click) {
-  glfwSetMouseButtonCallback(m_window, on_mouse_click);
+void Window::attach_mouse_listeners(GLFWcursorposfun on_mouse_move, GLFWmousebuttonfun on_mouse_click, GLFWscrollfun on_mouse_scroll) {
+  // hide cursor & unlimited mouse movement
+  glfwSetInputMode(w, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+  // listen for mouse click/movement/scroll
+  glfwSetMouseButtonCallback(w, on_mouse_click);
+  glfwSetCursorPosCallback(w, on_mouse_move);
+  glfwSetScrollCallback(w, on_mouse_scroll);
 }

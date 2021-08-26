@@ -13,10 +13,12 @@
 class MouseHandler {
 public:
   /* No need for instance constructor to init static private members */
-  static void init(int xmouse, int ymouse, Camera* camera);
+  static void init(int xmouse, int ymouse, const Window& window, Camera* camera);
 
-  /* static methods can be easily converted to function pointers callbacks (no `this` argument) */
+  /* static methods can be passed as function pointers callbacks (no `this` argument) */
+  static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
   static void on_mouse_click(GLFWwindow* window, int button, int action, int mods);
+  static void on_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset);
 
 private:
   Window m_window;
@@ -28,10 +30,6 @@ private:
   /* previous mouse xy-coords to compare to when moving (modified inside listeners below) */
   static int m_xmouse;
   static int m_ymouse;
-
-  /* static methods can be easily converted to function pointers callbacks (no `this` argument) */
-  static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
-  static void on_mouse_scroll(GLFWwindow* window, double xoffset, double yoffset);
 };
 
 #endif // MOUSE_HANDLER_HPP
