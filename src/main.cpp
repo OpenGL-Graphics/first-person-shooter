@@ -25,6 +25,7 @@
 #include "models/model.hpp"
 #include "profiling/profiler.hpp"
 #include "levels/tilemap.hpp"
+#include "characters/targets.hpp"
 
 int main() {
   // glfw window
@@ -45,9 +46,14 @@ int main() {
     std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
   }
 
+  // camera & transformation matrixes
+  Camera camera(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+  // position of color cube follows location of mouse click (calculate from camera position & direction)
+  glm::vec3 position_cube = glm::vec3(-3.0f, 0.0f, 0.0f);
+
   // callback for processing mouse click (after init static members)
-  Camera camera(glm::vec3(0.0f, 2.5f, 30.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  MouseHandler::init(window.width / 2, window.height / 2, window, &camera);
+  MouseHandler::init(&window, &camera, &position_cube);
   window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
   std::cout << "window.width: " << window.width
             << " window.height: " << window.height
@@ -107,6 +113,9 @@ int main() {
   Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
   Renderer surface_mix(pgm_texture_surface_mix, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
+
+  // targets group cubes
+  Targets targets({&cube_basic, &cube_color, &cube_texture, &cube_light});
 
   // horizontal terrain from triangle strips
   // Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
@@ -184,8 +193,8 @@ int main() {
 
     // transformation matrices
     glm::mat4 view = camera.get_view();
-    glm::mat4 projection3d = glm::perspective(glm::radians(camera.get_fov()), (float) window.width / (float) window.height, 1.0f, 50.f);
-    glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
+    glm::mat4 projection2d = window.get_projection2d();
+    glm::mat4 projection3d = window.get_projection3d(camera);
 
     // cube with outline using two-passes rendering & stencil buffer
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f)));
@@ -250,7 +259,7 @@ int main() {
       {"light.ambiant", 0.2f * color_light},
       {"light.diffuse", 0.5f * color_light},
       {"light.specular", color_light},
-      {"position_camera", camera.get_position()},
+      {"position_camera", camera.position},
     };
     cube_light.draw(uniforms_cube_light);
 
@@ -262,7 +271,7 @@ int main() {
     renderer_trapezoid.draw(uniforms_trapezoid);
 
     // draw color cube
-    cube_color.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)));
+    cube_color.set_transform(glm::translate(glm::mat4(1.0f), position_cube));
     Uniforms uniform_cube_color = {
       {"view", view},
       {"projection", projection3d},

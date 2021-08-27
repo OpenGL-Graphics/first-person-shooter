@@ -4,7 +4,7 @@
 #include "render/model_renderer.hpp"
 #include "navigation/camera.hpp"
 
-/* */
+/* Player character */
 struct Player : ModelRenderer {
   /* for collision detection */
   BoundingBox bounding_box;

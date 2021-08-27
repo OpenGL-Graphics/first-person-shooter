@@ -15,22 +15,21 @@ struct Camera {
   float pitch;
   float yaw;
 
-  Camera(const glm::vec3& position, const glm::vec3& direction, const glm::vec3& up);
+  /* used in 3D projection matrix (zoom-in corresponds to lower field-of-view) */
+  float fov;
+
+  /* look at parameters (used to position cube on LMB click) */
+  glm::vec3 position;
+  glm::vec3 direction;
+
+  Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up);
   glm::mat4 get_view();
-  glm::vec3 get_position() const;
-  float get_fov() const;
-  void move(Direction direction);
+  void move(Direction d);
   void rotate(float x_offset, float y_offset);
-  void zoom(Zoom direction);
+  void zoom(Zoom z);
 
 private:
-  // look at parameters
-  glm::vec3 m_position;
-  glm::vec3 m_direction;
   glm::vec3 m_up;
-
-  // zoom-in corresponds to lower field-of-view
-  float m_fov;
 
   // direction of movement
   glm::vec3 m_forward_dir;

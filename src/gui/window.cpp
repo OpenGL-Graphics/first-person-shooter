@@ -1,4 +1,5 @@
 #include <iostream>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "gui/window.hpp"
 
@@ -17,6 +18,18 @@ Window::Window(const std::string& title) {
 
   // get window size (same as monitor in full-screen mode)
   glfwGetWindowSize(w, &width, &height);
+}
+
+/* 2D projection matrix for sprites */
+glm::mat4 Window::get_projection2d() {
+  glm::mat4 projection2d = glm::ortho(0.0f, (float) width, 0.0f, (float) height);
+  return projection2d;
+}
+
+/* 3D projection matrix, for 3D objects on scene, changes as camera's fov changes */
+glm::mat4 Window::get_projection3d(const Camera& camera) {
+  glm::mat4 projection3d = glm::perspective(glm::radians(camera.fov), (float) width / (float) height, 1.0f, 50.f);
+  return projection3d;
 }
 
 /* Whether window failed to be created */
