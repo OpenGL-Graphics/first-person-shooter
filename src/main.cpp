@@ -49,16 +49,6 @@ int main() {
   // camera & transformation matrixes
   Camera camera(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-  // position of color cube follows location of mouse click (calculate from camera position & direction)
-  glm::vec3 position_cube = glm::vec3(-3.0f, 0.0f, 0.0f);
-
-  // callback for processing mouse click (after init static members)
-  MouseHandler::init(&window, &camera, &position_cube);
-  window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
-  std::cout << "window.width: " << window.width
-            << " window.height: " << window.height
-            << '\n';
-
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_color("assets/shaders/color.vert", "assets/shaders/color.frag");
@@ -169,6 +159,13 @@ int main() {
   // initialize dialog with imgui
   // Dialog dialog(window, "Dialog title", "Dialog text");
 
+  // callback for processing mouse click (after init static members)
+  MouseHandler::init(&window, &camera, &cube_color);
+  window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
+  std::cout << "window.width: " << window.width
+            << " window.height: " << window.height
+            << '\n';
+
   // handler for keyboard inputs
   KeyHandler key_handler(window, camera, pc);
 
@@ -271,7 +268,7 @@ int main() {
     renderer_trapezoid.draw(uniforms_trapezoid);
 
     // draw color cube
-    cube_color.set_transform(glm::translate(glm::mat4(1.0f), position_cube));
+    cube_color.set_transform(glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)));
     Uniforms uniform_cube_color = {
       {"view", view},
       {"projection", projection3d},

@@ -15,6 +15,7 @@ struct BoundingBox {
 
   bool check_collision(const BoundingBox& bounding_box);
   int check_collision(const std::vector<BoundingBox>& bounding_boxes);
+  bool intersects(const glm::vec3& point, const glm::vec3& vector);
 };
 
 #endif // BOUNDING_BOX_HPP

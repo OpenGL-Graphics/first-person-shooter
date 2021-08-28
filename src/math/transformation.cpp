@@ -16,6 +16,8 @@ Transformation::Transformation(const glm::mat4& v, const glm::mat4& p, float z):
  * Used for raycasting (i.e. intersection of 2D mouse cursor with 3D scene)
  * @param position_ndc XY coords in [-1, 1]
  * @return position_world Normalized vector in world space
+ * Raycasting theory: https://antongerdelan.net/opengl/raycasting.html
+ * TODO: Not working yet!
  */
 glm::vec4 Transformation::transform_inv(const glm::vec2& position_ndc) {
   // glm::vec4 position_view = glm::inverse(m_projection) * glm::vec4(position_ndc, m_z, 1.0f);

@@ -6,7 +6,7 @@
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 Camera* MouseHandler::m_camera;
 Window* MouseHandler::m_window;
-glm::vec3* MouseHandler::m_postition_cube;
+Renderer* MouseHandler::m_cube;
 int MouseHandler::m_xmouse;
 int MouseHandler::m_ymouse;
 
@@ -14,32 +14,31 @@ int MouseHandler::m_ymouse;
  * Initialize static members
  * @param window
  * @param camera Pointer to camera to control with mouse
+ * @param cube Check for its intersection with camera's intersection
  */
-// void MouseHandler::init(int xmouse, int ymouse, Camera* camera) {
-void MouseHandler::init(Window* window, Camera* camera, glm::vec3* position_cube) {
+void MouseHandler::init(Window* window, Camera* camera, Renderer* cube) {
   // init static members: initial mouse's xy-coords at center of screen
   m_camera = camera;
   m_window = window;
   m_xmouse = m_window->width / 2;
   m_ymouse = m_window->height / 2;
-
-  m_postition_cube = position_cube;
+  m_cube = cube;
 }
 
 /**
  * listener for click on mouse buttons
- * Raycasting theory: https://antongerdelan.net/opengl/raycasting.html
+ * Check for intersection between camera's line of sight & cube
  */
 void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, int mods) {
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-    /*
-    // gun crosshair at center of screen in clip space (NDC)
-    glm::vec4 position_ndc(0.0f, 0.0f, 0.0f, 1.0f);
-    Transformation transformation(m_camera->get_view(), m_window->get_projection3d(*m_camera), m_camera->get_position().z);
-    glm::vec4 position_world = transformation.transform_inv(position_ndc);
-    */
+    BoundingBox bounding_box = m_cube->bounding_box;
+    bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 
-    *m_postition_cube = m_camera->position + 5.0f * m_camera->direction;
+    if (is_intersecting) {
+      std::cout << "Intersecting!" << '\n';
+    } else {
+      std::cout << "Not intersecting!" << '\n';
+    }
   }
 }
 

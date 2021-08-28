@@ -13,7 +13,7 @@
 class MouseHandler {
 public:
   /* No need for instance constructor to init static private members */
-  static void init(Window* window, Camera* camera, glm::vec3* position_cube);
+  static void init(Window* window, Camera* camera, Renderer* cube);
 
   /* static methods can be passed as function pointers callbacks (no `this` argument) */
   static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
@@ -28,8 +28,8 @@ private:
   /* Needed to get 3d projection matrix for raycasting (mouse position to 3d position) */
   static Window* m_window;
 
-  /* Color cube positionned using camera's position & direction vector */
-  static glm::vec3* m_postition_cube;
+  /* Color cube to check for intersection with camera's line of sight */
+  static Renderer* m_cube;
 
   /* previous mouse xy-coords to compare to when moving (modified inside listeners below) */
   static int m_xmouse;
