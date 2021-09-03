@@ -26,8 +26,9 @@ Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Att
  * glm::mat4 used as certain objects in scene require a scaling (besides translation)
  * @param model Model matrix (i.e. transformation matrix)
  */
-void Renderer::set_transform(const glm::mat4& model) {
-  model_mat = model;
+void Renderer::set_transform(const Transformation& t) {
+  transformation = t;
+  model_mat = transformation.model;
 
   // calculate bounding box from positions in local coords in vbo
   // then update bounding box in world coords from model matrix (avoids incremental translation)
@@ -59,7 +60,9 @@ void Renderer::move(const glm::vec3& offset) {
  */
 void Renderer::draw(Uniforms& uniforms, GLenum mode) {
   // 3d position of model
-  uniforms["model"] = model_mat;
+  uniforms["model"] = transformation.model;
+  uniforms["view"] = transformation.view;
+  uniforms["projection"] = transformation.projection;
 
   // wireframe mode
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -89,7 +92,12 @@ void Renderer::draw_with_outlines(Uniforms& uniforms) {
   // 2nd render pass: only fragments that weren't assigned 1s in previous step are rendered (pass the test)
   // white outlines & scaling
   glStencilFunc(GL_NOTEQUAL, 1, 0xff);
-  set_transform(glm::scale(model_mat, glm::vec3(1.1f, 1.1f, 1.1f)));
+  // set_transform(glm::scale(model_mat, glm::vec3(1.1f, 1.1f, 1.1f)));
+  set_transform({
+    glm::scale(model_mat, glm::vec3(1.1f, 1.1f, 1.1f)),
+    transformation.view,
+    transformation.projection
+  });
   uniforms["color"] = glm::vec3(1.0f, 1.0f, 1.0f);
   draw(uniforms);
 

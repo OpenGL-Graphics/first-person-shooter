@@ -13,10 +13,9 @@
 struct LevelRenderer {
   LevelRenderer(const Program& program, const Tilemap& tilemap);
   void draw(Uniforms& uniforms);
-  void draw_horizontal_surface(Uniforms& uniforms, const glm::vec2& size, float height);
   void draw_floor(Uniforms& uniforms);
   void draw_ceiling(Uniforms& uniforms);
-  void set_transform(const glm::mat4& mat_model);
+  void set_transform(const Transformation& t);
   void free();
 
 protected:
@@ -30,6 +29,8 @@ private:
   float m_height;
   Tilemap m_tilemap;
   std::unordered_map<std::string, Texture2D> m_textures;
+
+  void draw_horizontal_surface(Uniforms& uniforms, const glm::vec2& size, float height);
 };
 
 #endif // LEVEL_RENDERER_HPP

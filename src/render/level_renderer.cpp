@@ -64,14 +64,16 @@ void LevelRenderer::draw(Uniforms& uniforms) {
       // render tile surface (or two tiles surfaces for corners)
       for (size_t i_surface = 0; i_surface < n_surfaces; ++i_surface) {
         // vertical scaling then rotation around y-axis then translation
-        m_renderer.set_transform(glm::scale(
-          glm::rotate(
-            glm::translate(glm::mat4(1.0f), position_surface),
-            angle[i_surface],
-            glm::vec3(0.0f, 1.0f, 0.0f)
-          ),
-          glm::vec3(1.0f, m_height, 1.0f)
-        ));
+        m_renderer.set_transform({
+          glm::scale(
+            glm::rotate(
+              glm::translate(glm::mat4(1.0f), position_surface),
+              angle[i_surface],
+              glm::vec3(0.0f, 1.0f, 0.0f)
+            ),
+            glm::vec3(1.0f, m_height, 1.0f)
+          ), m_renderer.transformation.view, m_renderer.transformation.projection
+        });
 
         m_renderer.draw(uniforms);
       }
@@ -87,14 +89,16 @@ void LevelRenderer::draw(Uniforms& uniforms) {
 void LevelRenderer::draw_horizontal_surface(Uniforms& uniforms, const glm::vec2& size, float height) {
   // xy scaling then rotation around x-axis then translation
   float angle = glm::radians(90.0f);
-  m_renderer.set_transform(glm::scale(
-    glm::rotate(
-      glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
-      angle,
-      glm::vec3(1.0f, 0.0f, 0.0f)
-    ),
-    glm::vec3(size.x, size.y, 1.0f)
-  ));
+  m_renderer.set_transform({
+    glm::scale(
+      glm::rotate(
+        glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
+        angle,
+        glm::vec3(1.0f, 0.0f, 0.0f)
+      ),
+      glm::vec3(size.x, size.y, 1.0f)
+    ), m_renderer.transformation.view, m_renderer.transformation.projection
+  });
 
   m_renderer.draw(uniforms);
 }
@@ -115,8 +119,8 @@ void LevelRenderer::draw_ceiling(Uniforms& uniforms) {
  * Set model matrix (translation/rotation/scaling)
  * `m_position` serves as an offset when translating surfaces tiles in `draw()`
  */
-void LevelRenderer::set_transform(const glm::mat4& mat_model) {
-  m_renderer.set_transform(mat_model);
+void LevelRenderer::set_transform(const Transformation& t) {
+  m_renderer.set_transform(t);
   m_position = m_renderer.model_mat[3];
 }
 

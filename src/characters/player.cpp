@@ -4,8 +4,8 @@
 // movement constants
 const float SPEED = 0.1f;
 
-Player::Player(const Program& program, const Model& model, const std::vector<Attribute>& attributes):
-  ModelRenderer(program, model, attributes),
+Player::Player(ModelRenderer* renderer):
+  model_renderer(renderer),
   m_forward_dir(0.0f, 0.0f, -1.0f)
 {
 }
@@ -13,7 +13,7 @@ Player::Player(const Program& program, const Model& model, const std::vector<Att
 /* Calculate bounding box from bounding boxes of each mesh renderer */
 void Player::calculate_bounding_box() {
   std::vector<glm::vec3> renderers_bounds;
-  for (Renderer& renderer : m_renderers) {
+  for (Renderer& renderer : model_renderer->renderers) {
     renderers_bounds.push_back(renderer.bounding_box.min);
     renderers_bounds.push_back(renderer.bounding_box.max);
   }
@@ -42,7 +42,7 @@ void Player::move(Direction direction) {
   }
 
   // move meshes & recalculate model's bounding box
-  for (Renderer& renderer : m_renderers) {
+  for (Renderer& renderer : model_renderer->renderers) {
     renderer.move(offset);
   }
   calculate_bounding_box();
@@ -64,4 +64,13 @@ void Player::orient(const Camera& camera) {
     } else if (yaw_camera >= glm::radians(45.0f)) {
       m_forward_dir = {-1.0f, 0.0f, 0.0f};
     }
+}
+
+/* delegate drawing with OpenGL (buffers & shaders) to renderer */
+void Player::draw(Uniforms& uniforms) {
+  if (m_is_dead) {
+    return;
+  }
+
+  model_renderer->draw(uniforms);
 }

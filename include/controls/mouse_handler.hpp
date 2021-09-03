@@ -2,8 +2,8 @@
 #define MOUSE_HANDLER_HPP
 
 #include "gui/window.hpp"
-#include "render/model_renderer.hpp"
 #include "navigation/camera.hpp"
+#include "characters/target.hpp"
 
 /**
  * Static class (all its members are static) because it contains only callbacks (function pointers)
@@ -13,7 +13,8 @@
 class MouseHandler {
 public:
   /* No need for instance constructor to init static private members */
-  static void init(Window* window, Camera* camera, Renderer* cube);
+  // static void init(Window* window, Camera* camera, Renderer* cube);
+  static void init(Window* window, Camera* camera, std::vector<Target *> targets);
 
   /* static methods can be passed as function pointers callbacks (no `this` argument) */
   static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
@@ -29,7 +30,7 @@ private:
   static Window* m_window;
 
   /* Color cube to check for intersection with camera's line of sight */
-  static Renderer* m_cube;
+  static std::vector<Target *> m_targets;
 
   /* previous mouse xy-coords to compare to when moving (modified inside listeners below) */
   static int m_xmouse;

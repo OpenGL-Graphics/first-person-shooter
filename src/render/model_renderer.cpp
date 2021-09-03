@@ -13,25 +13,28 @@ ModelRenderer::ModelRenderer(const Program& program, const Model& model, const s
   for (const Mesh& mesh : m_model.meshes) {
     VBO vbo_mesh(Geometry(mesh.vertexes, mesh.indices, mesh.positions));
     Renderer renderer(program, vbo_mesh, attributes);
-    m_renderers.push_back(renderer);
+    renderers.push_back(renderer);
   }
 }
 
-/* Initial transformation (position) of 3D Object accord. to model matrix */
-void ModelRenderer::set_transform(const glm::mat4& mat_model) {
-  for (Renderer& renderer : m_renderers) {
-    renderer.set_transform(mat_model);
+/**
+ * Initial transformation (position) of 3D Object accord. to model matrix
+ * as well view & projection matrixes
+ */
+void ModelRenderer::set_transform(const Transformation& transformation) {
+  for (Renderer& renderer : renderers) {
+    renderer.set_transform(transformation);
   }
 }
 
 /* Rendering of model relies on `Renderer::draw() applied to each mesh */
 void ModelRenderer::draw(Uniforms& uniforms, bool with_outlines) {
-  for (size_t i_renderer = 0; i_renderer < m_renderers.size(); ++i_renderer) {
+  for (size_t i_renderer = 0; i_renderer < renderers.size(); ++i_renderer) {
     // retrieve material color from mesh
     Mesh mesh = m_model.meshes[i_renderer];
     uniforms["color"] = mesh.color;
     uniforms["texture2d"] = mesh.texture;
-    Renderer renderer = m_renderers[i_renderer];
+    Renderer renderer = renderers[i_renderer];
 
     if (with_outlines) {
       renderer.draw_with_outlines(uniforms);
@@ -42,7 +45,7 @@ void ModelRenderer::draw(Uniforms& uniforms, bool with_outlines) {
 }
 
 void ModelRenderer::free() {
-  for (Renderer& renderer : m_renderers) {
+  for (Renderer& renderer : renderers) {
     renderer.free();
   }
 }

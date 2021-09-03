@@ -6,7 +6,7 @@
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 Camera* MouseHandler::m_camera;
 Window* MouseHandler::m_window;
-Renderer* MouseHandler::m_cube;
+std::vector<Target *> MouseHandler::m_targets;
 int MouseHandler::m_xmouse;
 int MouseHandler::m_ymouse;
 
@@ -16,13 +16,13 @@ int MouseHandler::m_ymouse;
  * @param camera Pointer to camera to control with mouse
  * @param cube Check for its intersection with camera's intersection
  */
-void MouseHandler::init(Window* window, Camera* camera, Renderer* cube) {
+void MouseHandler::init(Window* window, Camera* camera, std::vector<Target *> targets) {
   // init static members: initial mouse's xy-coords at center of screen
   m_camera = camera;
   m_window = window;
   m_xmouse = m_window->width / 2;
   m_ymouse = m_window->height / 2;
-  m_cube = cube;
+  m_targets = targets;
 }
 
 /**
@@ -31,13 +31,16 @@ void MouseHandler::init(Window* window, Camera* camera, Renderer* cube) {
  */
 void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, int mods) {
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-    BoundingBox bounding_box = m_cube->bounding_box;
-    bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
+    for (Target* target : m_targets) {
+      BoundingBox bounding_box = target->renderer->bounding_box;
+      bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 
-    if (is_intersecting) {
-      std::cout << "Intersecting!" << '\n';
-    } else {
-      std::cout << "Not intersecting!" << '\n';
+      if (is_intersecting) {
+        target->is_dead = true;
+        std::cout << "Intersecting!" << '\n';
+      } else {
+        std::cout << "Not intersecting!" << '\n';
+      }
     }
   }
 }

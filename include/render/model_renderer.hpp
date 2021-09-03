@@ -9,14 +9,14 @@
  * as vertexes indices start from 0 for all meshes (otherwise they would overwrite)
  */
 struct ModelRenderer {
+  // used by class `characters/Player`
+  std::vector<Renderer> renderers;
+
   ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes);
   void draw(Uniforms& uniforms, bool with_outlines=false);
-  void set_transform(const glm::mat4& mat_model);
+  void set_transform(const Transformation& transformation);
   void free();
 
-protected:
-  // inherited by child class `characters/Player`
-  std::vector<Renderer> m_renderers;
 private:
   Model m_model;
 };
