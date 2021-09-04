@@ -9,9 +9,10 @@ TextRenderer::TextRenderer(const Program& program, const VBO& vbo, const std::ve
 {
 }
 
-void TextRenderer::draw_text(Uniforms& uniforms, const std::string& text) {
+void TextRenderer::draw_text(const std::string& text, const Uniforms& u) {
   // inspired by https://learnopengl.com/In-Practice/Text-Rendering
   float x = 0;
+  Uniforms uniforms = u;
 
   for (const char& c : text) {
     // get glyph texture corresponding to character

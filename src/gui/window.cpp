@@ -14,7 +14,8 @@ Window::Window(const std::string& title) {
 
   // window in full-screen mode
   Monitor monitor;
-  w = glfwCreateWindow(monitor.width, monitor.height, title.c_str(), monitor.m, NULL);
+  // w = glfwCreateWindow(monitor.width, monitor.height, title.c_str(), monitor.m, NULL);
+  w = glfwCreateWindow(monitor.width, monitor.height, title.c_str(), NULL, NULL); // windowed mode
 
   // get window size (same as monitor in full-screen mode)
   glfwGetWindowSize(w, &width, &height);

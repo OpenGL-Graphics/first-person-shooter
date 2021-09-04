@@ -13,7 +13,7 @@ struct ModelRenderer {
   std::vector<Renderer> renderers;
 
   ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes);
-  void draw(Uniforms& uniforms, bool with_outlines=false);
+  void draw(const Uniforms& u={}, bool with_outlines=false);
   void set_transform(const Transformation& transformation);
   void free();
 

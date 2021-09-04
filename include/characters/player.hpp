@@ -16,7 +16,7 @@ struct Player {
   void move(Direction direction);
   void calculate_bounding_box();
   void orient(const Camera& camera);
-  void draw(Uniforms& uniforms);
+  void draw(const Uniforms& uniforms={});
 
 private:
   /* defines direction of movement forward */

@@ -12,9 +12,9 @@
  */
 struct LevelRenderer {
   LevelRenderer(const Program& program, const Tilemap& tilemap);
-  void draw(Uniforms& uniforms);
-  void draw_floor(Uniforms& uniforms);
-  void draw_ceiling(Uniforms& uniforms);
+  void draw(const Uniforms& u);
+  void draw_floor(const Uniforms& u);
+  void draw_ceiling(const Uniforms& u);
   void set_transform(const Transformation& t);
   void free();
 
@@ -30,7 +30,7 @@ private:
   Tilemap m_tilemap;
   std::unordered_map<std::string, Texture2D> m_textures;
 
-  void draw_horizontal_surface(Uniforms& uniforms, const glm::vec2& size, float height);
+  void draw_horizontal_surface(const Uniforms& u, const glm::vec2& size, float height);
 };
 
 #endif // LEVEL_RENDERER_HPP

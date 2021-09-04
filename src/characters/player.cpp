@@ -6,7 +6,8 @@ const float SPEED = 0.1f;
 
 Player::Player(ModelRenderer* renderer):
   model_renderer(renderer),
-  m_forward_dir(0.0f, 0.0f, -1.0f)
+  m_forward_dir(0.0f, 0.0f, -1.0f),
+  m_is_dead(false)
 {
 }
 
@@ -67,7 +68,7 @@ void Player::orient(const Camera& camera) {
 }
 
 /* delegate drawing with OpenGL (buffers & shaders) to renderer */
-void Player::draw(Uniforms& uniforms) {
+void Player::draw(const Uniforms& uniforms) {
   if (m_is_dead) {
     return;
   }

@@ -56,10 +56,12 @@ void Renderer::move(const glm::vec3& offset) {
 /**
  * Draw vertexes given to `m_vbo`
  * @param Uniforms Unordered map (key, values) of vars to pass to shader
+ *        Passed as const ref. as we cannot have default param values with refs.
  * @param mode GL_TRIANGLES for most meshes, GL_TRIANGLE_STRIP for terrains
  */
-void Renderer::draw(Uniforms& uniforms, GLenum mode) {
+void Renderer::draw(const Uniforms& u, GLenum mode) {
   // 3d position of model
+  Uniforms uniforms = u;
   uniforms["model"] = transformation.model;
   uniforms["view"] = transformation.view;
   uniforms["projection"] = transformation.projection;
@@ -83,10 +85,11 @@ void Renderer::draw(Uniforms& uniforms, GLenum mode) {
  * Draw vertexes with outlines using stencil buffer & multipass drawing
  * @param Uniforms Unordered map (key, values) of vars to pass to shader
  */
-void Renderer::draw_with_outlines(Uniforms& uniforms) {
+void Renderer::draw_with_outlines(const Uniforms& u) {
   // 1st render pass: always pass the stencil test & set ref=1 in stencil buffer for drawn fragments (pixels)
   glStencilFunc(GL_ALWAYS, 1, 0xff);
   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+  Uniforms uniforms = u;
   draw(uniforms);
 
   // 2nd render pass: only fragments that weren't assigned 1s in previous step are rendered (pass the test)

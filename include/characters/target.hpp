@@ -13,7 +13,7 @@ struct Target {
   bool is_dead;
 
   Target(Renderer* r);
-  void draw(Uniforms& uniforms);
+  void draw(const Uniforms& uniforms={});
 };
 
 #endif // TARGET_HPP

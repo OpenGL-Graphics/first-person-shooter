@@ -134,20 +134,17 @@ int main() {
   ModelRenderer renderer_trapezoid(pgm_basic, model_trapezoid, {{0, "position", 3, 8, 0}});
   ModelRenderer renderer_two_cubes(pgm_basic, model_two_cubes, {{0, "position", 3, 8, 0}});
   ModelRenderer renderer_player(pgm_texture_mesh, model_cube, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
-  Player player(&renderer_player);
   profiler.stop();
   profiler.print("Loading 3D models");
+
+  // player
+  Player player(&renderer_player);
+  player.calculate_bounding_box();
 
   // transformation matrices
   glm::mat4 view = camera.get_view();
   glm::mat4 projection3d = window.get_projection3d(camera);
   glm::mat4 projection2d = window.get_projection2d();
-
-  // position 3D models
-  renderer_trapezoid.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 25.0f)), view, projection3d });
-  renderer_two_cubes.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)), view, projection3d });
-  renderer_player.set_transform({ glm::mat4(1.0f), view, projection3d });
-  player.calculate_bounding_box();
 
   // cubes to collide with (cube_texture)
   std::vector<glm::vec3> positions = {
@@ -203,34 +200,27 @@ int main() {
     // cube with outline using two-passes rendering & stencil buffer
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f)));
     cube_basic.set_transform({ model_cube_outline, view, projection3d });
-    Uniforms uniforms_cube_outline = { {"color", glm::vec3(0.0f, 0.0f, 1.0f)}, };
-    cube_basic.draw_with_outlines(uniforms_cube_outline);
+    cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
     // draw level tiles surfaces
-    Uniforms uniforms_level = {
-      {"view", view},
-      {"projection", projection3d},
-    };
     level.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 10.0f)), view, projection3d});
-    level.draw(uniforms_level);
+    level.draw({});
 
     // draw terrain using triangle strips
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
     glm::vec3 position_light(10.0f, 6.0f, 6.0f);
-    terrain.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0.0f, -10.0f)), view, projection3d });
-    Uniforms uniform_terrain = {
-      {"view", view},
-      {"projection", projection3d},
-      {"texture2d_water", texture_terrain_water},
-      {"texture2d_grass", texture_terrain_grass},
-      {"texture2d_rock", texture_terrain_rock},
-      {"texture2d_splatmap", texture_terrain_splatmap},
-      {"light.position", position_light},
-      {"light.ambiant", 0.2f * color_light},
-      {"light.diffuse", 0.5f * color_light},
-      {"light.specular", color_light},
-    };
-    terrain.draw(uniform_terrain, GL_TRIANGLE_STRIP);
+    terrain.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -10.0f)), view, projection3d });
+    terrain.draw({
+        {"texture2d_water", texture_terrain_water},
+        {"texture2d_grass", texture_terrain_grass},
+        {"texture2d_rock", texture_terrain_rock},
+        {"texture2d_splatmap", texture_terrain_splatmap},
+        {"light.position", position_light},
+        {"light.ambiant", 0.2f * color_light},
+        {"light.diffuse", 0.5f * color_light},
+        {"light.specular", color_light},
+      }, GL_TRIANGLE_STRIP
+    );
 
     // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
@@ -239,18 +229,11 @@ int main() {
       glm::vec3(0.2f)
     ));
     cube_basic.set_transform({ model_light, view, projection3d });
-    Uniforms uniforms_cube_basic = {
-      {"view", view},
-      {"projection", projection3d},
-      {"color", color_light},
-    };
-    target_cube_basic.draw(uniforms_cube_basic);
+    target_cube_basic.draw({ {"color", color_light} });
 
     // draw illuminated cube
     cube_light.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 4.0f)), view, projection3d });
-    Uniforms uniforms_cube_light = {
-      {"view", view},
-      {"projection", projection3d},
+    target_cube_light.draw({
       {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
       {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
       {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
@@ -260,50 +243,37 @@ int main() {
       {"light.diffuse", 0.5f * color_light},
       {"light.specular", color_light},
       {"position_camera", camera.position},
-    };
-    target_cube_light.draw(uniforms_cube_light);
+    });
 
     // draw colored trapezoid 3d model
-    Uniforms uniforms_trapezoid = {
-      {"view", view},
-      {"projection", projection3d},
-    };
-    renderer_trapezoid.draw(uniforms_trapezoid);
+    renderer_trapezoid.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 25.0f)), view, projection3d });
+    renderer_trapezoid.draw();
 
-    // draw color cube
-    cube_color.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)), view, projection3d });
-    Uniforms uniform_cube_color = {
-      {"view", view},
-      {"projection", projection3d},
-    };
-    target_cube_color.draw(uniform_cube_color);
+    // draw color cube (rotated around x-axis)
+    cube_color.set_transform({
+      glm::rotate(
+        glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)),
+        glm::radians(45.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f)
+      ),
+      view, projection3d });
+    target_cube_color.draw();
 
     // draw colored two-cubes 3d model
-    Uniforms uniforms_two_cubes = {
-      {"view", view},
-      {"projection", projection3d},
-    };
-    renderer_two_cubes.draw(uniforms_two_cubes);
+    renderer_two_cubes.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)), view, projection3d });
+    renderer_two_cubes.draw();
 
     // draw 3x texture cubes
-    Uniforms uniforms_cube_texture = {
-      {"view", view},
-      {"projection", projection3d},
-      {"texture3d", texture_cube},
-    };
     std::vector<BoundingBox> bounding_boxes;
     for (const glm::vec3& position : positions) {
       cube_texture.set_transform({ glm::translate(glm::mat4(1.0f), position), view, projection3d });
-      target_cube_texture.draw(uniforms_cube_texture);
+      target_cube_texture.draw({ {"texture3d", texture_cube} });
       bounding_boxes.push_back(cube_texture.bounding_box);
     }
 
     // draw textured cube 3d model
-    Uniforms uniforms_cube_textured = {
-      {"view", view},
-      {"projection", projection3d},
-    };
-    renderer_player.draw(uniforms_cube_textured);
+    renderer_player.set_transform({ glm::mat4(1.0f), view, projection3d });
+    player.draw();
 
 
     // remove static textured cubes on collision with moving PC & increment score
@@ -316,22 +286,11 @@ int main() {
 
     // draw surface with two blending textures
     surface_mix.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f)), view, projection3d });
-    Uniforms uniform_mix = {
-      {"view",  view},
-      {"projection", projection3d},
-      {"texture2d_1", texture_panda},
-      {"texture2d_2", texture_cat},
-    };
-    surface_mix.draw(uniform_mix);
+    surface_mix.draw({ {"texture2d_1", texture_panda}, {"texture2d_2", texture_cat} });
 
     // draw 2d grass surface (non-centered)
     surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)), view, projection3d });
-    Uniforms uniform_grass = {
-      {"view",  view},
-      {"projection", projection3d},
-      {"texture2d", texture_surface_grass},
-    };
-    surface.draw(uniform_grass);
+    surface.draw({ {"texture2d", texture_surface_grass} });
 
     // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin
@@ -349,18 +308,12 @@ int main() {
         glm::vec3(0.15f)
       ), glm::mat4(1.0f), projection3d
     });
-    Uniforms uniforms_gun = {};
-    renderer_gun.draw(uniforms_gun);
+    renderer_gun.draw();
 
     // last to render: transparent surfaces to ensure blending with background
     // draw half-transparent 3d window
     surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f)), view, projection3d });
-    Uniforms uniform_glass = {
-      {"view",  view},
-      {"projection", projection3d},
-      {"texture2d", texture_surface_glass},
-    };
-    surface.draw(uniform_glass);
+    surface.draw({ {"texture2d", texture_surface_glass} });
 
     // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
     glm::mat4 model_hud_health(glm::scale(
@@ -371,8 +324,7 @@ int main() {
       glm::vec3(texture_surface_hud.get_width(), texture_surface_hud.get_height(), 1.0f)
     ));
     surface.set_transform({ model_hud_health, glm::mat4(1.0f), projection2d });
-    Uniforms uniform_hud = { {"texture2d", texture_surface_hud}, };
-    surface.draw(uniform_hud);
+    surface.draw({ {"texture2d", texture_surface_hud} });
 
     // draw crosshair gun target surface at center of screen
     glm::mat4 model_crosshair(glm::scale(
@@ -384,13 +336,11 @@ int main() {
       glm::vec3(texture_surface_crosshair.get_width(), texture_surface_crosshair.get_height(), 1.0f)
     ));
     surface.set_transform({ model_crosshair, glm::mat4(1.0f), projection2d });
-    Uniforms uniform_crosshair = { {"texture2d", texture_surface_crosshair}, };
-    surface.draw(uniform_crosshair);
+    surface.draw({ {"texture2d", texture_surface_crosshair} });
 
     // draw 2d text surface (origin: left baseline)
     surface_glyph.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)), glm::mat4(1.0f), projection2d });
-    Uniforms uniforms_text = {};
-    surface_glyph.draw_text(uniforms_text, "Score: " + std::to_string(score));
+    surface_glyph.draw_text("Score: " + std::to_string(score));
 
     // render imgui dialog
     // dialog.render();

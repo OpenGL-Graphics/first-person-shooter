@@ -20,8 +20,9 @@ LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap):
  * Render tiles with textures accord. to tilemap & origin at tilemap's upper-left corner
  * @param uniforms Uniforms passed to shader
  */
-void LevelRenderer::draw(Uniforms& uniforms) {
+void LevelRenderer::draw(const Uniforms& u) {
   // draw floor & ceiling
+  Uniforms uniforms = u;
   draw_floor(uniforms);
   draw_ceiling(uniforms);
 
@@ -86,7 +87,7 @@ void LevelRenderer::draw(Uniforms& uniforms) {
  * @param size Amount by which to scale surface on xy vertical plan
  * @param height Elevation of surface (i.e. translation on y-axis)
  */
-void LevelRenderer::draw_horizontal_surface(Uniforms& uniforms, const glm::vec2& size, float height) {
+void LevelRenderer::draw_horizontal_surface(const Uniforms& uniforms, const glm::vec2& size, float height) {
   // xy scaling then rotation around x-axis then translation
   float angle = glm::radians(90.0f);
   m_renderer.set_transform({
@@ -104,13 +105,15 @@ void LevelRenderer::draw_horizontal_surface(Uniforms& uniforms, const glm::vec2&
 }
 
 /* Draw horizontal floor covering bottom of tilemap */
-void LevelRenderer::draw_floor(Uniforms& uniforms) {
+void LevelRenderer::draw_floor(const Uniforms& u) {
+  Uniforms uniforms = u;
   uniforms["texture2d"] = m_textures["floor"];
   draw_horizontal_surface(uniforms, {m_tilemap.n_cols - 1, m_tilemap.n_rows - 1}, 0.0f);
 }
 
 /* Draw horizontal floor covering top of tilemap */
-void LevelRenderer::draw_ceiling(Uniforms& uniforms) {
+void LevelRenderer::draw_ceiling(const Uniforms& u) {
+  Uniforms uniforms = u;
   uniforms["texture2d"] = m_textures["ceiling"];
   draw_horizontal_surface(uniforms, {m_tilemap.n_cols - 1, m_tilemap.n_rows - 1}, m_height);
 }

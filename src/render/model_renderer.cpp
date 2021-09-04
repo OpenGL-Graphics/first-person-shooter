@@ -28,7 +28,9 @@ void ModelRenderer::set_transform(const Transformation& transformation) {
 }
 
 /* Rendering of model relies on `Renderer::draw() applied to each mesh */
-void ModelRenderer::draw(Uniforms& uniforms, bool with_outlines) {
+void ModelRenderer::draw(const Uniforms& u, bool with_outlines) {
+  Uniforms uniforms = u;
+
   for (size_t i_renderer = 0; i_renderer < renderers.size(); ++i_renderer) {
     // retrieve material color from mesh
     Mesh mesh = m_model.meshes[i_renderer];

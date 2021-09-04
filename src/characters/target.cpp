@@ -2,7 +2,7 @@
 
 /**
  * TODO:
- *   1. pass ModelRenderer (like for Player) 
+ *   1. pass ModelRenderer (like for Player)
  *   2. Both Target & Player inherit from Character class containing draw() & m_is_dead
  */
 Target::Target(Renderer* r):
@@ -12,7 +12,7 @@ Target::Target(Renderer* r):
 }
 
 /* delegate drawing with OpenGL (buffers & shaders) to renderer */
-void Target::draw(Uniforms& uniforms) {
+void Target::draw(const Uniforms& uniforms) {
   if (is_dead) {
     return;
   }
