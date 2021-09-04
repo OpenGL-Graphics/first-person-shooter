@@ -46,7 +46,7 @@ int main() {
   }
 
   // camera & transformation matrixes
-  Camera camera(glm::vec3(0.0f, 2.5f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  Camera camera(glm::vec3(0.0f, 2.5f, 22.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
@@ -209,7 +209,7 @@ int main() {
     // draw terrain using triangle strips
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
     glm::vec3 position_light(10.0f, 6.0f, 6.0f);
-    terrain.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0.0f, -10.0f)), view, projection3d });
+    terrain.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(20.0f, 0.0f, -20.0f)), view, projection3d });
     terrain.draw({
         {"texture2d_water", texture_terrain_water},
         {"texture2d_grass", texture_terrain_grass},

@@ -43,13 +43,17 @@ void LevelRenderer::draw(const Uniforms& u) {
           uniforms["texture2d"] = m_textures["wall"];
           angle[0] = glm::radians(90.0f);
           break;
-        case Tilemap::Tiles::CORNER:
+        case Tilemap::Tiles::WALL_L:
           // close gap in lower-left corner using two perpendicular surfaces
-          if (i_col == 0 && i_row == m_tilemap.n_rows - 1) {
-            uniforms["texture2d"] = m_textures["wall"];
-            n_surfaces = 2;
-            angle[0] = glm::radians(90.0f);
-          }
+          uniforms["texture2d"] = m_textures["wall"];
+          n_surfaces = 2;
+          angle[0] = glm::radians(90.0f);
+          break;
+        case Tilemap::Tiles::WALL_L_INV:
+          // two perpendicular surfaces forming a reverse L-shape (Uppercase Gamma)
+          uniforms["texture2d"] = m_textures["wall"];
+          n_surfaces = 2;
+          angle[0] = glm::radians(-90.0f);
           break;
         case Tilemap::Tiles::DOOR_H:
           uniforms["texture2d"] = m_textures["door"];

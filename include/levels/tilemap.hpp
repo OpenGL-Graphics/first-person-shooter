@@ -14,8 +14,11 @@ struct Tilemap {
     WALL_V = '|',
     DOOR_H = '=',
     DOOR_V = '#',
-    CORNER = '+',
     SPACE = ' ',
+
+    // compounds wall composed of two perpendicular walls
+    WALL_L = 'L',
+    WALL_L_INV = 'I',
   };
 
   unsigned int n_rows;
