@@ -1,9 +1,15 @@
 #include <glm/gtc/matrix_transform.hpp>
+#include <algorithm>
+#include <iostream>
 
 #include "render/level_renderer.hpp"
 #include "geometries/surface.hpp"
 
-LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap):
+/**
+ * Sets positions of walls tiles only once in constructor
+ * Needed for collision with camera
+ */
+LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap, const glm::vec3& position):
   m_renderer(program, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
   m_tilemap(tilemap),
   m_textures {
@@ -12,8 +18,54 @@ LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap):
     {"floor", Texture2D(Image("assets/images/level/floor.jpg"))},
     {"ceiling", Texture2D(Image("assets/images/level/ceiling.jpg"))},
   },
-  m_height(5.0f)
+  m_height(5.0f),
+  m_position(position)
 {
+  // TODO: only calculate world positions & angles in constructor (not in `draw()`)
+  std::cout << "rows: " << m_tilemap.n_rows << '\n';
+  std::cout << "cols: " << m_tilemap.n_cols << '\n';
+
+  std::vector<Tilemap::Tiles> tiles_walls = {
+    Tilemap::Tiles::WALL_H, Tilemap::Tiles::WALL_V, Tilemap::Tiles::WALL_L, Tilemap::Tiles::WALL_L_INV,
+  };
+
+  for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
+    for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
+      Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
+      glm::vec3 position_surface = {i_col, 0, i_row};
+      position_surface += m_position;
+
+      float angle = 0.0f;
+      switch (tile) {
+        case Tilemap::Tiles::WALL_H:
+          break;
+        case Tilemap::Tiles::WALL_V:
+          angle = glm::radians(90.0f);
+          break;
+        case Tilemap::Tiles::WALL_L:
+          angle = glm::radians(90.0f);
+          break;
+        case Tilemap::Tiles::WALL_L_INV:
+          angle = glm::radians(-90.0f);
+          break;
+      }
+
+      // save world position for walls (for collision with camera)
+      if (std::find(tiles_walls.begin(), tiles_walls.end(), tile) != tiles_walls.end()) {
+        glm::vec3 center_local = {0.5f, 0.5f, 0.0f};
+        glm::mat4 model = glm::scale(
+          glm::rotate(
+            glm::translate(glm::mat4(1.0f), position_surface),
+            angle,
+            glm::vec3(0.0f, 1.0f, 0.0f)
+          ),
+          glm::vec3(1.0f, m_height, 1.0f)
+        );
+        glm::vec3 center_world = glm::vec3(model * glm::vec4(center_local, 1.0f));
+        positions_walls.push_back(center_world);
+      }
+    }
+  }
 }
 
 /**
@@ -128,7 +180,6 @@ void LevelRenderer::draw_ceiling(const Uniforms& u) {
  */
 void LevelRenderer::set_transform(const Transformation& t) {
   m_renderer.set_transform(t);
-  m_position = m_renderer.model_mat[3];
 }
 
 void LevelRenderer::free() {

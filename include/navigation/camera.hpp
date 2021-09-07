@@ -3,6 +3,7 @@
 #define CAMERA_HPP
 
 #include <glm/glm.hpp>
+#include <vector>
 
 #include "navigation/direction.hpp"
 #include "navigation/zoom.hpp"
@@ -22,6 +23,9 @@ struct Camera {
   glm::vec3 position;
   glm::vec3 direction;
 
+  /* boundaries of level (i.e. position of walls) */
+  std::vector<glm::vec3> boundaries;
+
   Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up);
   glm::mat4 get_view();
   void move(Direction d);
@@ -33,6 +37,8 @@ private:
 
   // direction of movement
   glm::vec3 m_forward_dir;
+
+  bool is_close_to_boundaries(const glm::vec3& position_future);
 };
 
 #endif // CAMERA_HPP

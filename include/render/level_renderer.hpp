@@ -11,8 +11,11 @@
  * Renderer for level items (e.g. walls, doors...)
  */
 struct LevelRenderer {
-  LevelRenderer(const Program& program, const Tilemap& tilemap);
-  void draw(const Uniforms& u);
+  /* Used to block camera from going through walls */
+  std::vector<glm::vec3> positions_walls;
+
+  LevelRenderer(const Program& program, const Tilemap& tilemap, const glm::vec3& position);
+  void draw(const Uniforms& u={});
   void draw_floor(const Uniforms& u);
   void draw_ceiling(const Uniforms& u);
   void set_transform(const Transformation& t);

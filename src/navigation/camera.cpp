@@ -1,6 +1,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
 #include <algorithm>
+#include <iostream>
 
 #include "navigation/camera.hpp"
 
@@ -41,17 +42,40 @@ void Camera::zoom(Zoom z) {
   }
 }
 
-void Camera::move(Direction d) {
-  glm::vec3 right_dir = glm::normalize(glm::cross(m_forward_dir, m_up));
+/**
+ * Check if future camera position is too close from its distance to closest wall tile
+ * Used to prevent camera from going through walls
+ * @param position_future Next position of camera
+ */
+bool Camera::is_close_to_boundaries(const glm::vec3& position_future) {
+  std::vector<float> distances;
+  std::transform(boundaries.begin(), boundaries.end(), std::back_inserter(distances),
+      [position_future](const glm::vec3& position_wall) { return glm::length(position_future - position_wall); });
+  float min_distance = *std::min_element(distances.begin(), distances.end());
 
-  if (d == Direction::FORWARD)
-    position += SPEED * m_forward_dir;
-  if (d == Direction::BACKWARD)
-    position -= SPEED * m_forward_dir;
-  if (d == Direction::RIGHT)
-    position += SPEED * right_dir;
-  if (d == Direction::LEFT)
-    position -= SPEED * right_dir;
+  return min_distance < 1.2f;
+}
+
+void Camera::move(Direction d) {
+  // move forward/backward & sideways
+  glm::vec3 right_dir = glm::normalize(glm::cross(m_forward_dir, m_up));
+  glm::vec3 position_future;
+
+  if (d == Direction::FORWARD) {
+    position_future = position + SPEED*m_forward_dir;
+  } else if (d == Direction::BACKWARD) {
+    position_future = position - SPEED*m_forward_dir;
+  } else if (d == Direction::RIGHT) {
+    position_future = position + SPEED*right_dir;
+  } else if (d == Direction::LEFT) {
+    position_future = position - SPEED*right_dir;
+  }
+
+  // only move camera if not too close to walls
+  std::vector<Direction> dirs = {
+    Direction::FORWARD, Direction::BACKWARD, Direction::RIGHT, Direction::LEFT};
+  if (std::find(dirs.begin(), dirs.end(), d) != dirs.end() && !is_close_to_boundaries(position_future))
+    position = position_future;
 }
 
 void Camera::rotate(float x_offset, float y_offset) {

@@ -45,8 +45,8 @@ int main() {
     std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
   }
 
-  // camera & transformation matrixes
-  Camera camera(glm::vec3(0.0f, 2.5f, 22.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  // camera
+  Camera camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
@@ -111,7 +111,9 @@ int main() {
 
   // load tilemap by parsing text file
   Tilemap tilemap("assets/levels/map.txt");
-  LevelRenderer level(pgm_texture_surface, tilemap);
+  glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
+  LevelRenderer level(pgm_texture_surface, tilemap, position_level);
+  camera.boundaries = level.positions_walls;
 
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
@@ -148,9 +150,9 @@ int main() {
 
   // cubes to collide with (cube_texture)
   std::vector<glm::vec3> positions = {
-    glm::vec3(2.0f, 0.0f, 0.0f),
-    glm::vec3(2.0f, 0.0f, -1.0f),
-    glm::vec3(2.0f, 0.0f, -2.0f),
+    glm::vec3(-1.0f, 0.0f, -2.0f),
+    glm::vec3(-1.0f, 0.0f, -3.0f),
+    glm::vec3(-1.0f, 0.0f, -4.0f),
   };
   unsigned int score = 0;
 
@@ -186,9 +188,6 @@ int main() {
     // orient player's movements relative to camera horizontal angle (yaw)
     player.orient(camera);
 
-    // keyboard input (move camera, quit application)
-    key_handler.on_keypress();
-
     // clear color & depth & stencil buffers before rendering every frame
     glClearColor(background.r, background.g, background.b, background.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -204,7 +203,7 @@ int main() {
 
     // draw level tiles surfaces
     level.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 10.0f)), view, projection3d});
-    level.draw({});
+    level.draw();
 
     // draw terrain using triangle strips
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
@@ -272,7 +271,7 @@ int main() {
     }
 
     // draw textured cube 3d model
-    renderer_player.set_transform({ glm::mat4(1.0f), view, projection3d });
+    renderer_player.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 2.5f, 25.0f)), view, projection3d });
     player.draw();
 
 
@@ -312,7 +311,7 @@ int main() {
 
     // last to render: transparent surfaces to ensure blending with background
     // draw half-transparent 3d window
-    surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 2.0f)), view, projection3d });
+    surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 5.0f)), view, projection3d });
     surface.draw({ {"texture2d", texture_surface_glass} });
 
     // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
@@ -348,6 +347,9 @@ int main() {
     // process events & show rendered buffer
     window.process_events();
     window.render();
+
+    // keyboard input (move camera, quit application)
+    key_handler.on_keypress();
   }
 
   // destroy imgui
