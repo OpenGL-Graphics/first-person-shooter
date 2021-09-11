@@ -4,6 +4,7 @@
 #include "gui/window.hpp"
 #include "navigation/camera.hpp"
 #include "characters/target.hpp"
+#include "audio/audio.hpp"
 
 /**
  * Static class (all its members are static) because it contains only callbacks (function pointers)
@@ -14,7 +15,7 @@ class MouseHandler {
 public:
   /* No need for instance constructor to init static private members */
   // static void init(Window* window, Camera* camera, Renderer* cube);
-  static void init(Window* window, Camera* camera, std::vector<Target *> targets);
+  static void init(Window* window, Camera* camera, std::vector<Target *> targets, Audio* audio);
 
   /* static methods can be passed as function pointers callbacks (no `this` argument) */
   static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
@@ -35,6 +36,9 @@ private:
   /* previous mouse xy-coords to compare to when moving (modified inside listeners below) */
   static int m_xmouse;
   static int m_ymouse;
+
+  /* irrklang sound engine (for playing sound effects) */
+  static Audio* m_audio;
 };
 
 #endif // MOUSE_HANDLER_HPP

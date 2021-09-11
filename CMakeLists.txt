@@ -30,6 +30,14 @@ file(GLOB IMGUI_SRC "src/imgui/*.cpp")
 add_library(imgui SHARED ${IMGUI_SRC})
 target_include_directories(imgui PUBLIC include/imgui include)
 
+# irrklang library for playing sounds
+list(APPEND CMAKE_PREFIX_PATH "./lib")
+find_library(LIB_IRRKLANG IrrKlang)
+find_library(LIB_IRRKLANG_MP3 IkpMP3)
+
+# copy irrklang mp3 plugin (needed to play mp3 files)
+file(COPY lib/ikpMP3.so DESTINATION ${CMAKE_BINARY_DIR})
+
 # main executable
 file(GLOB SRC
   "src/gui/*.cpp"
@@ -49,8 +57,16 @@ file(GLOB SRC
   "src/utils/*.cpp"
   "src/levels/*.cpp"
   "src/math/*.cpp"
+  "src/audio/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})
 target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS})
-target_link_libraries(main glfw glad imgui assimp ${FREETYPE_LIBRARIES})
+target_link_libraries(main
+  glfw
+  glad
+  imgui
+  assimp
+  ${FREETYPE_LIBRARIES}
+  ${LIB_IRRKLANG}
+)

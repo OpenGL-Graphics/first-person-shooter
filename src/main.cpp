@@ -25,6 +25,9 @@
 #include "models/model.hpp"
 #include "profiling/profiler.hpp"
 #include "levels/tilemap.hpp"
+#include "audio/audio.hpp"
+
+using namespace irrklang;
 
 int main() {
   // glfw window
@@ -44,6 +47,9 @@ int main() {
     std::cout << "Opengl version: " << glGetString(GL_VERSION) << "\n";
     std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
   }
+
+  // initialize irrKlang sound engine
+  Audio audio;
 
   // camera
   Camera camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -167,7 +173,7 @@ int main() {
   std::vector<Target *> targets = {&target_cube_basic, &target_cube_color, &target_cube_texture, &target_cube_light};
 
   // callback for processing mouse click (after init static members)
-  MouseHandler::init(&window, &camera, targets);
+  MouseHandler::init(&window, &camera, targets, &audio);
   window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
   std::cout << "window.width: " << window.width
             << " window.height: " << window.height
@@ -402,7 +408,8 @@ int main() {
   pgm_light_terrain.free();
   pgm_text.free();
 
-  // destroy window & terminate glfw
+  // destroy sound engine & window & terminate glfw
+  audio.free();
   window.destroy();
 
   return 0;
