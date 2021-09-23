@@ -26,6 +26,7 @@
 #include "profiling/profiler.hpp"
 #include "levels/tilemap.hpp"
 #include "audio/audio.hpp"
+#include "globals/score.hpp"
 
 using namespace irrklang;
 
@@ -160,7 +161,6 @@ int main() {
     glm::vec3(-1.0f, 0.0f, -3.0f),
     glm::vec3(-1.0f, 0.0f, -4.0f),
   };
-  unsigned int score = 0;
 
   // initialize dialog with imgui
   // Dialog dialog(window, "Dialog title", "Dialog text");
@@ -286,7 +286,7 @@ int main() {
     if ((i_bounding_box = player.bounding_box.check_collision(bounding_boxes)) != BoundingBox::NO_COLLISION) {
       std::cout << "Collision with " << i_bounding_box << '\n';
       positions.erase(positions.begin() + i_bounding_box);
-      ++score;
+      // ++score;
     }
 
     // draw surface with two blending textures

@@ -58,6 +58,7 @@ file(GLOB SRC
   "src/levels/*.cpp"
   "src/math/*.cpp"
   "src/audio/*.cpp"
+  "src/globals/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})

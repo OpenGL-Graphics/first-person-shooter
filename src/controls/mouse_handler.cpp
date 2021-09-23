@@ -2,6 +2,7 @@
 
 #include "controls/mouse_handler.hpp"
 #include "math/transformation.hpp"
+#include "globals/score.hpp"
 
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 Camera* MouseHandler::m_camera;
@@ -41,8 +42,10 @@ void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, in
       BoundingBox bounding_box = target->renderer->bounding_box;
       bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 
+      // remove target & increase score on intersection
       if (is_intersecting) {
         target->is_dead = true;
+        score++;
         std::cout << "Intersecting!" << '\n';
       } else {
         std::cout << "Not intersecting!" << '\n';
