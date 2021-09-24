@@ -58,7 +58,6 @@ int main() {
 
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-  Program pgm_color("assets/shaders/color.vert", "assets/shaders/color.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
   Program pgm_texture_surface_mix("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface_mix.frag");
   Program pgm_texture_mesh("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
@@ -66,7 +65,7 @@ int main() {
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   Program pgm_light_terrain("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag");
-  if (pgm_color.has_failed() || pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_surface_mix.has_failed() ||
+  if (pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_surface_mix.has_failed() ||
       pgm_texture_mesh.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() ||
       pgm_light_terrain.has_failed()) {
     window.destroy();
@@ -105,22 +104,19 @@ int main() {
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
   Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
-  Renderer cube_color(pgm_color, vbo_cube, {{0, "position", 3, 12, 0}, {0, "color", 3, 12, 3}});
   Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {0, "texture_coord", 3, 12, 6}});
   Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
   Renderer surface_mix(pgm_texture_surface_mix, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
   // horizontal terrain from triangle strips
-  // Renderer terrain(pgm_color, VBO(Terrain(10, 10)), {{0, "position", 3, 6, 0}, {0, "color", 3, 6, 3}});
-  // Renderer terrain(pgm_light_terrain, VBO(Terrain(10, 10)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
   VBO vbo_terrain(Terrain(Image("assets/images/terrain/heightmap.png")));
   Renderer terrain(pgm_light_terrain, vbo_terrain, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
 
   // load tilemap by parsing text file
   Tilemap tilemap("assets/levels/map.txt");
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
-  LevelRenderer level(pgm_texture_surface, pgm_color, tilemap, position_level);
+  LevelRenderer level(pgm_texture_surface, tilemap, position_level);
   camera.boundaries = level.positions_walls;
 
   // load font & assign its bitmap glyphs to textures
@@ -167,14 +163,16 @@ int main() {
   // Dialog dialog(window, "Dialog title", "Dialog text");
 
   // targets to mouse cursor intersection
+  /*
   Target target_cube_basic(pgm_basic);
-  Target target_cube_color(pgm_color);
   Target target_cube_texture(pgm_texture_cube);
   Target target_cube_light(pgm_light);
-  std::vector<Target *> targets = {&target_cube_basic, &target_cube_color, &target_cube_texture, &target_cube_light};
+  std::vector<Target *> targets = {&target_cube_basic, &target_cube_texture, &target_cube_light};
+  */
 
   // callback for processing mouse click (after init static members)
-  MouseHandler::init(&window, &camera, targets, &audio);
+  // MouseHandler::init(&window, &camera, targets, &audio);
+  MouseHandler::init(&window, &camera, &audio);
   window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
   std::cout << "window.width: " << window.width
             << " window.height: " << window.height
@@ -230,14 +228,17 @@ int main() {
 
     // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
+    /*
     glm::mat4 model_light(glm::scale(
       glm::translate(glm::mat4(1.0f), position_light),
       glm::vec3(0.2f)
     ));
     cube_basic.set_transform({ model_light, view, projection3d });
     target_cube_basic.draw({ {"color", color_light} });
+    */
 
     // draw illuminated cube
+    /*
     cube_light.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 4.0f)), view, projection3d });
     target_cube_light.draw({
       {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
@@ -250,12 +251,14 @@ int main() {
       {"light.specular", color_light},
       {"position_camera", camera.position},
     });
+    */
 
     // draw colored trapezoid 3d model
     renderer_trapezoid.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 25.0f)), view, projection3d });
     renderer_trapezoid.draw();
 
     // draw color cube (rotated around x-axis)
+    /*
     cube_color.set_transform({
       glm::rotate(
         glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)),
@@ -264,31 +267,35 @@ int main() {
       ),
       view, projection3d });
     target_cube_color.draw();
+    */
 
     // draw colored two-cubes 3d model
     renderer_two_cubes.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)), view, projection3d });
     renderer_two_cubes.draw();
 
     // draw 3x texture cubes
+    /*
     std::vector<BoundingBox> bounding_boxes;
     for (const glm::vec3& position : positions) {
       cube_texture.set_transform({ glm::translate(glm::mat4(1.0f), position), view, projection3d });
       target_cube_texture.draw({ {"texture3d", texture_cube} });
       bounding_boxes.push_back(cube_texture.bounding_box);
     }
+    */
 
     // draw textured cube 3d model
     renderer_player.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 2.5f, 25.0f)), view, projection3d });
     player.draw();
 
 
-    // remove static textured cubes on collision with moving PC & increment score
+    // remove static textured cubes on collision with moving PC
+    /*
     int i_bounding_box;
     if ((i_bounding_box = player.bounding_box.check_collision(bounding_boxes)) != BoundingBox::NO_COLLISION) {
       std::cout << "Collision with " << i_bounding_box << '\n';
       positions.erase(positions.begin() + i_bounding_box);
-      // ++score;
     }
+    */
 
     // draw surface with two blending textures
     surface_mix.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f)), view, projection3d });
@@ -388,7 +395,6 @@ int main() {
   level.free();
   terrain.free();
   cube_basic.free();
-  cube_color.free();
   cube_texture.free();
   cube_light.free();
   surface.free();
@@ -400,7 +406,6 @@ int main() {
 
   // destroy shaders programs
   pgm_basic.free();
-  pgm_color.free();
   pgm_texture_cube.free();
   pgm_texture_surface.free();
   pgm_texture_surface_mix.free();

@@ -9,10 +9,10 @@
  * Sets positions of walls tiles only once in constructor
  * Needed for collision with camera
  */
-LevelRenderer::LevelRenderer(const Program& program_tile, const Program& program_target, const Tilemap& tilemap, const glm::vec3& position):
+LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position):
   // renderer for walls/floors & targets
   m_renderer(program_tile, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
-  m_target(program_target),
+  m_target(),
 
   m_tilemap(tilemap),
   m_textures {
@@ -199,4 +199,5 @@ void LevelRenderer::set_transform(const Transformation& t) {
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
   m_renderer.free();
+  m_target.free();
 }

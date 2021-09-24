@@ -8,11 +8,15 @@
  * Multiple instance can have same renderer => use a pointer
  */
 struct Target {
-/* kill target on intersection with mouse cursor */
+  // program declared first (i.e. init first) as it's needed by renderer
+  // https://stackoverflow.com/a/41886567/2228912
+  Program program;
   Renderer renderer;
+
+  /* kill target on intersection with mouse cursor */
   bool is_dead;
 
-  Target(const Program& program);
+  Target();
   void draw(const Uniforms& uniforms={});
   void set_transform(const Transformation& t);
   void free();

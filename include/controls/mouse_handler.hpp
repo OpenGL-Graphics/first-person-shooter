@@ -14,8 +14,8 @@
 class MouseHandler {
 public:
   /* No need for instance constructor to init static private members */
-  // static void init(Window* window, Camera* camera, Renderer* cube);
-  static void init(Window* window, Camera* camera, std::vector<Target *> targets, Audio* audio);
+  // static void init(Window* window, Camera* camera, std::vector<Target *> targets, Audio* audio);
+  static void init(Window* window, Camera* camera, Audio* audio);
 
   /* static methods can be passed as function pointers callbacks (no `this` argument) */
   static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);

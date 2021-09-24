@@ -17,7 +17,7 @@ struct LevelRenderer {
   /* Targets to kill by mouse cursor intersection */
   // std::vector<Target> targets;
 
-  LevelRenderer(const Program& program_tile, const Program& program_target, const Tilemap& tilemap, const glm::vec3& position);
+  LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position);
   void draw(const Uniforms& u={});
   void draw_floor(const Uniforms& u);
   void draw_ceiling(const Uniforms& u);

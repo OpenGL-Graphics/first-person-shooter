@@ -19,13 +19,14 @@ Audio* MouseHandler::m_audio;
  * @param cube Check for its intersection with camera's intersection
  * @param audio
  */
-void MouseHandler::init(Window* window, Camera* camera, std::vector<Target *> targets, Audio* audio) {
+// void MouseHandler::init(Window* window, Camera* camera, std::vector<Target *> targets, Audio* audio) {
+void MouseHandler::init(Window* window, Camera* camera, Audio* audio) {
   // init static members: initial mouse's xy-coords at center of screen
   m_camera = camera;
   m_window = window;
   m_xmouse = m_window->width / 2;
   m_ymouse = m_window->height / 2;
-  m_targets = targets;
+  // m_targets = targets;
   m_audio = audio;
 }
 
