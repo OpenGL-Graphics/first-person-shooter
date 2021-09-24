@@ -108,8 +108,11 @@ void Renderer::draw_with_outlines(const Uniforms& u) {
   glStencilFunc(GL_ALWAYS, 1, 0xff);
 }
 
-/* Free used vertex buffers (VAO & VBO lifecycles managed by renderer) */
+/* Free used vertex buffers (VAO & VBO lifecycles managed by renderer) & shader program */
 void Renderer::free() {
   m_vao.free();
   m_vbo.free();
+
+  // TODO: program lifecycle managed internally by renderer
+  // m_program.free();
 }

@@ -39,7 +39,7 @@ void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, in
     m_audio->play_2d("assets/audio/gun_shot.mp3");
 
     for (Target* target : m_targets) {
-      BoundingBox bounding_box = target->renderer->bounding_box;
+      BoundingBox bounding_box = target->renderer.bounding_box;
       bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 
       // remove target & increase score on intersection

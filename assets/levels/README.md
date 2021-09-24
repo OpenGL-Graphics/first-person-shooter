@@ -3,6 +3,7 @@
 - |: Wall oriented along z-axis.
 - =: Door oriented along x-axis.
 - \#: Door oriented along z-axis.
+- x: Target.
 - p: Player.
 - a: Ammunition.
 - e: Enemy.

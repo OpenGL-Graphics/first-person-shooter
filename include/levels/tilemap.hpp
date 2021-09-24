@@ -15,6 +15,7 @@ struct Tilemap {
     DOOR_H = '=',
     DOOR_V = '#',
     SPACE = ' ',
+    TARGET = 'x',
 
     // compounds wall composed of two perpendicular walls
     WALL_L = 'L',

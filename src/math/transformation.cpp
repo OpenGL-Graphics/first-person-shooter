@@ -23,6 +23,7 @@ Transformation::Transformation(const glm::mat4& m, const glm::mat4& v, const glm
  * Raycasting theory: https://antongerdelan.net/opengl/raycasting.html
  * TODO: Not working yet!
  */
+/*
 glm::vec4 Transformation::transform_inv(const glm::vec2& position_ndc) {
   // glm::vec4 position_view = glm::inverse(m_projection) * glm::vec4(position_ndc, m_z, 1.0f);
   glm::vec4 position_view = glm::inverse(projection) * glm::vec4(position_ndc, -1.0f, 1.0f);
@@ -31,3 +32,4 @@ glm::vec4 Transformation::transform_inv(const glm::vec2& position_ndc) {
 
   return position_world;
 }
+*/

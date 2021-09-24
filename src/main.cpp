@@ -54,6 +54,7 @@ int main() {
 
   // camera
   Camera camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  // Camera camera(glm::vec3(0.0f, 2.0f, -2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
@@ -119,7 +120,7 @@ int main() {
   // load tilemap by parsing text file
   Tilemap tilemap("assets/levels/map.txt");
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
-  LevelRenderer level(pgm_texture_surface, tilemap, position_level);
+  LevelRenderer level(pgm_texture_surface, pgm_color, tilemap, position_level);
   camera.boundaries = level.positions_walls;
 
   // load font & assign its bitmap glyphs to textures
@@ -166,10 +167,10 @@ int main() {
   // Dialog dialog(window, "Dialog title", "Dialog text");
 
   // targets to mouse cursor intersection
-  Target target_cube_basic(&cube_basic);
-  Target target_cube_color(&cube_color);
-  Target target_cube_texture(&cube_texture);
-  Target target_cube_light(&cube_light);
+  Target target_cube_basic(pgm_basic);
+  Target target_cube_color(pgm_color);
+  Target target_cube_texture(pgm_texture_cube);
+  Target target_cube_light(pgm_light);
   std::vector<Target *> targets = {&target_cube_basic, &target_cube_color, &target_cube_texture, &target_cube_light};
 
   // callback for processing mouse click (after init static members)

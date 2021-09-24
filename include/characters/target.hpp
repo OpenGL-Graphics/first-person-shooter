@@ -9,11 +9,13 @@
  */
 struct Target {
 /* kill target on intersection with mouse cursor */
-  Renderer* renderer;
+  Renderer renderer;
   bool is_dead;
 
-  Target(Renderer* r);
+  Target(const Program& program);
   void draw(const Uniforms& uniforms={});
+  void set_transform(const Transformation& t);
+  void free();
 };
 
 #endif // TARGET_HPP

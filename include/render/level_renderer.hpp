@@ -6,6 +6,7 @@
 #include "render/renderer.hpp"
 #include "levels/tilemap.hpp"
 #include "shaders/program.hpp"
+#include "characters/target.hpp"
 
 /**
  * Renderer for level items (e.g. walls, doors...)
@@ -13,8 +14,10 @@
 struct LevelRenderer {
   /* Used to block camera from going through walls */
   std::vector<glm::vec3> positions_walls;
+  /* Targets to kill by mouse cursor intersection */
+  // std::vector<Target> targets;
 
-  LevelRenderer(const Program& program, const Tilemap& tilemap, const glm::vec3& position);
+  LevelRenderer(const Program& program_tile, const Program& program_target, const Tilemap& tilemap, const glm::vec3& position);
   void draw(const Uniforms& u={});
   void draw_floor(const Uniforms& u);
   void draw_ceiling(const Uniforms& u);
@@ -24,8 +27,11 @@ struct LevelRenderer {
 protected:
   std::vector<Renderer> m_renderers;
 private:
-  /* same renderer for all tiles */
+  /* same renderer for all ceiling/floor & walls */
   Renderer m_renderer;
+  /* same target rendered multiple times */
+  Target m_target;
+
   /* position of level */
   glm::vec3 m_position;
   /* Height of walls & elevation of ceiling */

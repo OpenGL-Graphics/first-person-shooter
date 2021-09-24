@@ -9,8 +9,11 @@
  * Sets positions of walls tiles only once in constructor
  * Needed for collision with camera
  */
-LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap, const glm::vec3& position):
-  m_renderer(program, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
+LevelRenderer::LevelRenderer(const Program& program_tile, const Program& program_target, const Tilemap& tilemap, const glm::vec3& position):
+  // renderer for walls/floors & targets
+  m_renderer(program_tile, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
+  m_target(program_target),
+
   m_tilemap(tilemap),
   m_textures {
     {"wall", Texture2D(Image("assets/images/level/wall.jpg"))},
@@ -32,8 +35,8 @@ LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap, con
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
     for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
       Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
-      glm::vec3 position_surface = {i_col, 0, i_row};
-      position_surface += m_position;
+      glm::vec3 position_tile = {i_col, 0, i_row};
+      position_tile += m_position;
 
       float angle = 0.0f;
       switch (tile) {
@@ -55,7 +58,7 @@ LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap, con
         glm::vec3 center_local = {0.5f, 0.5f, 0.0f};
         glm::mat4 model = glm::scale(
           glm::rotate(
-            glm::translate(glm::mat4(1.0f), position_surface),
+            glm::translate(glm::mat4(1.0f), position_tile),
             angle,
             glm::vec3(0.0f, 1.0f, 0.0f)
           ),
@@ -66,6 +69,8 @@ LevelRenderer::LevelRenderer(const Program& program, const Tilemap& tilemap, con
       }
     }
   }
+
+  // TODO: precalculate non-moving target cube in constructor
 }
 
 /**
@@ -81,13 +86,23 @@ void LevelRenderer::draw(const Uniforms& u) {
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
     for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
       Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
-      glm::vec3 position_surface = {i_col, 0, i_row};
-      position_surface += m_position;
+      glm::vec3 position_tile = {i_col, 0, i_row};
+      position_tile += m_position;
       float angle[2] = {0.0f, 0.0f};
       unsigned int n_surfaces = 1;
 
       // choose angle/texture of surface accord. to tile
       switch (tile) {
+        case Tilemap::Tiles::TARGET:
+          // colored cube target
+          m_target.set_transform({
+            glm::translate(glm::mat4(1.0f), position_tile + glm::vec3(0.0f, 0.5f, 0.0f)), // local origin at cube centroid
+            m_target.renderer.transformation.view, m_target.renderer.transformation.projection });
+          m_target.draw(uniforms);
+          continue;
+          break;
+        case Tilemap::Tiles::SPACE:
+          continue;
         case Tilemap::Tiles::WALL_H:
           uniforms["texture2d"] = m_textures["wall"];
           break;
@@ -114,8 +129,6 @@ void LevelRenderer::draw(const Uniforms& u) {
           uniforms["texture2d"] = m_textures["door"];
           angle[0] = glm::radians(90.0f);
           break;
-        case Tilemap::Tiles::SPACE:
-          continue;
       }
 
       // render tile surface (or two tiles surfaces for corners)
@@ -124,7 +137,7 @@ void LevelRenderer::draw(const Uniforms& u) {
         m_renderer.set_transform({
           glm::scale(
             glm::rotate(
-              glm::translate(glm::mat4(1.0f), position_surface),
+              glm::translate(glm::mat4(1.0f), position_tile),
               angle[i_surface],
               glm::vec3(0.0f, 1.0f, 0.0f)
             ),
@@ -180,8 +193,10 @@ void LevelRenderer::draw_ceiling(const Uniforms& u) {
  */
 void LevelRenderer::set_transform(const Transformation& t) {
   m_renderer.set_transform(t);
+  m_target.set_transform(t);
 }
 
+/* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
   m_renderer.free();
 }

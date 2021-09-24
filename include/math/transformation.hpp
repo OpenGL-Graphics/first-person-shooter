@@ -11,7 +11,8 @@ struct Transformation {
 
   Transformation();
   Transformation(const glm::mat4& m, const glm::mat4& v, const glm::mat4& p);
-  glm::vec4 transform_inv(const glm::vec2& position_ndc);
+
+  // glm::vec4 transform_inv(const glm::vec2& position_ndc);
 };
 
 #endif // TRANSFORMATION_HPP
