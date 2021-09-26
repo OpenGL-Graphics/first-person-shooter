@@ -13,7 +13,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
   // renderer for walls/floors & characters (targets, grass)
   m_renderer(program_tile, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
   m_target(),
-  m_grass(),
+  m_grass(Image("assets/images/surfaces/grass.png")),
 
   m_tilemap(tilemap),
   m_textures {
@@ -71,7 +71,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     }
   }
 
-  // TODO: precalculate non-moving target cube in constructor
+  // TODO: precalculate position of non-moving target cube in constructor
 }
 
 /**
@@ -105,9 +105,8 @@ void LevelRenderer::draw(const Uniforms& u) {
         case Tilemap::Tiles::GRASS:
           // textured surface
           m_grass.set_transform({
-            glm::translate(glm::mat4(1.0f), position_tile + glm::vec3(0.0f, 0.5f, 0.0f)), // local origin at cube centroid
+            glm::translate(glm::mat4(1.0f), position_tile + glm::vec3(0.0f, 0.5f, 0.0f)),  // origin: lower-left corner of surface
             m_grass.renderer.transformation.view, m_grass.renderer.transformation.projection });
-          uniforms["texture2d"] = m_grass.texture;
           m_grass.draw(uniforms);
           continue;
           break;

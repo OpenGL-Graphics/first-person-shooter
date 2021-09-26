@@ -1,11 +1,15 @@
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "entities/player.hpp"
 
 // not declared as private members as constants cause class's implicit copy-constructor to be deleted (prevents re-assignment)
 // movement constants
 const float SPEED = 0.1f;
 
-Player::Player(ModelRenderer* renderer):
-  model_renderer(renderer),
+Player::Player(Assimp::Importer& importer):
+  m_program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag"),
+  m_model("assets/models/cube-textured/cube-textured.obj", importer),
+  m_renderer(m_program, m_model, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}}),
   m_forward_dir(0.0f, 0.0f, -1.0f),
   m_is_dead(false)
 {
@@ -14,7 +18,7 @@ Player::Player(ModelRenderer* renderer):
 /* Calculate bounding box from bounding boxes of each mesh renderer */
 void Player::calculate_bounding_box() {
   std::vector<glm::vec3> renderers_bounds;
-  for (Renderer& renderer : model_renderer->renderers) {
+  for (Renderer& renderer : m_renderer.renderers) {
     renderers_bounds.push_back(renderer.bounding_box.min);
     renderers_bounds.push_back(renderer.bounding_box.max);
   }
@@ -43,7 +47,7 @@ void Player::move(Direction direction) {
   }
 
   // move meshes & recalculate model's bounding box
-  for (Renderer& renderer : model_renderer->renderers) {
+  for (Renderer& renderer : m_renderer.renderers) {
     renderer.move(offset);
   }
   calculate_bounding_box();
@@ -73,5 +77,15 @@ void Player::draw(const Uniforms& uniforms) {
     return;
   }
 
-  model_renderer->draw(uniforms);
+  m_renderer.draw(uniforms);
+}
+
+void Player::set_transform(const Transformation& t) {
+  m_renderer.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 2.5f, 10.0f)), t.view, t.projection });
+}
+
+/* Free renderer (vao/vbo buffers), and shader program */
+void Player::free() {
+  m_renderer.free();
+  m_program.free();
 }

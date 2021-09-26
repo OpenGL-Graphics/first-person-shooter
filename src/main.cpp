@@ -27,6 +27,8 @@
 #include "globals/score.hpp"
 
 #include "entities/splatmap.hpp"
+#include "entities/gun.hpp"
+#include "entities/sprite.hpp"
 
 using namespace irrklang;
 
@@ -57,14 +59,14 @@ int main() {
   // Camera camera(glm::vec3(0.0f, 2.0f, -2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
   // create then install vertex & fragment shaders on GPU
+  // TODO: Factory to produce singletons `Program`s to avoid duplication in Gun & Player
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
-  Program pgm_texture_mesh("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   if (pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() ||
-      pgm_texture_mesh.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
+      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
     window.destroy();
     return 1;
   }
@@ -82,9 +84,8 @@ int main() {
   std::transform(paths_images.begin(), paths_images.end(), std::back_inserter(images), [](const std::string& path) { return Image(path); });
   Texture3D texture_cube(images);
 
-  // 2D surface textures
+  // 2D textures for HUDS
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
-  Texture2D texture_surface_glass(Image("assets/images/surfaces/window.png"));
   Texture2D texture_surface_crosshair(Image("assets/images/surfaces/crosshair.png"));
 
   // renderer (encapsulates VAO & VBO) for each shape to render
@@ -96,6 +97,9 @@ int main() {
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
+
+  // sprites from texture image & 2d surface geometry
+  Sprite glass(Image("assets/images/surfaces/window.png"));
 
   // load tilemap by parsing text file
   Tilemap tilemap("assets/levels/map.txt");
@@ -114,18 +118,11 @@ int main() {
   // load 3d model from .obj file & its renderer
   Profiler profiler;
   profiler.start();
-  Model model_gun("assets/models/sniper/sniper.obj", importer);
-  Model model_cube("assets/models/cube-textured/cube-textured.obj", importer);
-
-  // renderers for 3d models
-  ModelRenderer renderer_gun(pgm_texture_mesh, model_gun, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
-  ModelRenderer renderer_player(pgm_texture_mesh, model_cube, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
+  Gun gun(importer);
+  Player player(importer);
+  player.calculate_bounding_box();
   profiler.stop();
   profiler.print("Loading 3D models");
-
-  // player
-  Player player(&renderer_player);
-  player.calculate_bounding_box();
 
   // transformation matrices
   glm::mat4 view = camera.get_view();
@@ -244,8 +241,7 @@ int main() {
     */
 
     // draw textured cube 3d model
-    renderer_player.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 2.5f, 10.0f)), view, projection3d });
-    // renderer_player.set_transform({ glm::mat4(1.0f), view, projection3d });
+    player.set_transform({ glm::mat4(1.0f), view, projection3d });
     player.draw();
 
 
@@ -258,34 +254,13 @@ int main() {
     }
     */
 
-    /*
-    // draw 2d grass surface (non-centered)
-    surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)), view, projection3d });
-    surface.draw({ {"texture2d", texture_surface_grass} });
-    */
-
     // draw textured gun model with position fixed rel. to camera
-    // view = I => fixed translation with camera as origin
-    renderer_gun.set_transform({
-      glm::scale(
-        glm::rotate(
-          glm::rotate(
-            glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, -0.7f, -2.0f)),
-            glm::radians(25.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f)
-          ),
-          glm::radians(15.0f),
-          glm::vec3(1.0f, 0.0f, 0.0f)
-        ),
-        glm::vec3(0.15f)
-      ), glm::mat4(1.0f), projection3d
-    });
-    renderer_gun.draw();
+    gun.set_transform({ glm::mat4(1.0f), view, projection3d });
+    gun.draw();
 
     // last to render: transparent surfaces to ensure blending with background
-    // draw half-transparent 3d window
-    surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 1.0f, 5.0f)), view, projection3d });
-    surface.draw({ {"texture2d", texture_surface_glass} });
+    glass.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 1.0f, 5.0f)), view, projection3d });
+    glass.draw();
 
     // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
     glm::mat4 model_hud_health(glm::scale(
@@ -331,7 +306,6 @@ int main() {
   // destroy textures
   texture_cube.free();
 
-  texture_surface_glass.free();
   texture_surface_hud.free();
   texture_surface_crosshair.free();
 
@@ -350,14 +324,14 @@ int main() {
   surface.free();
   surface_glyph.free();
 
-  renderer_gun.free();
-  renderer_player.free();
+  // free 2d & 3d entities
+  glass.free();
+  gun.free();
 
   // destroy shaders programs
   pgm_basic.free();
   pgm_texture_cube.free();
   pgm_texture_surface.free();
-  pgm_texture_mesh.free();
   pgm_light.free();
   pgm_text.free();
 

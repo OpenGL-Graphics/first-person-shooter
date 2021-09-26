@@ -1,12 +1,15 @@
-#include "entities/grass.hpp"
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "entities/sprite.hpp"
 #include "geometries/surface.hpp"
 #include "shaders/shader_exception.hpp"
 
 /**
+ * 2D sprite for props
  * Grass prop instances generated inside level accord. to tilemap
  */
-Grass::Grass():
-  texture(Image("assets/images/surfaces/grass.png")),
+Sprite::Sprite(const Texture2D& texture):
+  m_texture(texture),
   m_program("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag"),
   renderer(m_program, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}})  // render surface
 {
@@ -17,18 +20,20 @@ Grass::Grass():
 }
 
 /* delegate drawing with OpenGL (buffers & shaders) to renderer */
-void Grass::draw(const Uniforms& uniforms) {
+void Sprite::draw(const Uniforms& u) {
+  Uniforms uniforms = u;
+  uniforms["texture2d"] = m_texture;
   renderer.draw(uniforms);
 }
 
 /* delegate transform to renderer */
-void Grass::set_transform(const Transformation& t) {
+void Sprite::set_transform(const Transformation& t) {
   renderer.set_transform(t);
 }
 
 /* Free texture, renderer (vao/vbo buffers), and shader program */
-void Grass::free() {
-  texture.free();
+void Sprite::free() {
+  m_texture.free();
   renderer.free();
   m_program.free();
 }
