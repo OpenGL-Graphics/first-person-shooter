@@ -1,4 +1,4 @@
-#include "characters/player.hpp"
+#include "entities/player.hpp"
 
 // not declared as private members as constants cause class's implicit copy-constructor to be deleted (prevents re-assignment)
 // movement constants

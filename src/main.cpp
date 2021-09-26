@@ -9,12 +9,10 @@
 #include "navigation/camera.hpp"
 #include "geometries/cube.hpp"
 #include "geometries/surface.hpp"
-#include "geometries/terrain.hpp"
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
 #include "render/model_renderer.hpp"
 #include "render/level_renderer.hpp"
-#include "vertexes/vbo.hpp"
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
 #include "gui/dialog.hpp"
@@ -27,6 +25,8 @@
 #include "levels/tilemap.hpp"
 #include "audio/audio.hpp"
 #include "globals/score.hpp"
+
+#include "entities/splatmap.hpp"
 
 using namespace irrklang;
 
@@ -59,15 +59,12 @@ int main() {
   // create then install vertex & fragment shaders on GPU
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
-  Program pgm_texture_surface_mix("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface_mix.frag");
   Program pgm_texture_mesh("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  Program pgm_light_terrain("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag");
-  if (pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_surface_mix.has_failed() ||
-      pgm_texture_mesh.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() ||
-      pgm_light_terrain.has_failed()) {
+  if (pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() ||
+      pgm_texture_mesh.has_failed() || pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
     window.destroy();
     return 1;
   }
@@ -86,20 +83,9 @@ int main() {
   Texture3D texture_cube(images);
 
   // 2D surface textures
-  Texture2D texture_surface_grass(Image("assets/images/surfaces/grass.png"));
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
   Texture2D texture_surface_glass(Image("assets/images/surfaces/window.png"));
   Texture2D texture_surface_crosshair(Image("assets/images/surfaces/crosshair.png"));
-
-  // terrain textures (used by same shader) need to be attached to different texture units
-  Texture2D texture_terrain_water(Image("assets/images/terrain/water.jpg"), GL_TEXTURE0);
-  Texture2D texture_terrain_grass(Image("assets/images/terrain/grass.jpg"), GL_TEXTURE1);
-  Texture2D texture_terrain_rock(Image("assets/images/terrain/rock.jpg"), GL_TEXTURE2);
-  Texture2D texture_terrain_splatmap(Image("assets/images/terrain/splatmap.png"), GL_TEXTURE3);
-
-  // multiple textures in same shader (by attaching them to texture units GL_TEXTURE0/1)
-  Texture2D texture_panda(Image("assets/images/surfaces/panda.jpg"), GL_TEXTURE0);
-  Texture2D texture_cat(Image("assets/images/surfaces/cat.jpg"), GL_TEXTURE1);
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
@@ -107,11 +93,9 @@ int main() {
   Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {0, "texture_coord", 3, 12, 6}});
   Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
-  Renderer surface_mix(pgm_texture_surface_mix, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
-  // horizontal terrain from triangle strips
-  VBO vbo_terrain(Terrain(Image("assets/images/terrain/heightmap.png")));
-  Renderer terrain(pgm_light_terrain, vbo_terrain, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
+  // terrain from triangle strips & textured with image splatmap
+  Splatmap terrain;
 
   // load tilemap by parsing text file
   Tilemap tilemap("assets/levels/map.txt");
@@ -131,14 +115,10 @@ int main() {
   Profiler profiler;
   profiler.start();
   Model model_gun("assets/models/sniper/sniper.obj", importer);
-  Model model_two_cubes("assets/models/two-cubes/two-cubes.obj", importer);
   Model model_cube("assets/models/cube-textured/cube-textured.obj", importer);
-  Model model_trapezoid("assets/models/trapezoid/trapezoid.obj", importer);
 
   // renderers for 3d models
   ModelRenderer renderer_gun(pgm_texture_mesh, model_gun, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
-  ModelRenderer renderer_trapezoid(pgm_basic, model_trapezoid, {{0, "position", 3, 8, 0}});
-  ModelRenderer renderer_two_cubes(pgm_basic, model_two_cubes, {{0, "position", 3, 8, 0}});
   ModelRenderer renderer_player(pgm_texture_mesh, model_cube, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}});
   profiler.stop();
   profiler.print("Loading 3D models");
@@ -202,29 +182,17 @@ int main() {
     projection3d = window.get_projection3d(camera);
 
     // cube with outline using two-passes rendering & stencil buffer
-    glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f)));
+    glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
     cube_basic.set_transform({ model_cube_outline, view, projection3d });
     cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
     // draw level tiles surfaces
-    level.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 10.0f)), view, projection3d});
+    level.set_transform({ glm::mat4(1.0f), view, projection3d });
     level.draw();
 
-    // draw terrain using triangle strips
-    glm::vec3 color_light(1.0f, 1.0f, 1.0f);
-    glm::vec3 position_light(10.0f, 6.0f, 6.0f);
-    terrain.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(20.0f, 0.0f, -20.0f)), view, projection3d });
-    terrain.draw({
-        {"texture2d_water", texture_terrain_water},
-        {"texture2d_grass", texture_terrain_grass},
-        {"texture2d_rock", texture_terrain_rock},
-        {"texture2d_splatmap", texture_terrain_splatmap},
-        {"light.position", position_light},
-        {"light.ambiant", 0.2f * color_light},
-        {"light.diffuse", 0.5f * color_light},
-        {"light.specular", color_light},
-      }, GL_TRIANGLE_STRIP
-    );
+    // draw textured terrain using triangle strips
+    terrain.set_transform({ glm::mat4(1.0f), view, projection3d });
+    terrain.draw();
 
     // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
@@ -253,10 +221,6 @@ int main() {
     });
     */
 
-    // draw colored trapezoid 3d model
-    renderer_trapezoid.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 25.0f)), view, projection3d });
-    renderer_trapezoid.draw();
-
     // draw color cube (rotated around x-axis)
     /*
     cube_color.set_transform({
@@ -269,10 +233,6 @@ int main() {
     target_cube_color.draw();
     */
 
-    // draw colored two-cubes 3d model
-    renderer_two_cubes.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-7.0f, 0.0f, 0.0f)), view, projection3d });
-    renderer_two_cubes.draw();
-
     // draw 3x texture cubes
     /*
     std::vector<BoundingBox> bounding_boxes;
@@ -284,7 +244,8 @@ int main() {
     */
 
     // draw textured cube 3d model
-    renderer_player.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 2.5f, 25.0f)), view, projection3d });
+    renderer_player.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 2.5f, 10.0f)), view, projection3d });
+    // renderer_player.set_transform({ glm::mat4(1.0f), view, projection3d });
     player.draw();
 
 
@@ -297,13 +258,11 @@ int main() {
     }
     */
 
-    // draw surface with two blending textures
-    surface_mix.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 0.0f)), view, projection3d });
-    surface_mix.draw({ {"texture2d_1", texture_panda}, {"texture2d_2", texture_cat} });
-
+    /*
     // draw 2d grass surface (non-centered)
     surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)), view, projection3d });
     surface.draw({ {"texture2d", texture_surface_grass} });
+    */
 
     // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin
@@ -325,7 +284,7 @@ int main() {
 
     // last to render: transparent surfaces to ensure blending with background
     // draw half-transparent 3d window
-    surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, 0.0f, 5.0f)), view, projection3d });
+    surface.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 1.0f, 5.0f)), view, projection3d });
     surface.draw({ {"texture2d", texture_surface_glass} });
 
     // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
@@ -372,18 +331,9 @@ int main() {
   // destroy textures
   texture_cube.free();
 
-  texture_surface_grass.free();
   texture_surface_glass.free();
   texture_surface_hud.free();
   texture_surface_crosshair.free();
-
-  texture_terrain_water.free();
-  texture_terrain_grass.free();
-  texture_terrain_rock.free();
-  texture_terrain_splatmap.free();
-
-  texture_cat.free();
-  texture_panda.free();
 
   Glyphs glyphs(surface_glyph.get_glyphs());
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
@@ -399,19 +349,16 @@ int main() {
   cube_light.free();
   surface.free();
   surface_glyph.free();
+
   renderer_gun.free();
-  renderer_trapezoid.free();
-  renderer_two_cubes.free();
   renderer_player.free();
 
   // destroy shaders programs
   pgm_basic.free();
   pgm_texture_cube.free();
   pgm_texture_surface.free();
-  pgm_texture_surface_mix.free();
   pgm_texture_mesh.free();
   pgm_light.free();
-  pgm_light_terrain.free();
   pgm_text.free();
 
   // destroy sound engine & window & terminate glfw

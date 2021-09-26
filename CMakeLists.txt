@@ -53,7 +53,7 @@ file(GLOB SRC
   "src/controls/*.cpp"
   "src/physics/*.cpp"
   "src/perlin/*.cpp"
-  "src/characters/*.cpp"
+  "src/entities/*.cpp"
   "src/utils/*.cpp"
   "src/levels/*.cpp"
   "src/math/*.cpp"

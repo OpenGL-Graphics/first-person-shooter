@@ -6,7 +6,8 @@
 #include "render/renderer.hpp"
 #include "levels/tilemap.hpp"
 #include "shaders/program.hpp"
-#include "characters/target.hpp"
+#include "entities/target.hpp"
+#include "entities/grass.hpp"
 
 /**
  * Renderer for level items (e.g. walls, doors...)
@@ -31,6 +32,8 @@ private:
   Renderer m_renderer;
   /* same target rendered multiple times */
   Target m_target;
+  /* same grass prop rendered multiple times */
+  Grass m_grass;
 
   /* position of level */
   glm::vec3 m_position;

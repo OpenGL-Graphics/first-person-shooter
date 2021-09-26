@@ -8,9 +8,12 @@
  * Multiple instance can have same renderer => use a pointer
  */
 struct Target {
-  // program declared first (i.e. init first) as it's needed by renderer
-  // https://stackoverflow.com/a/41886567/2228912
-  Program program;
+// program declared first (i.e. init first) as it's needed by renderer
+// https://stackoverflow.com/a/41886567/2228912
+private:
+  Program m_program;
+
+public:
   Renderer renderer;
 
   /* kill target on intersection with mouse cursor */

@@ -3,7 +3,7 @@
 
 #include "gui/window.hpp"
 #include "navigation/camera.hpp"
-#include "characters/target.hpp"
+#include "entities/target.hpp"
 #include "audio/audio.hpp"
 
 /**

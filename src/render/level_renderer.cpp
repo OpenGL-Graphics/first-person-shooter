@@ -10,9 +10,10 @@
  * Needed for collision with camera
  */
 LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position):
-  // renderer for walls/floors & targets
+  // renderer for walls/floors & characters (targets, grass)
   m_renderer(program_tile, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
   m_target(),
+  m_grass(),
 
   m_tilemap(tilemap),
   m_textures {
@@ -99,6 +100,15 @@ void LevelRenderer::draw(const Uniforms& u) {
             glm::translate(glm::mat4(1.0f), position_tile + glm::vec3(0.0f, 0.5f, 0.0f)), // local origin at cube centroid
             m_target.renderer.transformation.view, m_target.renderer.transformation.projection });
           m_target.draw(uniforms);
+          continue;
+          break;
+        case Tilemap::Tiles::GRASS:
+          // textured surface
+          m_grass.set_transform({
+            glm::translate(glm::mat4(1.0f), position_tile + glm::vec3(0.0f, 0.5f, 0.0f)), // local origin at cube centroid
+            m_grass.renderer.transformation.view, m_grass.renderer.transformation.projection });
+          uniforms["texture2d"] = m_grass.texture;
+          m_grass.draw(uniforms);
           continue;
           break;
         case Tilemap::Tiles::SPACE:
@@ -194,10 +204,12 @@ void LevelRenderer::draw_ceiling(const Uniforms& u) {
 void LevelRenderer::set_transform(const Transformation& t) {
   m_renderer.set_transform(t);
   m_target.set_transform(t);
+  m_grass.set_transform(t);
 }
 
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
   m_renderer.free();
   m_target.free();
+  m_grass.free();
 }

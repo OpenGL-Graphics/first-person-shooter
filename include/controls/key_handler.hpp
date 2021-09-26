@@ -2,7 +2,7 @@
 #define KEY_HANDLER_HPP
 
 #include "gui/window.hpp"
-#include "characters/player.hpp"
+#include "entities/player.hpp"
 
 /**
  * Subject class in the Observer design pattern
