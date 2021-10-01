@@ -17,10 +17,10 @@ struct Tilemap {
     SPACE = ' ',
 
     // interactive characters
-    TARGET = 't',
+    ENEMMY = 'e',
 
     // props
-    GRASS = 'g',
+    TREE = 't',
 
     // compounds wall composed of two perpendicular walls
     WALL_L = 'L',

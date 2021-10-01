@@ -28,7 +28,7 @@ private:
   Program m_program;
 
   /* delegate drawing to model renderer */
-  Model m_model;
+  AssimpUtil::Model m_model;
   ModelRenderer m_renderer;
 };
 

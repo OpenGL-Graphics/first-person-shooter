@@ -7,7 +7,7 @@
 #include "levels/tilemap.hpp"
 #include "shaders/program.hpp"
 #include "entities/target.hpp"
-#include "entities/sprite.hpp"
+#include "entities/model.hpp"
 
 /**
  * Renderer for level items (e.g. walls, doors...)
@@ -18,7 +18,7 @@ struct LevelRenderer {
   /* Targets to kill by mouse cursor intersection */
   // std::vector<Target> targets;
 
-  LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position);
+  LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer);
   void draw(const Uniforms& u={});
   void draw_floor(const Uniforms& u);
   void draw_ceiling(const Uniforms& u);
@@ -33,7 +33,10 @@ private:
   /* same target rendered multiple times */
   Target m_target;
   /* same grass prop rendered multiple times */
-  Sprite m_grass;
+  Model m_tree;
+
+  /* transformation matrixes (view, projection) passed to tiles renderers before `draw()` */
+  Transformation m_transformation;
 
   /* position of level */
   glm::vec3 m_position;

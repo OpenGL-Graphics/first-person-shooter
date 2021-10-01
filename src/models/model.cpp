@@ -5,6 +5,8 @@
 #include "models/model.hpp"
 #include "materials/texture.hpp"
 
+using namespace AssimpUtil;
+
 /**
  * Load 3d model in .obj ascii format with Assimp
  * @param path

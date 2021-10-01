@@ -9,11 +9,11 @@
  * Sets positions of walls tiles only once in constructor
  * Needed for collision with camera
  */
-LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position):
+LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
   // renderer for walls/floors & characters (targets, grass)
   m_renderer(program_tile, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
   m_target(),
-  m_grass(Image("assets/images/surfaces/grass.png")),
+  m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag")),
 
   m_tilemap(tilemap),
   m_textures {
@@ -94,20 +94,20 @@ void LevelRenderer::draw(const Uniforms& u) {
 
       // choose angle/texture of surface accord. to tile
       switch (tile) {
-        case Tilemap::Tiles::TARGET:
-          // colored cube target
+        case Tilemap::Tiles::ENEMMY:
+          // colored cube enemies
           m_target.set_transform({
             glm::translate(glm::mat4(1.0f), position_tile + glm::vec3(0.0f, 0.5f, 0.0f)), // local origin at cube centroid
-            m_target.renderer.transformation.view, m_target.renderer.transformation.projection });
+            m_transformation.view, m_transformation.projection });
           m_target.draw(uniforms);
           continue;
           break;
-        case Tilemap::Tiles::GRASS:
-          // textured surface
-          m_grass.set_transform({
-            glm::translate(glm::mat4(1.0f), position_tile + glm::vec3(0.0f, 0.5f, 0.0f)),  // origin: lower-left corner of surface
-            m_grass.renderer.transformation.view, m_grass.renderer.transformation.projection });
-          m_grass.draw(uniforms);
+        case Tilemap::Tiles::TREE:
+          // 3d model
+          m_tree.set_transform({
+            glm::translate(glm::mat4(1.0f), position_tile),  // origin: base of 3d model
+            m_transformation.view, m_transformation.projection });
+          m_tree.draw(uniforms);
           continue;
           break;
         case Tilemap::Tiles::SPACE:
@@ -140,7 +140,7 @@ void LevelRenderer::draw(const Uniforms& u) {
           break;
       }
 
-      // render tile surface (or two tiles surfaces for corners)
+      // render tile surface (or two tiles surfaces for corners): wall or door
       for (size_t i_surface = 0; i_surface < n_surfaces; ++i_surface) {
         // vertical scaling then rotation around y-axis then translation
         m_renderer.set_transform({
@@ -151,7 +151,7 @@ void LevelRenderer::draw(const Uniforms& u) {
               glm::vec3(0.0f, 1.0f, 0.0f)
             ),
             glm::vec3(1.0f, m_height, 1.0f)
-          ), m_renderer.transformation.view, m_renderer.transformation.projection
+          ), m_transformation.view, m_transformation.projection
         });
 
         m_renderer.draw(uniforms);
@@ -176,7 +176,7 @@ void LevelRenderer::draw_horizontal_surface(const Uniforms& uniforms, const glm:
         glm::vec3(1.0f, 0.0f, 0.0f)
       ),
       glm::vec3(size.x, size.y, 1.0f)
-    ), m_renderer.transformation.view, m_renderer.transformation.projection
+    ), m_transformation.view, m_transformation.projection
   });
 
   m_renderer.draw(uniforms);
@@ -197,18 +197,16 @@ void LevelRenderer::draw_ceiling(const Uniforms& u) {
 }
 
 /**
- * Set model matrix (translation/rotation/scaling)
+ * Set model matrix (translation/rotation/scaling) used by renderers in `draw()`
  * `m_position` serves as an offset when translating surfaces tiles in `draw()`
  */
 void LevelRenderer::set_transform(const Transformation& t) {
-  m_renderer.set_transform(t);
-  m_target.set_transform(t);
-  m_grass.set_transform(t);
+  m_transformation = t;
 }
 
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
   m_renderer.free();
   m_target.free();
-  m_grass.free();
+  m_tree.free();
 }

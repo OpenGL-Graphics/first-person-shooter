@@ -3,17 +3,17 @@
 
 #include "render/model_renderer.hpp"
 
-/* Encapsulates 3D model for gun & stick it at bottom of screen */
-class Gun {
+/* Encapsulates 3D model with its renderer for gun */
+class Model {
 private:
   // program declared first (i.e. init first) as it's needed by renderer
   // https://stackoverflow.com/a/41886567/2228912
   Program m_program;
-  Model m_model;
+  AssimpUtil::Model m_model;
   ModelRenderer m_renderer;
 
 public:
-  Gun(Assimp::Importer& importer);
+  Model(Assimp::Importer& importer, const std::string& path, const Program& program);
   void draw(const Uniforms& uniforms={});
   void set_transform(const Transformation& t);
   void free();

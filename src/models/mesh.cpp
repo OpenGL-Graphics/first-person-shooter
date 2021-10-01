@@ -1,5 +1,7 @@
 #include "models/mesh.hpp"
 
+using namespace AssimpUtil;
+
 /* Needed to instantiate vector `models::Model::m_meshes` */
 Mesh::Mesh() {
 }
@@ -22,7 +24,10 @@ void Mesh::set_vertexes() {
   unsigned int n_coords_position = 3;
   unsigned int n_coords_normal = 3;
   unsigned int n_coords_texture = 2;
-  unsigned int n_coords_vertex = n_coords_position + n_coords_normal + n_coords_texture;
+  unsigned int n_coords_vertex = n_coords_position + n_coords_normal;
+  if (texture_coords != NULL)  // not all meshes have texture coordinates
+    n_coords_vertex += n_coords_texture;
+
   vertexes.resize(n_vertexes * n_coords_vertex);
   positions.resize(n_vertexes);
 
@@ -30,8 +35,10 @@ void Mesh::set_vertexes() {
     std::vector<float> vertex = {
       xyz_coords[i_vertex].x, xyz_coords[i_vertex].y, xyz_coords[i_vertex].z,
       normals_coords[i_vertex].x, normals_coords[i_vertex].y, normals_coords[i_vertex].z,
-      texture_coords[i_vertex].x, texture_coords[i_vertex].y
     };
+    if (texture_coords != NULL)  // not all meshes have texture coordinates
+      vertex.insert(vertex.end(), {texture_coords[i_vertex].x, texture_coords[i_vertex].y});
+
     std::copy(vertex.begin(), vertex.end(), vertexes.begin() + i_vertex*n_coords_vertex);
     positions[i_vertex] = glm::vec3(xyz_coords[i_vertex].x, xyz_coords[i_vertex].y, xyz_coords[i_vertex].z);
   }

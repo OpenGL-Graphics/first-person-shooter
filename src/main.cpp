@@ -27,7 +27,7 @@
 #include "globals/score.hpp"
 
 #include "entities/splatmap.hpp"
-#include "entities/gun.hpp"
+#include "entities/model.hpp"
 #include "entities/sprite.hpp"
 
 using namespace irrklang;
@@ -61,11 +61,12 @@ int main() {
   // create then install vertex & fragment shaders on GPU
   // TODO: Factory to produce singletons `Program`s to avoid duplication in Gun & Player
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+  Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  if (pgm_texture_cube.has_failed() || pgm_texture_surface.has_failed() ||
+  if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() ||
       pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
     window.destroy();
     return 1;
@@ -101,10 +102,13 @@ int main() {
   // sprites from texture image & 2d surface geometry
   Sprite glass(Image("assets/images/surfaces/window.png"));
 
+  // accord. to doc: better to reuse importer, & destroys scene (3d model) once out of scope
+  Assimp::Importer importer;
+
   // load tilemap by parsing text file
   Tilemap tilemap("assets/levels/map.txt");
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
-  LevelRenderer level(pgm_texture_surface, tilemap, position_level);
+  LevelRenderer level(pgm_texture_surface, tilemap, position_level, importer);
   camera.boundaries = level.positions_walls;
 
   // load font & assign its bitmap glyphs to textures
@@ -112,13 +116,10 @@ int main() {
   Font font("assets/fonts/Vera.ttf");
   TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}, font);
 
-  // accord. to doc: better to reuse importer, & destroys scene (3d model) once out of scope
-  Assimp::Importer importer;
-
   // load 3d model from .obj file & its renderer
   Profiler profiler;
   profiler.start();
-  Gun gun(importer);
+  Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture);
   Player player(importer);
   player.calculate_bounding_box();
   profiler.stop();
@@ -255,7 +256,22 @@ int main() {
     */
 
     // draw textured gun model with position fixed rel. to camera
-    gun.set_transform({ glm::mat4(1.0f), view, projection3d });
+    // view = I => fixed translation with camera as origin
+    // stick gun at bottom of screen
+    gun.set_transform({
+      glm::scale(
+        glm::rotate(
+          glm::rotate(
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, -0.7f, -2.0f)),
+            glm::radians(25.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f)
+          ),
+          glm::radians(15.0f),
+          glm::vec3(1.0f, 0.0f, 0.0f)
+        ),
+        glm::vec3(0.15f)
+      ), glm::mat4(1.0f), projection3d
+    });
     gun.draw();
 
     // last to render: transparent surfaces to ensure blending with background
@@ -331,6 +347,7 @@ int main() {
   // destroy shaders programs
   pgm_basic.free();
   pgm_texture_cube.free();
+  pgm_texture.free();
   pgm_texture_surface.free();
   pgm_light.free();
   pgm_text.free();

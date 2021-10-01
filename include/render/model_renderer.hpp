@@ -12,13 +12,13 @@ struct ModelRenderer {
   // used by class `characters/Player`
   std::vector<Renderer> renderers;
 
-  ModelRenderer(const Program& program, const Model& model, const std::vector<Attribute>& attributes);
+  ModelRenderer(const Program& program, const AssimpUtil::Model& model, const std::vector<Attribute>& attributes);
   void draw(const Uniforms& u={}, bool with_outlines=false);
   void set_transform(const Transformation& transformation);
   void free();
 
 private:
-  Model m_model;
+  AssimpUtil::Model m_model;
 };
 
 #endif // MODEL_RENDERER_HPP
