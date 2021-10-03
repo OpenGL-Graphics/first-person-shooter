@@ -4,15 +4,15 @@
 
 #include "render/level_renderer.hpp"
 #include "geometries/surface.hpp"
+#include "globals/targets.hpp"
 
 /**
  * Sets positions of walls tiles only once in constructor
  * Needed for collision with camera
  */
 LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
-  // renderer for walls/floors & characters (targets, grass)
+  // renderer for walls/floors, props (trees)
   m_renderer(program_tile, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
-  m_target(),
   m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag")),
 
   m_tilemap(tilemap),
@@ -52,6 +52,10 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
         case Tilemap::Tiles::WALL_L_INV:
           angle = glm::radians(-90.0f);
           break;
+        case Tilemap::Tiles::ENEMMY: // non-mobile enemies
+          glm::vec3 position_target = position_tile + glm::vec3(0.0f, 0.5f, 0.0f);
+          Targets::add(Target(position_target));
+          continue;
       }
 
       // save world position for walls (for collision with camera)
@@ -79,10 +83,11 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
  * @param uniforms Uniforms passed to shader
  */
 void LevelRenderer::draw(const Uniforms& u) {
-  // draw floor & ceiling
+  // draw floor & ceiling & targets
   Uniforms uniforms = u;
   draw_floor(uniforms);
   draw_ceiling(uniforms);
+  draw_targets(uniforms);
 
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
     for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
@@ -95,13 +100,7 @@ void LevelRenderer::draw(const Uniforms& u) {
       // choose angle/texture of surface accord. to tile
       switch (tile) {
         case Tilemap::Tiles::ENEMMY:
-          // colored cube enemies
-          m_target.set_transform({
-            glm::translate(glm::mat4(1.0f), position_tile + glm::vec3(0.0f, 0.5f, 0.0f)), // local origin at cube centroid
-            m_transformation.view, m_transformation.projection });
-          m_target.draw(uniforms);
           continue;
-          break;
         case Tilemap::Tiles::TREE:
           // 3d model
           m_tree.set_transform({
@@ -160,6 +159,14 @@ void LevelRenderer::draw(const Uniforms& u) {
   }
 }
 
+/* Draw targets */
+void LevelRenderer::draw_targets(const Uniforms& u) {
+  for (Target& target : Targets::cubes) {
+    target.set_transform(m_transformation);
+    target.draw(u);
+  }
+}
+
 /**
  * Draw horizontal surface at given height
  * @param size Amount by which to scale surface on xy vertical plan
@@ -207,6 +214,6 @@ void LevelRenderer::set_transform(const Transformation& t) {
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
   m_renderer.free();
-  m_target.free();
   m_tree.free();
+  Targets::free();
 }

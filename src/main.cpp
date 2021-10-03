@@ -149,7 +149,6 @@ int main() {
   */
 
   // callback for processing mouse click (after init static members)
-  // MouseHandler::init(&window, &camera, targets, &audio);
   MouseHandler::init(&window, &camera, &audio);
   window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
   std::cout << "window.width: " << window.width

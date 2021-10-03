@@ -12,6 +12,7 @@ private:
   // program declared first (i.e. init first) as it's needed by renderer
   // https://stackoverflow.com/a/41886567/2228912
   Program m_program;
+  glm::vec3 m_position;
 
 public:
   Renderer renderer;
@@ -19,7 +20,7 @@ public:
   /* kill target on intersection with mouse cursor */
   bool is_dead;
 
-  Target();
+  Target(const glm::vec3& position);
   void draw(const Uniforms& uniforms={});
   void set_transform(const Transformation& t);
   void free();

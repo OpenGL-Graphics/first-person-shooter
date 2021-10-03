@@ -3,11 +3,11 @@
 #include "controls/mouse_handler.hpp"
 #include "math/transformation.hpp"
 #include "globals/score.hpp"
+#include "globals/targets.hpp"
 
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 Camera* MouseHandler::m_camera;
 Window* MouseHandler::m_window;
-std::vector<Target *> MouseHandler::m_targets;
 int MouseHandler::m_xmouse;
 int MouseHandler::m_ymouse;
 Audio* MouseHandler::m_audio;
@@ -19,14 +19,12 @@ Audio* MouseHandler::m_audio;
  * @param cube Check for its intersection with camera's intersection
  * @param audio
  */
-// void MouseHandler::init(Window* window, Camera* camera, std::vector<Target *> targets, Audio* audio) {
 void MouseHandler::init(Window* window, Camera* camera, Audio* audio) {
   // init static members: initial mouse's xy-coords at center of screen
   m_camera = camera;
   m_window = window;
   m_xmouse = m_window->width / 2;
   m_ymouse = m_window->height / 2;
-  // m_targets = targets;
   m_audio = audio;
 }
 
@@ -39,13 +37,13 @@ void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, in
     // play gun shot sound
     m_audio->play_2d("assets/audio/gun_shot.mp3");
 
-    for (Target* target : m_targets) {
-      BoundingBox bounding_box = target->renderer.bounding_box;
+    for (Target& target : Targets::cubes) {
+      BoundingBox bounding_box = target.renderer.bounding_box;
       bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 
       // remove target & increase score on intersection
       if (is_intersecting) {
-        target->is_dead = true;
+        target.is_dead = true;
         score++;
         std::cout << "Intersecting!" << '\n';
       } else {

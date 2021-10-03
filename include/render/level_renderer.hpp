@@ -15,13 +15,12 @@
 struct LevelRenderer {
   /* Used to block camera from going through walls */
   std::vector<glm::vec3> positions_walls;
-  /* Targets to kill by mouse cursor intersection */
-  // std::vector<Target> targets;
 
   LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer);
   void draw(const Uniforms& u={});
   void draw_floor(const Uniforms& u);
   void draw_ceiling(const Uniforms& u);
+  void draw_targets(const Uniforms& u);
   void set_transform(const Transformation& t);
   void free();
 
@@ -30,8 +29,6 @@ protected:
 private:
   /* same renderer for all ceiling/floor & walls */
   Renderer m_renderer;
-  /* same target rendered multiple times */
-  Target m_target;
   /* same grass prop rendered multiple times */
   Model m_tree;
 

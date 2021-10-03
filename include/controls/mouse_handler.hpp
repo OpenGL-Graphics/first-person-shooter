@@ -3,7 +3,6 @@
 
 #include "gui/window.hpp"
 #include "navigation/camera.hpp"
-#include "entities/target.hpp"
 #include "audio/audio.hpp"
 
 /**
@@ -14,7 +13,6 @@
 class MouseHandler {
 public:
   /* No need for instance constructor to init static private members */
-  // static void init(Window* window, Camera* camera, std::vector<Target *> targets, Audio* audio);
   static void init(Window* window, Camera* camera, Audio* audio);
 
   /* static methods can be passed as function pointers callbacks (no `this` argument) */
@@ -29,9 +27,6 @@ private:
 
   /* Needed to get 3d projection matrix for raycasting (mouse position to 3d position) */
   static Window* m_window;
-
-  /* Color cube to check for intersection with camera's line of sight */
-  static std::vector<Target *> m_targets;
 
   /* previous mouse xy-coords to compare to when moving (modified inside listeners below) */
   static int m_xmouse;
