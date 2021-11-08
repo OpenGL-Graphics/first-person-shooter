@@ -24,12 +24,6 @@ find_package(assimp REQUIRED)
 add_library(glad SHARED src/glad/glad.c)
 target_include_directories(glad PUBLIC include)
 
-# imgui library (preprocessor definition to force it to use glad)
-add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
-file(GLOB IMGUI_SRC "src/imgui/*.cpp")
-add_library(imgui SHARED ${IMGUI_SRC})
-target_include_directories(imgui PUBLIC include/imgui include)
-
 # irrklang library for playing sounds
 list(APPEND CMAKE_PREFIX_PATH "./lib")
 find_library(LIB_IRRKLANG IrrKlang)
@@ -66,7 +60,6 @@ target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(main
   glfw
   glad
-  imgui
   assimp
   ${FREETYPE_LIBRARIES}
   ${LIB_IRRKLANG}

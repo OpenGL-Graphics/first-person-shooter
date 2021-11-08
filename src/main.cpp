@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <iostream>
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -15,7 +14,6 @@
 #include "render/level_renderer.hpp"
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
-#include "gui/dialog.hpp"
 #include "gui/window.hpp"
 #include "controls/key_handler.hpp"
 #include "controls/mouse_handler.hpp"
@@ -136,9 +134,6 @@ int main() {
     glm::vec3(-1.0f, 0.0f, -3.0f),
     glm::vec3(-1.0f, 0.0f, -4.0f),
   };
-
-  // initialize dialog with imgui
-  // Dialog dialog(window, "Dialog title", "Dialog text");
 
   // targets to mouse cursor intersection
   /*
@@ -304,9 +299,6 @@ int main() {
     surface_glyph.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)), glm::mat4(1.0f), projection2d });
     surface_glyph.draw_text("Score: " + std::to_string(score));
 
-    // render imgui dialog
-    // dialog.render();
-
     // process events & show rendered buffer
     window.process_events();
     window.render();
@@ -314,9 +306,6 @@ int main() {
     // keyboard input (move camera, quit application)
     key_handler.on_keypress();
   }
-
-  // destroy imgui
-  // dialog.free();
 
   // destroy textures
   texture_cube.free();

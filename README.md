@@ -35,13 +35,6 @@ Useful tutorials:
 [docs.gl]: http://docs.gl/
 [khronos.org]: https://www.khronos.org/registry/OpenGL-Refpages/gl4/
 
-# Imgui
-- Source and header files for imgui were copied directly from [imgui-repo] into this project.
-- Follow [imgui-example] to include imgui in an opengl/glsw project.
-
-[imgui-repo]: https://github.com/ocornut/imgui/
-[imgui-example]: https://github.com/ocornut/imgui/tree/master/examples/example_glfw_opengl3
-
 # Texture image
 - As OpenGL doesn't support standard image formats (jpeg, png), texture images are loaded using [stb-image].
 - Brick and building texture images downloaded from [textures.com].
