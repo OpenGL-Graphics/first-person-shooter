@@ -2,7 +2,6 @@
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "materials/texture.hpp"
 #include "shaders/program.hpp"
 #include "shaders/shader.hpp"
 #include "utils/file.hpp"

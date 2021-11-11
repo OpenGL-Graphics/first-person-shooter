@@ -3,7 +3,7 @@
 #include <assimp/postprocess.h>
 
 #include "models/model.hpp"
-#include "materials/texture.hpp"
+#include "texture.hpp"
 
 using namespace AssimpUtil;
 

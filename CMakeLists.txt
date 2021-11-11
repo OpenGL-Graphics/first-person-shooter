@@ -20,17 +20,14 @@ file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 find_package(Freetype REQUIRED)
 find_package(assimp REQUIRED)
 
-# glad shared library (opengl)
-add_library(glad SHARED src/glad/glad.c)
-target_include_directories(glad PUBLIC include)
-
 # irrklang library for playing sounds
 list(APPEND CMAKE_PREFIX_PATH "./lib")
 find_library(LIB_IRRKLANG IrrKlang)
 find_library(LIB_IRRKLANG_MP3 IkpMP3)
 
-# glfw window library from submodule
+# glfw-window & opengl-texture (& glad) libraries from submodules
 add_subdirectory(glfw-window)
+add_subdirectory(opengl-texture)
 
 # copy irrklang mp3 plugin (needed to play mp3 files)
 file(COPY lib/ikpMP3.so DESTINATION ${CMAKE_BINARY_DIR})
@@ -58,11 +55,14 @@ file(GLOB SRC
 )
 
 add_executable(main src/main.cpp ${SRC})
-target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS} glfw-window/include)
+target_include_directories(main PRIVATE
+  ${FREETYPE_INCLUDE_DIRS}
+  include
+)
 target_link_libraries(main
-  glad
   assimp
   ${FREETYPE_LIBRARIES}
   ${LIB_IRRKLANG}
   glfw_window
+  opengl_texture
 )

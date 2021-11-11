@@ -2,7 +2,7 @@
 #define TERRAIN_HPP
 
 #include "geometries/geometry.hpp"
-#include "materials/image.hpp"
+#include "image.hpp"
 
 /**
  * Inspired by triangle-strip terrain from this tutorial:

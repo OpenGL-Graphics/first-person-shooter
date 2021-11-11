@@ -2,8 +2,7 @@
 ```console
 $ # Clone repo and its submodules:
 $ git clone git@github.com:h4k1m0u/first-person-shooter.git
-$ git submodule init
-$ git submodule update  # also needed to get new commits from submodule
+$ git submodule update --init --recursive --remote  # also needed to get new commits from submodule
 
 $ # Build & run
 $ mkdir build && cd build

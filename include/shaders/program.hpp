@@ -6,7 +6,7 @@
 #include <string>
 #include <glm/glm.hpp>
 
-#include "shaders/uniforms.hpp"
+#include "uniforms.hpp"
 
 class Program {
   public:

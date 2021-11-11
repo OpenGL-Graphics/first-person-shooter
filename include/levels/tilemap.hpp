@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "materials/texture.hpp"
+#include "texture.hpp"
 
 struct Tilemap {
   // types & enums constants
