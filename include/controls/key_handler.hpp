@@ -1,7 +1,7 @@
 #ifndef KEY_HANDLER_HPP
 #define KEY_HANDLER_HPP
 
-#include "gui/window.hpp"
+#include "window.hpp"
 #include "entities/player.hpp"
 
 /**

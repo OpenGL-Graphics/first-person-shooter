@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 # autocomplete with YCM & debug with gdb
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 # profiling flag
@@ -16,7 +17,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 
 # needed packages
-find_package(glfw3 REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(assimp REQUIRED)
 
@@ -29,12 +29,14 @@ list(APPEND CMAKE_PREFIX_PATH "./lib")
 find_library(LIB_IRRKLANG IrrKlang)
 find_library(LIB_IRRKLANG_MP3 IkpMP3)
 
+# glfw window library from submodule
+add_subdirectory(glfw-window)
+
 # copy irrklang mp3 plugin (needed to play mp3 files)
 file(COPY lib/ikpMP3.so DESTINATION ${CMAKE_BINARY_DIR})
 
 # main executable
 file(GLOB SRC
-  "src/gui/*.cpp"
   "src/geometries/*.cpp"
   "src/materials/*.cpp"
   "src/navigation/*.cpp"
@@ -56,11 +58,11 @@ file(GLOB SRC
 )
 
 add_executable(main src/main.cpp ${SRC})
-target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(main PRIVATE ${FREETYPE_INCLUDE_DIRS} glfw-window/include)
 target_link_libraries(main
-  glfw
   glad
   assimp
   ${FREETYPE_LIBRARIES}
   ${LIB_IRRKLANG}
+  glfw_window
 )

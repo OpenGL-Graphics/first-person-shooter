@@ -1,5 +1,18 @@
+# How to run
+```console
+$ # Clone repo and its submodules:
+$ git clone git@github.com:h4k1m0u/first-person-shooter.git
+$ git submodule init
+$ git submodule update  # also needed to get new commits from submodule
+
+$ # Build & run
+$ mkdir build && cd build
+$ cmake .. && make -j
+$ ./main
+```
+
 # Program
-- **src/main.cpp:** Draws textured 3D cubes with OpenGL shaders on a window generated with GLFW, with the possibility to navigate in the scene using the mouse and WASD keys.
+- **src/main.cpp:** Draws player's gun, scene from tilemap, and colored 3D cubes targets with OpenGL shaders on a window generated with GLFW, with the possibility to navigate in the scene using WASD keys and the mouse (LMB is for shooting).
 
 # OpenGL
 - **GLFW (Graphics Library Framework):** Library for creating windows with OpenGL context and for handling mouse and keyboard interactions. Read this [GLFW tutorial].
@@ -83,7 +96,7 @@ sudo apt install assimp-utils
 
 
 # Profiling with gprof
-- Install [gprof][gprof]:
+- Install gprof:
 
 ```console
 $ ./configure

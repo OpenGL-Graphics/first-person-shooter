@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include "window.hpp"
 #include "navigation/camera.hpp"
 #include "geometries/cube.hpp"
 #include "geometries/surface.hpp"
@@ -14,7 +15,6 @@
 #include "render/level_renderer.hpp"
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
-#include "gui/window.hpp"
 #include "controls/key_handler.hpp"
 #include "controls/mouse_handler.hpp"
 #include "models/mesh.hpp"
@@ -125,8 +125,8 @@ int main() {
 
   // transformation matrices
   glm::mat4 view = camera.get_view();
-  glm::mat4 projection3d = window.get_projection3d(camera);
-  glm::mat4 projection2d = window.get_projection2d();
+  glm::mat4 projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
+  glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
 
   // cubes to collide with (cube_texture)
   std::vector<glm::vec3> positions = {
@@ -169,9 +169,9 @@ int main() {
     glClearColor(background.r, background.g, background.b, background.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    // update transformation matrices
+    // update transformation matrices (camera fov changes on zoom)
     view = camera.get_view();
-    projection3d = window.get_projection3d(camera);
+    projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
 
     // cube with outline using two-passes rendering & stencil buffer
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));

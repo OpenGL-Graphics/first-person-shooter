@@ -1,7 +1,7 @@
 #ifndef MOUSE_HANDLER_HPP
 #define MOUSE_HANDLER_HPP
 
-#include "gui/window.hpp"
+#include "window.hpp"
 #include "navigation/camera.hpp"
 #include "audio/audio.hpp"
 
