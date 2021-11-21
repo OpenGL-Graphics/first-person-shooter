@@ -1,7 +1,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "entities/splatmap.hpp"
-#include "shaders/shader_exception.hpp"
+#include "shader_exception.hpp"
 #include "geometries/terrain.hpp"
 
 Splatmap::Splatmap():

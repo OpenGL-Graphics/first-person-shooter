@@ -5,7 +5,7 @@
 
 #include "render/renderer.hpp"
 #include "levels/tilemap.hpp"
-#include "shaders/program.hpp"
+#include "program.hpp"
 #include "entities/target.hpp"
 #include "entities/model.hpp"
 

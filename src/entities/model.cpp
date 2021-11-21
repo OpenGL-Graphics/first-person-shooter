@@ -2,7 +2,7 @@
 
 #include "entities/model.hpp"
 #include "geometries/surface.hpp"
-#include "shaders/shader_exception.hpp"
+#include "shader_exception.hpp"
 
 /**
  * @param importer Assimp importer (single instance in all program)

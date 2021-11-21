@@ -2,7 +2,7 @@
 
 #include "entities/target.hpp"
 #include "geometries/cube.hpp"
-#include "shaders/shader_exception.hpp"
+#include "shader_exception.hpp"
 
 /**
  * Targets are generated inside level accord. to tilemap

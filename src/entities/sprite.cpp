@@ -2,7 +2,7 @@
 
 #include "entities/sprite.hpp"
 #include "geometries/surface.hpp"
-#include "shaders/shader_exception.hpp"
+#include "shader_exception.hpp"
 
 /**
  * 2D sprite for props

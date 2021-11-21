@@ -4,3 +4,6 @@
 [submodule "opengl-texture"]
 	path = opengl-texture
 	url = git@github.com:OpenGL-Graphics/opengl-texture.git
+[submodule "opengl-shader"]
+	path = opengl-shader
+	url = git@github.com:OpenGL-Graphics/opengl-shader.git
