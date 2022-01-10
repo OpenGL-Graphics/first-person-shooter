@@ -64,8 +64,9 @@ int main() {
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
+  Program pgm_matcap("assets/shaders/matcap.vert", "assets/shaders/matcap.frag");
   if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() ||
-      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed()) {
+      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed()) {
     window.destroy();
     return 1;
   }
@@ -87,11 +88,16 @@ int main() {
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
   Texture2D texture_surface_crosshair(Image("assets/images/surfaces/crosshair.png"));
 
+  // matcap texture
+  // Texture2D texture_matcap(Image("assets/images/matcap/046363_0CC3C3_049B9B_04ACAC-512px.png"));
+  Texture2D texture_matcap(Image("assets/images/matcap/326666_66CBC9_C0B8AE_52B3B4-512px.png"));
+
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
   Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
   Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {0, "texture_coord", 3, 12, 6}});
-  Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
+  // Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
+  Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
 
   // terrain from triangle strips & textured with image splatmap
@@ -199,8 +205,8 @@ int main() {
 
     // draw illuminated cube
     /*
-    cube_light.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 4.0f)), view, projection3d });
-    target_cube_light.draw({
+    cube_light.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 4.0f, 4.0f)), view, projection3d });
+    cube_light.draw({
       {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
       {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
       {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
@@ -212,6 +218,12 @@ int main() {
       {"position_camera", camera.position},
     });
     */
+
+    // draw shaded cube using matcap
+    cube_matcap.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 4.0f)), view, projection3d });
+    cube_matcap.draw({
+      {"texture2d", texture_matcap},
+    });
 
     // draw color cube (rotated around x-axis)
     /*
@@ -312,6 +324,7 @@ int main() {
 
   texture_surface_hud.free();
   texture_surface_crosshair.free();
+  texture_matcap.free();
 
   Glyphs glyphs(surface_glyph.get_glyphs());
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
@@ -324,7 +337,8 @@ int main() {
   terrain.free();
   cube_basic.free();
   cube_texture.free();
-  cube_light.free();
+  // cube_light.free();
+  cube_matcap.free();
   surface.free();
   surface_glyph.free();
 
@@ -338,6 +352,7 @@ int main() {
   pgm_texture.free();
   pgm_texture_surface.free();
   pgm_light.free();
+  pgm_matcap.free();
   pgm_text.free();
 
   // destroy sound engine & window & terminate glfw
