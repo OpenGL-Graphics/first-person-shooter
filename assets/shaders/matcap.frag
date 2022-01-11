@@ -2,8 +2,11 @@
 
 in vec3 normal_vert;
 
-uniform sampler2D texture2d;
-uniform mat4 view; // world coord  -> camera coord
+/* don't call it `texture2d` as uniform of same name passed in `ModelRenderer::draw()` */
+uniform sampler2D texture_matcap;
+
+// world coord  -> camera coord
+uniform mat4 view;
 
 out vec4 color_out;
 
@@ -15,5 +18,7 @@ void main() {
   // convert normal from [-1, 1] to [0, 1]
   texture_coord = 0.5 * normalize(texture_coord) + vec2(0.5, 0.5);
 
-  color_out = texture(texture2d, texture_coord);
+  // use normal as uv-coords to sample from texture
+  color_out = texture(texture_matcap, texture_coord);
+  // color_out = vec4(texture_coord, 0, 1); // intensity depends directly on normal
 }

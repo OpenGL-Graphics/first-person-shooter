@@ -88,9 +88,9 @@ int main() {
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
   Texture2D texture_surface_crosshair(Image("assets/images/surfaces/crosshair.png"));
 
-  // matcap texture
-  // Texture2D texture_matcap(Image("assets/images/matcap/046363_0CC3C3_049B9B_04ACAC-512px.png"));
-  Texture2D texture_matcap(Image("assets/images/matcap/326666_66CBC9_C0B8AE_52B3B4-512px.png"));
+  // matcap texture (use 2nd texture slot as 1st one used for 3d model's texture, ie. Suzanne)
+  // Texture2D texture_matcap(Image("assets/images/matcap/046363_0CC3C3_049B9B_04ACAC-512px.png"), GL_TEXTURE1);
+  Texture2D texture_matcap(Image("assets/images/matcap/326666_66CBC9_C0B8AE_52B3B4-512px.png"), GL_TEXTURE1);
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
@@ -124,6 +124,7 @@ int main() {
   Profiler profiler;
   profiler.start();
   Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture);
+  Model suzanne(importer, "assets/models/suzanne/suzanne.obj", pgm_matcap);
   Player player(importer);
   player.calculate_bounding_box();
   profiler.stop();
@@ -222,7 +223,13 @@ int main() {
     // draw shaded cube using matcap
     cube_matcap.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 4.0f)), view, projection3d });
     cube_matcap.draw({
-      {"texture2d", texture_matcap},
+      {"texture_matcap", texture_matcap},
+    });
+
+    // render 3d model for suzanne with matcap shader
+    suzanne.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 2.0f, 2.0f)), view, projection3d });
+    suzanne.draw({
+      {"texture_matcap", texture_matcap},
     });
 
     // draw color cube (rotated around x-axis)
@@ -345,6 +352,7 @@ int main() {
   // free 2d & 3d entities
   glass.free();
   gun.free();
+  suzanne.free();
 
   // destroy shaders programs
   pgm_basic.free();

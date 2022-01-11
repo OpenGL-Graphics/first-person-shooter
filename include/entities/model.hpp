@@ -10,6 +10,8 @@ private:
   // https://stackoverflow.com/a/41886567/2228912
   Program m_program;
   AssimpUtil::Model m_model;
+
+  /* Renderer for 3d model */
   ModelRenderer m_renderer;
 
 public:
