@@ -5,27 +5,9 @@
 #include "geometries/terrain.hpp"
 #include "materials/heightmap.hpp"
 
-/* Construct random terrain using Perlin noise values */
-Terrain::Terrain(unsigned int n_vertexes_x, unsigned int n_vertexes_y):
-  m_n_vertexes_x(n_vertexes_x),
-  m_n_vertexes_y(n_vertexes_y)
-{
-  // reserve space for position & normal coords for every vertex
-  m_vertexes.resize(m_n_coords * m_n_vertexes_x * m_n_vertexes_y);
-
-  // set vertexes positions/normals & triangles faces
-  set_positions_from_perlin();
-  set_indices();
-  set_normals();
-  set_texture_coords();
-  set_n_elements();
-  // print_indices();
-}
-
 /* Construct terrain from heightmap image */
 Terrain::Terrain(const Image& heightmap):
-  m_n_vertexes_x(heightmap.width),
-  m_n_vertexes_y(heightmap.height),
+  Grid(heightmap.width, heightmap.height),
   m_image(heightmap)
 {
   // reserve space for position & normal coords for every vertex
@@ -33,11 +15,10 @@ Terrain::Terrain(const Image& heightmap):
 
   // set vertexes positions/normals & triangles faces
   set_positions_from_image();
-  set_indices();
+  set_indices(m_indices);
   set_normals();
-  set_texture_coords();
-  set_n_elements();
-  // print_indices();
+  set_texture_coords(m_vertexes);
+  // print_indices(m_indices);
 }
 
 /**
@@ -86,37 +67,6 @@ void Terrain::set_positions_from_perlin() {
 }
 
 /**
- * Set vertexes 2D texture coordinates
- * Texture coords in [0, 1] with (0, 0) being lower-left corner of texture image
- */
-void Terrain::set_texture_coords() {
-  for (size_t i_vertex_y = 0; i_vertex_y < m_n_vertexes_y; ++i_vertex_y) {
-    for (size_t i_vertex_x = 0; i_vertex_x < m_n_vertexes_x; ++i_vertex_x) {
-      unsigned int i_vertex = i_vertex_y * m_n_vertexes_x + i_vertex_x;
-      float coord_x = (float) i_vertex_x / (m_n_vertexes_x - 1);
-      float coord_y = (float) i_vertex_y / (m_n_vertexes_y - 1);
-
-      // vertex's texture coords (skip coords for xyz & normal)
-      m_vertexes[m_n_coords * i_vertex + 6] = coord_x;
-      m_vertexes[m_n_coords * i_vertex + 7] = coord_y;
-    }
-  }
-}
-
-/**
- * Set vertexes (positions, colors) from horizontal xy-plan (z = 0)
- * y-axis is the vertical axis in OpenGL (whereas for terrain plan z=0 is the ground)
- */
-void Terrain::set_vertexes_from_plan() {
-  for (size_t i_vertex_y = 0; i_vertex_y < m_n_vertexes_y; ++i_vertex_y) {
-    for (size_t i_vertex_x = 0; i_vertex_x < m_n_vertexes_x; ++i_vertex_x) {
-      m_vertexes.insert(m_vertexes.end(), {(float) i_vertex_x, 0.0, (float) i_vertex_y});
-      m_vertexes.insert(m_vertexes.end(), {0xff, 0x00, 0x00});
-    }
-  }
-}
-
-/**
  * Set vertexes positions from paraboloid (3d parabola)
  * Generic equation: z = x^2 / a^2 + y^2 / b^2, a & b control curve steepness
  * y-axis is the vertical axis in OpenGL
@@ -148,7 +98,7 @@ void Terrain::set_vertexes_from_paraboloid() {
  * then consider vertex's normal the average of normals of triangles that have this vertex as a corner
  */
 void Terrain::set_normals() {
-  // print_indices();
+  // print_indices(m_indices);
   unsigned int n_vertexes = m_n_vertexes_x * m_n_vertexes_y;
   std::vector<glm::vec3> normals(n_vertexes, glm::vec3(0.0f));
   std::vector<unsigned int> n_adjacent_triangles(n_vertexes, 0);
@@ -195,42 +145,10 @@ void Terrain::set_normals() {
 }
 
 /**
- * Calculate vertexes indices used for triangle strips
- * http://www.learnopengles.com/android-lesson-eight-an-introduction-to-index-buffer-objects-ibos/
- */
-void Terrain::set_indices() {
-  for (size_t i_vertex_y = 0; i_vertex_y < m_n_vertexes_y - 1; ++i_vertex_y) {
-    for (size_t i_vertex_x = 0; i_vertex_x < m_n_vertexes_x; ++i_vertex_x) {
-      // successive triangles overlap (advance by 1 vertex each time)
-      m_indices.push_back(i_vertex_x + i_vertex_y * m_n_vertexes_x);
-      m_indices.push_back(m_n_vertexes_x + i_vertex_x + i_vertex_y * m_n_vertexes_x);
-    }
-
-    // degenerate triangles (area = 0) by repeating some vertexes to go to next row
-    if (i_vertex_y != m_n_vertexes_y - 2) {
-      m_indices.push_back((i_vertex_y + 2) * m_n_vertexes_x - 1);
-      m_indices.push_back((i_vertex_y + 1) * m_n_vertexes_x);
-    }
-  }
-}
-
-/* Display indices of successive vertexes forming triangle strips (Useful for debugging) */
-void Terrain::print_indices() {
-  for (unsigned int indice : m_indices) {
-    std::cout << indice << ',';
-  }
-  std::cout << '\n';
-}
-
-/**
+ * Needed by `VBO()` otherwise would call `Geometry::get_n_vertexes()`
  * Number of elements to draw (i.e. # of indices in triangle strip mode)
  * https://stackoverflow.com/a/14842779/2228912
  */
-void Terrain::set_n_elements() {
-  m_n_elements = m_indices.size();
-}
-
-/* Needed by `VBO()` otherwise would call `Geometry::get_n_vertexes()` */
 unsigned int Terrain::get_n_elements() const {
-  return m_n_elements;
+  return m_indices.size();
 }

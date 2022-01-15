@@ -57,7 +57,7 @@ void Renderer::move(const glm::vec3& offset) {
  * Draw vertexes given to `m_vbo`
  * @param Uniforms Unordered map (key, values) of vars to pass to shader
  *        Passed as const ref. as we cannot have default param values with refs.
- * @param mode GL_TRIANGLES for most meshes, GL_TRIANGLE_STRIP for terrains
+ * @param mode GL_TRIANGLES for most meshes, GL_TRIANGLE_STRIP for grids (i.e. terrain & plane)
  */
 void Renderer::draw(const Uniforms& u, GLenum mode) {
   // 3d position of model

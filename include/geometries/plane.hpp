@@ -1,27 +1,23 @@
-#ifndef TERRAIN_HPP
-#define TERRAIN_HPP
+#ifndef PLANE_HPP
+#define PLANE_HPP
 
-#include "geometries/grid.hpp"
 #include "geometries/geometry.hpp"
+#include "geometries/grid.hpp"
 #include "image.hpp"
 
 /**
  * Inspired by triangle-strip terrain from this tutorial:
  * http://www.learnopengles.com/android-lesson-eight-an-introduction-to-index-buffer-objects-ibos/
  */
-class Terrain : public Geometry, public Grid {
+class Plane : public Geometry, public Grid {
 public:
-  Terrain(const Image& heightmap);
+  Plane(unsigned int n_vertexes_x, unsigned int n_vertexes_y);
   unsigned int get_n_elements() const override;
 
 private:
-  /* heightmap image */
-  Image m_image;
-
   void set_normals();
-  void set_positions_from_perlin();
-  void set_positions_from_image();
+  void set_positions_from_grid();
   void set_vertexes_from_paraboloid();
 };
 
-#endif // TERRAIN_HPP
+#endif // PLANE_HPP

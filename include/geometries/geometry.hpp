@@ -10,15 +10,21 @@ public:
   Geometry();
   Geometry(const std::vector<float>& vertexes, const std::vector<unsigned int>& indices, const std::vector<glm::vec3>& positions);
   virtual std::vector<float> get_vertexes() const;
-  virtual unsigned int get_n_elements() const;
   virtual std::vector<unsigned int> get_indices() const;
   virtual std::vector<glm::vec3> get_positions() const;
 
+  /**
+   * # of elements to render by `glDrawElements()` (= # of vertexes, except for triangle strips = # of indices)
+   * Used by `VBO` (and Renderer)
+   */
+  virtual unsigned int get_n_elements() const;
+
+// vertexes & indices set in derived classes
 protected:
   /* coordinates for position/normal/texture-coord */
   std::vector<float> m_vertexes;
 
-  /* # of elements to render by `glDrawElements()` (= # of vertexes, except for triangle strips = # of indices) */
+  /* # of elements to render */
   int m_n_elements;
 
   /* faces (triangles formed by vertexes indexes) */

@@ -11,8 +11,9 @@ Splatmap::Splatmap():
   m_texture_terrain_rock(Image("assets/images/terrain/rock.jpg"), GL_TEXTURE2),
   m_texture_terrain_splatmap(Image("assets/images/terrain/splatmap.png"), GL_TEXTURE3),
 
-  m_program("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag"),
-  m_vbo(Terrain(Image("assets/images/terrain/heightmap.png"))),
+  m_program("assets/shaders/light_grid.vert", "assets/shaders/light_terrain.frag"),
+  m_image("assets/images/terrain/heightmap.png"),
+  m_vbo(Terrain(m_image)),
   m_renderer(m_program, m_vbo, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}})
 {
   // vertex or fragment shaders failed to compile
@@ -48,6 +49,7 @@ void Splatmap::set_transform(const Transformation& t) {
 
 /* Free textures, renderer (vao/vbo buffers), and shader program */
 void Splatmap::free() {
+  m_image.free();
   m_texture_terrain_water.free();
   m_texture_terrain_grass.free();
   m_texture_terrain_rock.free();

@@ -14,6 +14,9 @@ public:
   void free();
 
 private:
+  /* heightmap image (needs to be declared/init before vbo) */
+  Image m_image;
+
   // program declared first (i.e. init first) as it's needed by renderer
   // https://stackoverflow.com/a/41886567/2228912
   Program m_program;

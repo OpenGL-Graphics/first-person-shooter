@@ -1,6 +1,9 @@
 #include <vertexes/vbo.hpp>
 
-/* No polymorphism if `geometry` wasn't passed by ref */
+/**
+ * No polymorphism if `geometry` wasn't passed by ref (or as a pointer)
+ * https://stackoverflow.com/a/15188950/2228912
+ */
 VBO::VBO(const Geometry& geometry, bool is_empty, GLenum type):
   m_type(type),
   m_vertexes(geometry.get_vertexes()),

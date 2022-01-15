@@ -9,6 +9,7 @@
 #include "navigation/camera.hpp"
 #include "geometries/cube.hpp"
 #include "geometries/surface.hpp"
+#include "geometries/plane.hpp"
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
 #include "render/model_renderer.hpp"
@@ -65,8 +66,10 @@ int main() {
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   Program pgm_matcap("assets/shaders/matcap.vert", "assets/shaders/matcap.frag");
+  Program pgm_plane("assets/shaders/light_grid.vert", "assets/shaders/light_plane.frag");
   if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() ||
-      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed()) {
+      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed() ||
+      pgm_plane.has_failed()) {
     window.destroy();
     return 1;
   }
@@ -92,6 +95,9 @@ int main() {
   // Texture2D texture_matcap(Image("assets/images/matcap/046363_0CC3C3_049B9B_04ACAC-512px.png"), GL_TEXTURE1);
   Texture2D texture_matcap(Image("assets/images/matcap/326666_66CBC9_C0B8AE_52B3B4-512px.png"), GL_TEXTURE1);
 
+  // 2D texture for flat grid plane
+  Texture2D texture_plane(Image("assets/images/plane/radial-blur.png"));
+
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
   Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
@@ -99,6 +105,7 @@ int main() {
   // Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
+  Renderer plane(pgm_plane, VBO(Plane(5, 5)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
@@ -192,6 +199,19 @@ int main() {
     // draw textured terrain using triangle strips
     terrain.set_transform({ glm::mat4(1.0f), view, projection3d });
     terrain.draw();
+
+    // draw textured plane using triangle strips
+    plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.0f, 1.0f)), view, projection3d });
+    glm::vec3 color_light(1.0f, 1.0f, 1.0f);
+    glm::vec3 position_light(10.0f, 6.0f, 6.0f);
+
+    plane.draw({
+      {"texture2d", texture_plane},
+      {"light.position", position_light},
+      {"light.ambiant", 0.2f * color_light},
+      {"light.diffuse", 0.5f * color_light},
+      {"light.specular", color_light},
+    }, GL_TRIANGLE_STRIP);
 
     // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
@@ -332,6 +352,7 @@ int main() {
   texture_surface_hud.free();
   texture_surface_crosshair.free();
   texture_matcap.free();
+  texture_plane.free();
 
   Glyphs glyphs(surface_glyph.get_glyphs());
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
@@ -348,6 +369,7 @@ int main() {
   cube_matcap.free();
   surface.free();
   surface_glyph.free();
+  plane.free();
 
   // free 2d & 3d entities
   glass.free();
@@ -360,8 +382,9 @@ int main() {
   pgm_texture.free();
   pgm_texture_surface.free();
   pgm_light.free();
-  pgm_matcap.free();
   pgm_text.free();
+  pgm_matcap.free();
+  pgm_plane.free();
 
   // destroy sound engine & window & terminate glfw
   audio.free();
