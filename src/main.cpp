@@ -200,7 +200,8 @@ int main() {
     terrain.set_transform({ glm::mat4(1.0f), view, projection3d });
     terrain.draw();
 
-    // draw textured plane using triangle strips
+    // draw animated & textured wave from plane using triangle strips
+    float time = glfwGetTime();
     plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
     glm::vec3 position_light(10.0f, 6.0f, 6.0f);
@@ -211,6 +212,7 @@ int main() {
       {"light.ambiant", 0.2f * color_light},
       {"light.diffuse", 0.5f * color_light},
       {"light.specular", color_light},
+      {"time", time},
     }, GL_TRIANGLE_STRIP);
 
     // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
