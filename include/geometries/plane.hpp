@@ -15,6 +15,9 @@ public:
   unsigned int get_n_elements() const override;
 
 private:
+  /* used to magnify/reduce size of grid */
+  const float scale = 1.0f / 50;
+
   void set_normals();
   void set_positions_from_grid();
   void set_vertexes_from_paraboloid();

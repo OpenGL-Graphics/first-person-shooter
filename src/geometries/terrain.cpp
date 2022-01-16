@@ -37,9 +37,9 @@ void Terrain::set_positions_from_image() {
       unsigned char pixel_value = m_image.data[i_vertex];
 
       // set vertex elevation from pixel intensity
-      m_vertexes[m_n_coords * i_vertex] = i_col / 100.0f;  // miniatured sized
+      m_vertexes[m_n_coords * i_vertex] = i_col * scale;  // miniature sized
       m_vertexes[m_n_coords * i_vertex + 1] = pixel_value / 500.0f;
-      m_vertexes[m_n_coords * i_vertex + 2] = i_row / 100.0f;
+      m_vertexes[m_n_coords * i_vertex + 2] = i_row * scale;
     }
   }
 }

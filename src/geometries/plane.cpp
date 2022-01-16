@@ -27,9 +27,9 @@ void Plane::set_positions_from_grid() {
     for (size_t i_col = 0; i_col < m_n_vertexes_x; ++i_col) {
       unsigned int i_vertex = i_row * m_n_vertexes_x + i_col;
 
-      m_vertexes[m_n_coords * i_vertex] = i_col / 10.0f;  // miniatured sized
+      m_vertexes[m_n_coords * i_vertex] = i_col * scale;  // miniature sized
       m_vertexes[m_n_coords * i_vertex + 1] = 0.0f;
-      m_vertexes[m_n_coords * i_vertex + 2] = i_row / 10.0f;
+      m_vertexes[m_n_coords * i_vertex + 2] = i_row * scale;
     }
   }
 }

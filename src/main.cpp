@@ -66,7 +66,7 @@ int main() {
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   Program pgm_matcap("assets/shaders/matcap.vert", "assets/shaders/matcap.frag");
-  Program pgm_plane("assets/shaders/light_grid.vert", "assets/shaders/light_plane.frag");
+  Program pgm_plane("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag");
   if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() ||
       pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed() ||
       pgm_plane.has_failed()) {
@@ -95,8 +95,8 @@ int main() {
   // Texture2D texture_matcap(Image("assets/images/matcap/046363_0CC3C3_049B9B_04ACAC-512px.png"), GL_TEXTURE1);
   Texture2D texture_matcap(Image("assets/images/matcap/326666_66CBC9_C0B8AE_52B3B4-512px.png"), GL_TEXTURE1);
 
-  // 2D texture for flat grid plane
-  Texture2D texture_plane(Image("assets/images/plane/radial-blur.png"));
+  // 2D texture for flat grid plane (shape made as a sin wave in vertex shader)
+  Texture2D texture_plane(Image("assets/images/plane/wave.png"));
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
@@ -105,7 +105,7 @@ int main() {
   // Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
-  Renderer plane(pgm_plane, VBO(Plane(5, 5)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
+  Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
@@ -201,7 +201,7 @@ int main() {
     terrain.draw();
 
     // draw textured plane using triangle strips
-    plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.0f, 1.0f)), view, projection3d });
+    plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
     glm::vec3 position_light(10.0f, 6.0f, 6.0f);
 

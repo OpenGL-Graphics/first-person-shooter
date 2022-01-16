@@ -11,7 +11,7 @@ Splatmap::Splatmap():
   m_texture_terrain_rock(Image("assets/images/terrain/rock.jpg"), GL_TEXTURE2),
   m_texture_terrain_splatmap(Image("assets/images/terrain/splatmap.png"), GL_TEXTURE3),
 
-  m_program("assets/shaders/light_grid.vert", "assets/shaders/light_terrain.frag"),
+  m_program("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag"),
   m_image("assets/images/terrain/heightmap.png"),
   m_vbo(Terrain(m_image)),
   m_renderer(m_program, m_vbo, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}})
