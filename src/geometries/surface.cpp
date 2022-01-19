@@ -1,8 +1,13 @@
 #include "geometries/surface.hpp"
 
-Surface::Surface() {
+/**
+ * @param uv_max Needed to avoid stretching wall texture when scaling it up in `LevelRenderer`
+ */
+Surface::Surface(const glm::vec2& uv_max):
+  m_uv_max(uv_max)
+{
   // cannot be init in constructor's member initalizer list as they're members of base class
-  m_vertexes = VERTEXES;
+  m_vertexes = _get_vertexes();
   m_indices = INDICES;
   m_positions = POSITIONS;
   set_n_elements();
@@ -36,13 +41,15 @@ std::vector<glm::vec3> Surface::get_positions() const {
   return m_positions;
 }
 
-//coord(x,y) texture(u,v)
-const std::vector<float> Surface::VERTEXES {
-  // origin: lower-left corner for opengl textures
-  0.0f, 0.0f, 0.0f, 0.0f,
-  1.0f, 0.0f, 1.0f, 0.0f,
-  1.0f, 1.0f, 1.0f, 1.0f,
-  0.0f, 1.0f, 0.0f, 1.0f,
+std::vector<float> Surface::_get_vertexes() {
+  return {
+    // origin: lower-left corner for opengl textures
+    //coord(x,y) texture(u,v)
+    0.0f, 0.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, m_uv_max.x, 0.0f,
+    1.0f, 1.0f, m_uv_max.x, m_uv_max.y,
+    0.0f, 1.0f, 0.0f, m_uv_max.y,
+  };
 };
 
 const std::vector<unsigned int> Surface::INDICES {

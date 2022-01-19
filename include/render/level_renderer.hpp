@@ -27,8 +27,19 @@ struct LevelRenderer {
 protected:
   std::vector<Renderer> m_renderers;
 private:
-  /* same renderer for all ceiling/floor & walls */
-  Renderer m_renderer;
+  /* Height of walls & elevation of ceiling */
+  const float m_height;
+
+  /* declared before `m_renderer_floor` as nrows/ncols needed to avoid stretching texture */
+  Tilemap m_tilemap;
+
+  /**
+   * One renderer for walls tiles and another one for ceiling/floor
+   * wall tiles & ceiling/floor have different sizes => different uv-coords to avoid stretching texture
+   */
+  Renderer m_renderer_wall;
+  Renderer m_renderer_floor;
+
   /* same grass prop rendered multiple times */
   Model m_tree;
 
@@ -37,9 +48,6 @@ private:
 
   /* position of level */
   glm::vec3 m_position;
-  /* Height of walls & elevation of ceiling */
-  float m_height;
-  Tilemap m_tilemap;
   std::unordered_map<std::string, Texture2D> m_textures;
 
   void draw_horizontal_surface(const Uniforms& u, const glm::vec2& size, float height);

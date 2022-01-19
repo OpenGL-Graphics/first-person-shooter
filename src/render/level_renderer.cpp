@@ -11,18 +11,20 @@
  * Needed for collision with camera
  */
 LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
-  // renderer for walls/floors, props (trees)
-  m_renderer(program_tile, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
+  m_height(3.5f),
+  m_tilemap(tilemap),
+
+  // renderers for walls/floors, props (trees)
+  m_renderer_wall(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
+  m_renderer_floor(program_tile, VBO(Surface(glm::vec2(m_tilemap.n_cols - 1, m_tilemap.n_rows - 1))), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
   m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag")),
 
-  m_tilemap(tilemap),
   m_textures {
-    {"wall", Texture2D(Image("assets/images/level/wall.jpg"))},
+    {"wall", Texture2D(Image("assets/images/level/bricks.jpg"))},
     {"door", Texture2D(Image("assets/images/level/door.jpg"))},
     {"floor", Texture2D(Image("assets/images/level/floor.jpg"))},
     {"ceiling", Texture2D(Image("assets/images/level/ceiling.jpg"))},
   },
-  m_height(5.0f),
   m_position(position)
 {
   // TODO: only calculate world positions & angles in constructor (not in `draw()`)
@@ -142,7 +144,7 @@ void LevelRenderer::draw(const Uniforms& u) {
       // render tile surface (or two tiles surfaces for corners): wall or door
       for (size_t i_surface = 0; i_surface < n_surfaces; ++i_surface) {
         // vertical scaling then rotation around y-axis then translation
-        m_renderer.set_transform({
+        m_renderer_wall.set_transform({
           glm::scale(
             glm::rotate(
               glm::translate(glm::mat4(1.0f), position_tile),
@@ -153,7 +155,7 @@ void LevelRenderer::draw(const Uniforms& u) {
           ), m_transformation.view, m_transformation.projection
         });
 
-        m_renderer.draw(uniforms);
+        m_renderer_wall.draw(uniforms);
       }
     }
   }
@@ -175,7 +177,7 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
 void LevelRenderer::draw_horizontal_surface(const Uniforms& uniforms, const glm::vec2& size, float height) {
   // xy scaling then rotation around x-axis then translation
   float angle = glm::radians(90.0f);
-  m_renderer.set_transform({
+  m_renderer_floor.set_transform({
     glm::scale(
       glm::rotate(
         glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
@@ -186,7 +188,7 @@ void LevelRenderer::draw_horizontal_surface(const Uniforms& uniforms, const glm:
     ), m_transformation.view, m_transformation.projection
   });
 
-  m_renderer.draw(uniforms);
+  m_renderer_floor.draw(uniforms);
 }
 
 /* Draw horizontal floor covering bottom of tilemap */
@@ -213,7 +215,8 @@ void LevelRenderer::set_transform(const Transformation& t) {
 
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
-  m_renderer.free();
+  m_renderer_wall.free();
+  m_renderer_floor.free();
   m_tree.free();
   Targets::free();
 }
