@@ -1,4 +1,5 @@
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 #include <algorithm>
 #include <iostream>
 
@@ -15,15 +16,25 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
   m_tilemap(tilemap),
 
   // renderers for walls/floors, props (trees)
-  m_renderer_wall(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
-  m_renderer_floor(program_tile, VBO(Surface(glm::vec2(m_tilemap.n_cols - 1, m_tilemap.n_rows - 1))), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}),
+  m_renderer_wall(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {
+    {0, "position", 2, 4, 0},
+    {0, "texture_coord", 2, 4, 2},
+  }),
+  m_renderer_floor(program_tile, VBO(Surface(glm::vec2(m_tilemap.n_cols - 1, m_tilemap.n_rows - 1))), {
+    {0, "position", 2, 4, 0},
+    {0, "texture_coord", 2, 4, 2},
+  }),
   m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag")),
 
   m_textures {
-    {"wall", Texture2D(Image("assets/images/level/bricks.jpg"))},
-    {"door", Texture2D(Image("assets/images/level/door.jpg"))},
-    {"floor", Texture2D(Image("assets/images/level/floor.jpg"))},
-    {"ceiling", Texture2D(Image("assets/images/level/ceiling.jpg"))},
+    {"wall_diffuse", Texture2D(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0)},
+    {"wall_normal", Texture2D(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1)},
+    {"door_diffuse", Texture2D(Image("assets/images/level/door_diffuse.jpg"), GL_TEXTURE0)},
+    {"door_normal", Texture2D(Image("assets/images/level/door_normal.jpg"), GL_TEXTURE1)},
+    {"floor_diffuse", Texture2D(Image("assets/images/level/floor_diffuse.jpg"), GL_TEXTURE0)},
+    {"floor_normal", Texture2D(Image("assets/images/level/floor_normal.jpg"), GL_TEXTURE1)},
+    {"ceiling_diffuse", Texture2D(Image("assets/images/level/ceiling_diffuse.jpg"), GL_TEXTURE0)},
+    {"ceiling_normal", Texture2D(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE1)},
   },
   m_position(position)
 {
@@ -85,8 +96,11 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
  * @param uniforms Uniforms passed to shader
  */
 void LevelRenderer::draw(const Uniforms& u) {
-  // draw floor & ceiling & targets
+  // normal matrix for transforming normal vec to world space (inverse() not defined in glsl-1.30)
   Uniforms uniforms = u;
+  uniforms["normal_mat"] = glm::inverseTranspose(glm::mat3(m_transformation.model));
+
+  // draw floor & ceiling & targets
   draw_floor(uniforms);
   draw_ceiling(uniforms);
   draw_targets(uniforms);
@@ -114,29 +128,35 @@ void LevelRenderer::draw(const Uniforms& u) {
         case Tilemap::Tiles::SPACE:
           continue;
         case Tilemap::Tiles::WALL_H:
-          uniforms["texture2d"] = m_textures["wall"];
+          uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
+          uniforms["texture_normal"] = m_textures["wall_normal"];
           break;
         case Tilemap::Tiles::WALL_V:
-          uniforms["texture2d"] = m_textures["wall"];
+          uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
+          uniforms["texture_normal"] = m_textures["wall_normal"];
           angle[0] = glm::radians(90.0f);
           break;
         case Tilemap::Tiles::WALL_L:
           // close gap in lower-left corner using two perpendicular surfaces
-          uniforms["texture2d"] = m_textures["wall"];
+          uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
+          uniforms["texture_normal"] = m_textures["wall_normal"];
           n_surfaces = 2;
           angle[0] = glm::radians(90.0f);
           break;
         case Tilemap::Tiles::WALL_L_INV:
           // two perpendicular surfaces forming a reverse L-shape (Uppercase Gamma)
-          uniforms["texture2d"] = m_textures["wall"];
+          uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
+          uniforms["texture_normal"] = m_textures["wall_normal"];
           n_surfaces = 2;
           angle[0] = glm::radians(-90.0f);
           break;
         case Tilemap::Tiles::DOOR_H:
-          uniforms["texture2d"] = m_textures["door"];
+          uniforms["texture_diffuse"] = m_textures["door_diffuse"];
+          uniforms["texture_normal"] = m_textures["door_normal"];
           break;
         case Tilemap::Tiles::DOOR_V:
-          uniforms["texture2d"] = m_textures["door"];
+          uniforms["texture_diffuse"] = m_textures["door_diffuse"];
+          uniforms["texture_normal"] = m_textures["door_normal"];
           angle[0] = glm::radians(90.0f);
           break;
       }
@@ -194,14 +214,16 @@ void LevelRenderer::draw_horizontal_surface(const Uniforms& uniforms, const glm:
 /* Draw horizontal floor covering bottom of tilemap */
 void LevelRenderer::draw_floor(const Uniforms& u) {
   Uniforms uniforms = u;
-  uniforms["texture2d"] = m_textures["floor"];
+  uniforms["texture_diffuse"] = m_textures["floor_diffuse"];
+  uniforms["texture_normal"] = m_textures["floor_normal"];
   draw_horizontal_surface(uniforms, {m_tilemap.n_cols - 1, m_tilemap.n_rows - 1}, 0.0f);
 }
 
 /* Draw horizontal floor covering top of tilemap */
 void LevelRenderer::draw_ceiling(const Uniforms& u) {
   Uniforms uniforms = u;
-  uniforms["texture2d"] = m_textures["ceiling"];
+  uniforms["texture_diffuse"] = m_textures["ceiling_diffuse"];
+  uniforms["texture_normal"] = m_textures["ceiling_normal"];
   draw_horizontal_surface(uniforms, {m_tilemap.n_cols - 1, m_tilemap.n_rows - 1}, m_height);
 }
 
@@ -219,4 +241,8 @@ void LevelRenderer::free() {
   m_renderer_floor.free();
   m_tree.free();
   Targets::free();
+
+  for (const auto& item : m_textures) {
+    item.second.free();
+  }
 }

@@ -62,12 +62,13 @@ int main() {
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
+  Program pgm_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   Program pgm_matcap("assets/shaders/matcap.vert", "assets/shaders/matcap.frag");
   Program pgm_plane("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag");
-  if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() ||
+  if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_tile.has_failed() ||
       pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed() ||
       pgm_plane.has_failed()) {
     window.destroy();
@@ -119,7 +120,7 @@ int main() {
   // load tilemap by parsing text file
   Tilemap tilemap("assets/levels/map.txt");
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
-  LevelRenderer level(pgm_texture_surface, tilemap, position_level, importer);
+  LevelRenderer level(pgm_tile, tilemap, position_level, importer);
   camera.boundaries = level.positions_walls;
 
   // load font & assign its bitmap glyphs to textures
@@ -192,10 +193,6 @@ int main() {
     cube_basic.set_transform({ model_cube_outline, view, projection3d });
     cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
-    // draw level tiles surfaces
-    level.set_transform({ glm::mat4(1.0f), view, projection3d });
-    level.draw();
-
     // draw textured terrain using triangle strips
     terrain.set_transform({ glm::mat4(1.0f), view, projection3d });
     terrain.draw();
@@ -204,7 +201,7 @@ int main() {
     float time = glfwGetTime();
     plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
-    glm::vec3 position_light(10.0f, 6.0f, 6.0f);
+    glm::vec3 position_light(5.0f, 3.0f, 5.0f);
 
     plane.draw({
       {"texture2d", texture_plane},
@@ -217,14 +214,18 @@ int main() {
 
     // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
-    /*
     glm::mat4 model_light(glm::scale(
       glm::translate(glm::mat4(1.0f), position_light),
       glm::vec3(0.2f)
     ));
     cube_basic.set_transform({ model_light, view, projection3d });
-    target_cube_basic.draw({ {"color", color_light} });
-    */
+    cube_basic.draw({ {"color", color_light} });
+
+    // draw level tiles surfaces
+    level.set_transform({ glm::mat4(1.0f), view, projection3d });
+    level.draw({
+      {"position_light", position_light},
+    });
 
     // draw illuminated cube
     /*
@@ -383,6 +384,7 @@ int main() {
   pgm_texture_cube.free();
   pgm_texture.free();
   pgm_texture_surface.free();
+  pgm_tile.free();
   pgm_light.free();
   pgm_text.free();
   pgm_matcap.free();

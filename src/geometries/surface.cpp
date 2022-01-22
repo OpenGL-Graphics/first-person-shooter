@@ -41,14 +41,18 @@ std::vector<glm::vec3> Surface::get_positions() const {
   return m_positions;
 }
 
+/**
+ * xy only for position as z-coord set to 0 in vertex shader
+ * origin: lower-left corner for opengl textures
+ * Vertexes sorted in CCW order (i.e. defines visible face) in `Surface::INDICES` => normal sticking out of front-face (i.e. z-axis)
+ */
 std::vector<float> Surface::_get_vertexes() {
   return {
-    // origin: lower-left corner for opengl textures
     //coord(x,y) texture(u,v)
-    0.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f,       0.0f,
     1.0f, 0.0f, m_uv_max.x, 0.0f,
     1.0f, 1.0f, m_uv_max.x, m_uv_max.y,
-    0.0f, 1.0f, 0.0f, m_uv_max.y,
+    0.0f, 1.0f, 0.0f,       m_uv_max.y,
   };
 };
 
