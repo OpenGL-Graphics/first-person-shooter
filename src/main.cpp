@@ -55,7 +55,6 @@ int main() {
 
   // camera
   Camera camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  // Camera camera(glm::vec3(0.0f, 2.0f, -2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
   // create then install vertex & fragment shaders on GPU
   // TODO: Factory to produce singletons `Program`s to avoid duplication in Gun & Player
@@ -201,7 +200,7 @@ int main() {
     float time = glfwGetTime();
     plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
     glm::vec3 color_light(1.0f, 1.0f, 1.0f);
-    glm::vec3 position_light(5.0f, 3.0f, 5.0f);
+    glm::vec3 position_light(5.0f, 3.0f, 2.0f);
 
     plane.draw({
       {"texture2d", texture_plane},
@@ -347,6 +346,9 @@ int main() {
 
     // keyboard input (move camera, quit application)
     key_handler.on_keypress();
+
+    // continuous jumping/falling after press on <spacebar>
+    camera.update();
   }
 
   // destroy textures

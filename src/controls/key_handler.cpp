@@ -17,15 +17,24 @@ void KeyHandler::on_keypress() {
     m_window.close();
   }
 
-  // move camera
-  if (m_window.is_key_pressed(GLFW_KEY_W))
-    m_camera.move(Direction::FORWARD);
-  if (m_window.is_key_pressed(GLFW_KEY_S))
-    m_camera.move(Direction::BACKWARD);
-  if (m_window.is_key_pressed(GLFW_KEY_A))
-    m_camera.move(Direction::LEFT);
-  if (m_window.is_key_pressed(GLFW_KEY_D))
-    m_camera.move(Direction::RIGHT);
+  // TODO: if <spacebar> is pressed while jumping, camera can stick to ceiling
+  if (m_window.is_key_pressed(GLFW_KEY_SPACE)) {
+    m_camera.is_jumping = true;
+  } else {
+    // move camera in 6 directions (no else to support oblique movement)
+    if (m_window.is_key_pressed(GLFW_KEY_W))
+      m_camera.move(Direction::FORWARD);
+    if (m_window.is_key_pressed(GLFW_KEY_S))
+      m_camera.move(Direction::BACKWARD);
+    if (m_window.is_key_pressed(GLFW_KEY_A))
+      m_camera.move(Direction::LEFT);
+    if (m_window.is_key_pressed(GLFW_KEY_D))
+      m_camera.move(Direction::RIGHT);
+    if (m_window.is_key_pressed(GLFW_KEY_F))
+      m_camera.move(Direction::DOWN);
+    if (m_window.is_key_pressed(GLFW_KEY_R))
+      m_camera.move(Direction::UP);
+  }
 
   // move pc (textured cube)
   if (m_window.is_key_pressed(GLFW_KEY_UP))

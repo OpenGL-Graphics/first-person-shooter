@@ -5,11 +5,6 @@
 
 #include "navigation/camera.hpp"
 
-// not declared as private members as constants cause class's implicit copy-constructor to be deleted (prevents re-assignment)
-// movement constants
-const float SPEED = 0.1f;
-const float SENSITIVITY = 0.25e-2;
-
 Camera::Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up):
   position(pos),
   direction(dir),
@@ -18,7 +13,10 @@ Camera::Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up):
 
   pitch(0.0f),
   yaw(0.0f),
-  fov(45.0f)
+  fov(45.0f),
+
+  is_jumping(false),
+  is_falling(false)
 {
 }
 
@@ -57,23 +55,34 @@ bool Camera::is_close_to_boundaries(const glm::vec3& position_future) {
 }
 
 void Camera::move(Direction d) {
-  // move forward/backward & sideways
+  // move forward/backward & sideways & up/down
   glm::vec3 right_dir = glm::normalize(glm::cross(m_forward_dir, m_up));
   glm::vec3 position_future;
 
-  if (d == Direction::FORWARD) {
-    position_future = position + SPEED*m_forward_dir;
-  } else if (d == Direction::BACKWARD) {
-    position_future = position - SPEED*m_forward_dir;
-  } else if (d == Direction::RIGHT) {
-    position_future = position + SPEED*right_dir;
-  } else if (d == Direction::LEFT) {
-    position_future = position - SPEED*right_dir;
+  switch (d) {
+    case Direction::FORWARD:
+      position_future = position + SPEED_MOVEMENT*m_forward_dir;
+      break;
+    case Direction::BACKWARD:
+      position_future = position - SPEED_MOVEMENT*m_forward_dir;
+      break;
+    case Direction::RIGHT:
+      position_future = position + SPEED_MOVEMENT*right_dir;
+      break;
+    case Direction::LEFT:
+      position_future = position - SPEED_MOVEMENT*right_dir;
+      break;
+    case Direction::UP:
+      position_future = position + SPEED_MOVEMENT*m_up;
+      break;
+    case Direction::DOWN:
+      position_future = position - SPEED_MOVEMENT*m_up;
+      break;
   }
 
   // only move camera if not too close to walls
   std::vector<Direction> dirs = {
-    Direction::FORWARD, Direction::BACKWARD, Direction::RIGHT, Direction::LEFT};
+    Direction::FORWARD, Direction::BACKWARD, Direction::RIGHT, Direction::LEFT, Direction::UP, Direction::DOWN};
   if (std::find(dirs.begin(), dirs.end(), d) != dirs.end() && !is_close_to_boundaries(position_future))
     position = position_future;
 }
@@ -101,4 +110,40 @@ void Camera::rotate(float x_offset, float y_offset) {
 
   // forward dir. of movement unaffected by vertical angle (sticks camera to ground)
   m_forward_dir = {direction.x, 0.0f, direction.z};
+}
+
+/**
+ * Jump with camera till a certain elevation then start falling
+ * Inspired by: https://codereview.stackexchange.com/a/43187
+ */
+void Camera::jump() {
+  // maximum elevation at y = 3.0f
+  if (position.y >= MAX_Y) {
+    is_jumping = false;
+    is_falling = true;
+    return;
+  }
+
+  position += SPEED_JUMP*m_up;
+}
+
+/* Same rationale as `Camera::jump()` in other direction */
+void Camera::fall() {
+  // initial camera elevation at y = 2.0f
+  if (position.y <= MIN_Y) {
+    is_jumping = false;
+    is_falling = false;
+    return;
+  }
+
+  position -= SPEED_FALL*m_up;
+}
+
+/* called in main loop for a continuous jumping/falling */
+void Camera::update() {
+  if (is_jumping) {
+    jump();
+  } else if (is_falling) {
+    fall();
+  }
 }
