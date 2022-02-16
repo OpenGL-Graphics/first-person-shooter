@@ -10,6 +10,7 @@
 #include "geometries/cube.hpp"
 #include "geometries/surface.hpp"
 #include "geometries/plane.hpp"
+#include "geometries/sphere.hpp"
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
 #include "render/model_renderer.hpp"
@@ -107,6 +108,11 @@ int main() {
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
 
+  ///
+  // Renderer sphere(pgm_basic, VBO(Sphere(4, 2)), {{0, "position", 3, 3, 0}});
+  Renderer sphere(pgm_basic, VBO(Sphere(8, 4)), {{0, "position", 3, 3, 0}});
+  ///
+
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
 
@@ -191,6 +197,13 @@ int main() {
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
     cube_basic.set_transform({ model_cube_outline, view, projection3d });
     cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
+
+    ///
+    // cube with outline using two-passes rendering & stencil buffer
+    glm::mat4 model_sphere(glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f)));
+    sphere.set_transform({ model_sphere, view, projection3d });
+    sphere.draw({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
+    ///
 
     // draw textured terrain using triangle strips
     terrain.set_transform({ glm::mat4(1.0f), view, projection3d });
@@ -375,6 +388,7 @@ int main() {
   surface.free();
   surface_glyph.free();
   plane.free();
+  sphere.free();
 
   // free 2d & 3d entities
   glass.free();
