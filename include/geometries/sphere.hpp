@@ -5,7 +5,7 @@
 
 class Sphere : public Geometry {
 public:
-  Sphere(int n_longitudes, int n_latitudes);
+  Sphere(unsigned int n_longitudes, unsigned int n_latitudes);
 
   ///
   std::vector<float> get_vertexes() const override;
@@ -16,11 +16,11 @@ public:
   ///
 
 private:
-  int m_n_longitudes;
-  int m_n_latitudes;
+  unsigned int m_n_longitudes;
+  unsigned int m_n_latitudes;
 
   void set_vertexes();
-  // void set_n_elements();
+  void set_indices();
 };
 
 #endif // SPHERE_HPP

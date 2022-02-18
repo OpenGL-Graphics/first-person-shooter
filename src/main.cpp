@@ -109,8 +109,9 @@ int main() {
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
 
   ///
+  // Renderer sphere(pgm_basic, VBO(Sphere(4, 3)), {{0, "position", 3, 3, 0}});
   // Renderer sphere(pgm_basic, VBO(Sphere(4, 2)), {{0, "position", 3, 3, 0}});
-  Renderer sphere(pgm_basic, VBO(Sphere(8, 4)), {{0, "position", 3, 3, 0}});
+  Renderer sphere(pgm_basic, VBO(Sphere(8, 8)), {{0, "position", 3, 3, 0}});
   ///
 
   // terrain from triangle strips & textured with image splatmap
@@ -200,7 +201,7 @@ int main() {
 
     ///
     // cube with outline using two-passes rendering & stencil buffer
-    glm::mat4 model_sphere(glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 1.0f)));
+    glm::mat4 model_sphere(glm::translate(glm::mat4(1.0f), glm::vec3(6.0f, 2.0f, 5.0f)));
     sphere.set_transform({ model_sphere, view, projection3d });
     sphere.draw({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
     ///
