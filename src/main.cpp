@@ -107,12 +107,7 @@ int main() {
   Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
-
-  ///
-  // Renderer sphere(pgm_basic, VBO(Sphere(4, 3)), {{0, "position", 3, 3, 0}});
-  // Renderer sphere(pgm_basic, VBO(Sphere(4, 2)), {{0, "position", 3, 3, 0}});
-  Renderer sphere(pgm_basic, VBO(Sphere(8, 8)), {{0, "position", 3, 3, 0}});
-  ///
+  Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
@@ -199,13 +194,6 @@ int main() {
     cube_basic.set_transform({ model_cube_outline, view, projection3d });
     cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
-    ///
-    // cube with outline using two-passes rendering & stencil buffer
-    glm::mat4 model_sphere(glm::translate(glm::mat4(1.0f), glm::vec3(6.0f, 2.0f, 5.0f)));
-    sphere.set_transform({ model_sphere, view, projection3d });
-    sphere.draw({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
-    ///
-
     // draw textured terrain using triangle strips
     terrain.set_transform({ glm::mat4(1.0f), view, projection3d });
     terrain.draw();
@@ -224,6 +212,21 @@ int main() {
       {"light.specular", color_light},
       {"time", time},
     }, GL_TRIANGLE_STRIP);
+
+    // shaded sphere
+    glm::mat4 model_sphere(glm::translate(glm::mat4(1.0f), glm::vec3(6.0f, 2.0f, 5.0f)));
+    sphere.set_transform({ model_sphere, view, projection3d });
+    sphere.draw({
+      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
+      {"material.shininess", 32.0f},
+      {"light.position", position_light},
+      {"light.ambiant", 0.2f * color_light},
+      {"light.diffuse", 0.5f * color_light},
+      {"light.specular", color_light},
+      {"position_camera", camera.position},
+    });
 
     // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912

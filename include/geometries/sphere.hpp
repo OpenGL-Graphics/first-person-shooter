@@ -19,8 +19,15 @@ private:
   unsigned int m_n_longitudes;
   unsigned int m_n_latitudes;
 
+  /* # of coords by vertex (xyz & normal) */
+  const unsigned int m_n_coords = 6;
+
+  /* needed to fill xyz & normals coords */
+  unsigned int m_n_vertexes;
+
   void set_vertexes();
   void set_indices();
+  void set_normals();
 };
 
 #endif // SPHERE_HPP
