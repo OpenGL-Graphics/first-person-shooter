@@ -1,9 +1,6 @@
 [submodule "glfw-window"]
 	path = glfw-window
-	url = git@github.com:h4k1m0u/glfw-window.git
-[submodule "opengl-texture"]
-	path = opengl-texture
-	url = git@github.com:OpenGL-Graphics/opengl-texture.git
+	url = https://github.com/h4k1m0u/glfw-window
 [submodule "opengl-shader"]
 	path = opengl-shader
-	url = git@github.com:OpenGL-Graphics/opengl-shader.git
+	url = https://github.com/OpenGL-Graphics/opengl-shader
