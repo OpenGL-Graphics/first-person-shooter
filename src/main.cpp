@@ -45,6 +45,7 @@ int main() {
   window.make_context();
   if (!gladLoadGL()) {
     std::cout << "Failed to load Glad (OpenGL)" << "\n";
+    window.destroy();
     return 1;
   } else {
     std::cout << "Opengl version: " << glGetString(GL_VERSION) << "\n";
@@ -71,6 +72,7 @@ int main() {
   if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_tile.has_failed() ||
       pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed() ||
       pgm_plane.has_failed()) {
+    std::cout << "Failed to build shader" << '\n';
     window.destroy();
     return 1;
   }

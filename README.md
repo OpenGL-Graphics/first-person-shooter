@@ -1,32 +1,39 @@
 # How to run
 ```console
-$ # Clone repo and its submodules:
-$ git clone git@github.com:h4k1m0u/first-person-shooter.git
-$ git submodule update --init --recursive --remote  # also needed to get new commits from submodule
+# clone repo with its submodules
+$ git clone --recursive https://github.com/OpenGL-Graphics/first-person-shooter
 
-$ # Build & run
+# build & run
+$ cd first-person-shooter
 $ mkdir build && cd build
-$ cmake .. && make -j
-$ ./main
+$ cmake .. && make -j && ./main
+
+# to get new commits from submodules
+$ git submodule update --init --recursive --remote
 ```
 
-# Program
-- **src/main.cpp:** Draws player's gun, scene from tilemap, and colored 3D cubes targets with OpenGL shaders on a window generated with GLFW, with the possibility to navigate in the scene using WASD keys and the mouse (LMB is for shooting).
+# Dependencies
+To install the needed dependencies on Ubuntu:
 
-# OpenGL
-- **GLFW (Graphics Library Framework):** Library for creating windows with OpenGL context and for handling mouse and keyboard interactions. Read this [GLFW tutorial].
-- **Glad:** Loader for OpenGL functions. Following this tutorial from [learnopengl.com], glad files can be generated using this [webservice] then copied inside include and src folders.
+```console
+$ apt install libglfw3-dev libassimp-dev
+```
 
-[GLFW tutorial]: https://www.glfw.org/docs/latest/quick_guide.html
-[webservice]: https://glad.dav1d.de/
+# Test
+This app was tested on the following drivers:
+- Opengl-3.0 & GLSL-1.30
+- Opengl-4.6 & GLSL-4.60
 
-# Shaders
-Shaders are written in GLSL (OpenGL Shading Language). The following two shaders (GPU programs) are needed to draw with OpenGL:
+# Resources
+- [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
+- [Backpack 3D model][backpack]: 3D model in obj ascii format.
 
-- **Vertex shader:** for each vertex, determines its position on the scene.
-- **Fragment shader:** for each pixel, determines its color on the screen.
+[health-bar]: https://opengameart.org/content/rpg-hud-bars
+[backpack]: https://learnopengl.com/Model-Loading/Model
 
-# Credit
+---
+
+# Tutorials
 Useful tutorials:
 
 - Getting started with GLFW: [GLFW tutorial]
@@ -47,8 +54,26 @@ Useful tutorials:
 [docs.gl]: http://docs.gl/
 [khronos.org]: https://www.khronos.org/registry/OpenGL-Refpages/gl4/
 
+---
+
+# Program
+- **src/main.cpp:** Draws player's gun, scene from tilemap, and colored 3D cubes targets with OpenGL shaders on a window generated with GLFW, with the possibility to navigate in the scene using WASD keys and the mouse (LMB is for shooting).
+
+# OpenGL
+- **GLFW (Graphics Library Framework):** Library for creating windows with OpenGL context and for handling mouse and keyboard interactions. Read this [GLFW tutorial].
+- **Glad:** Loader for OpenGL functions. Following this tutorial from [learnopengl.com], glad files can be generated using this [webservice] then copied inside include and src folders.
+
+[GLFW tutorial]: https://www.glfw.org/docs/latest/quick_guide.html
+[webservice]: https://glad.dav1d.de/
+
+# Shaders
+Shaders are written in GLSL (OpenGL Shading Language). The following two shaders (GPU programs) are needed to draw with OpenGL:
+
+- **Vertex shader:** for each vertex, determines its position on the scene.
+- **Fragment shader:** for each pixel, determines its color on the screen.
+
 # Texture image
-- As OpenGL doesn't support standard image formats (jpeg, png), texture images are loaded using [stb-image].
+- Images used as textures are loaded using [stb-image] then sent to the GPU.
 - Brick and building texture images downloaded from [textures.com].
 
 [stb-image]: https://github.com/nothings/stb/blob/master/stb_image.h
@@ -65,13 +90,6 @@ A table of these components values for different materials can be found on [this
 
 [lights]: http://blog.lexique-du-net.com/index.php?post/2009/07/24/AmbientDiffuseEmissive-and-specular-colorSome-examples
 [materials]: http://devernay.free.fr/cours/opengl/materials.html
-
-# Resources
-- [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
-- [Backpack 3D model][backpack]: 3D model in obj ascii format.
-
-[health-bar]: https://opengameart.org/content/rpg-hud-bars
-[backpack]: https://learnopengl.com/Model-Loading/Model
 
 # OpenGL objects
 - **VBO (Vertex Buffer Object):**
@@ -114,3 +132,14 @@ $ cc -pg script.cpp -o app
 ```console
 $ gprof -p app | less
 ```
+
+# Detecting memory leaks
+- Install `valgrind` from source following its [official webpage][valgrind-build]
+- Build project with debug symbols (`-g` in gcc, `set(CMAKE_BUILD_TYPE Debug)` in cmake)
+- Run:
+
+```console
+$ valgrind --tool=memcheck ./main
+```
+
+[valgrind-build]: https://valgrind.org/docs/manual/dist.readme.html
