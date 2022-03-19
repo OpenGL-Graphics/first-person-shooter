@@ -30,6 +30,10 @@
 #include "entities/model.hpp"
 #include "entities/sprite.hpp"
 
+#include "framebuffer.hpp"
+#include "framebuffer_exception.hpp"
+#include "shader_exception.hpp"
+
 using namespace irrklang;
 
 int main() {
@@ -72,9 +76,8 @@ int main() {
   if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_tile.has_failed() ||
       pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed() ||
       pgm_plane.has_failed()) {
-    std::cout << "Failed to build shader" << '\n';
     window.destroy();
-    return 1;
+    throw ShaderException();
   }
 
   // 3D cube texture
@@ -100,6 +103,19 @@ int main() {
 
   // 2D texture for flat grid plane (shape made as a sin wave in vertex shader)
   Texture2D texture_plane(Image("assets/images/plane/wave.png"));
+
+  // empty texture to fill when drawing to framebuffer
+  Image image_framebuffer(window.width, window.height, GL_RGB, NULL);
+  Texture2D texture_framebuffer(image_framebuffer);
+
+  // framebuffers with empty texture attached to it (to render scene to texture)
+  Framebuffer framebuffer;
+  framebuffer.attach_texture(texture_framebuffer);
+
+  if (!framebuffer.is_complete()) {
+    window.destroy();
+    throw FramebufferException();
+  }
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
@@ -164,9 +180,6 @@ int main() {
   // callback for processing mouse click (after init static members)
   MouseHandler::init(&window, &camera, &audio);
   window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
-  std::cout << "window.width: " << window.width
-            << " window.height: " << window.height
-            << '\n';
 
   // handler for keyboard inputs
   KeyHandler key_handler(window, camera, player);
@@ -183,6 +196,19 @@ int main() {
     // orient player's movements relative to camera horizontal angle (yaw)
     player.orient(camera);
 
+    ///
+    // clear framebuffer's attached color buffer in every frame
+    framebuffer.bind();
+    framebuffer.clear({ 1.0f, 1.0f, 1.0f, 1.0f });
+
+    // draw red cube to texture attached to framebuffer
+    cube_basic.set_transform({
+      glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.0f, 0.0f)),
+      view, projection3d });
+    cube_basic.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f) } });
+    framebuffer.unbind();
+    ///
+
     // clear color & depth & stencil buffers before rendering every frame
     glClearColor(background.r, background.g, background.b, background.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -190,6 +216,20 @@ int main() {
     // update transformation matrices (camera fov changes on zoom)
     view = camera.get_view();
     projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
+
+    ///
+    // apply to surface the texture drawn to framebuffer
+    // same aspect ratio for surface as texture (to avoid stretching its content)
+    float aspect_ratio = (float) window.height / window.width;
+    surface.set_transform({
+      glm::scale(
+        glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 4.0f)),
+        glm::vec3(2.0f, 2.0f * aspect_ratio, 1.0f)
+      ),
+      view, projection3d
+    });
+    surface.draw({ {"texture2d", texture_framebuffer } });
+    ///
 
     // cube with outline using two-passes rendering & stencil buffer
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
@@ -216,7 +256,10 @@ int main() {
     }, GL_TRIANGLE_STRIP);
 
     // shaded sphere
-    glm::mat4 model_sphere(glm::translate(glm::mat4(1.0f), glm::vec3(6.0f, 2.0f, 5.0f)));
+    glm::mat4 model_sphere(glm::scale(
+      glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 2.0f, 6.0f)),
+      glm::vec3(0.5f)
+    ));
     sphere.set_transform({ model_sphere, view, projection3d });
     sphere.draw({
       {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
@@ -262,7 +305,7 @@ int main() {
     */
 
     // draw shaded cube using matcap
-    cube_matcap.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 1.0f, 4.0f)), view, projection3d });
+    cube_matcap.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 6.0f)), view, projection3d });
     cube_matcap.draw({
       {"texture_matcap", texture_matcap},
     });
@@ -377,12 +420,16 @@ int main() {
   texture_surface_crosshair.free();
   texture_matcap.free();
   texture_plane.free();
+  texture_framebuffer.free();
 
   Glyphs glyphs(surface_glyph.get_glyphs());
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
     Glyph glyph(glyphs.at(c));
     glyph.texture.free();
   }
+
+  // destroy framebuffers
+  framebuffer.free();
 
   // destroy renderers of each shape (frees vao & vbo)
   level.free();
