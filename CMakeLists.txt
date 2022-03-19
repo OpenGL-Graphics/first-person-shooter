@@ -25,9 +25,9 @@ list(APPEND CMAKE_PREFIX_PATH "./lib")
 find_library(LIB_IRRKLANG IrrKlang)
 find_library(LIB_IRRKLANG_MP3 IkpMP3)
 
-# glfw-window & opengl-shader (& opengl-texture & glad) libraries from submodules
+# glfw-window & opengl-utils (texture, shader, & framebuffer) libraries from submodules
 add_subdirectory(glfw-window)
-add_subdirectory(opengl-shader)
+add_subdirectory(opengl-utils)
 
 # copy irrklang mp3 plugin (needed to play mp3 files)
 file(COPY lib/ikpMP3.so DESTINATION ${CMAKE_BINARY_DIR})
@@ -64,5 +64,5 @@ target_link_libraries(main
   ${FREETYPE_LIBRARIES}
   ${LIB_IRRKLANG}
   glfw_window
-  opengl_shader
+  opengl_utils
 )
