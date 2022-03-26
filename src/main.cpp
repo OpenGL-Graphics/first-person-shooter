@@ -184,6 +184,10 @@ int main() {
   // handler for keyboard inputs
   KeyHandler key_handler(window, camera, player);
 
+  // light
+  glm::vec3 color_light(1.0f, 1.0f, 1.0f);
+  glm::vec3 position_light(5.0f, 3.0f, 2.0f);
+
   // enable depth test & blending & stencil test (for outlines)
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
@@ -196,18 +200,18 @@ int main() {
     // orient player's movements relative to camera horizontal angle (yaw)
     player.orient(camera);
 
-    ///
-    // clear framebuffer's attached color buffer in every frame
-    framebuffer.bind();
-    framebuffer.clear({ 1.0f, 1.0f, 1.0f, 1.0f });
+    {
+      // clear framebuffer's attached color buffer in every frame
+      framebuffer.bind();
+      framebuffer.clear({ 1.0f, 1.0f, 1.0f, 1.0f });
 
-    // draw red cube to texture attached to framebuffer
-    cube_basic.set_transform({
-      glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.0f, 0.0f)),
-      view, projection3d });
-    cube_basic.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f) } });
-    framebuffer.unbind();
-    ///
+      // draw red cube to texture attached to framebuffer
+      cube_basic.set_transform({
+        glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.0f, 0.0f)),
+        view, projection3d });
+      cube_basic.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f) } });
+      framebuffer.unbind();
+    }
 
     // clear color & depth & stencil buffers before rendering every frame
     glClearColor(background.r, background.g, background.b, background.a);
@@ -215,7 +219,33 @@ int main() {
 
     // update transformation matrices (camera fov changes on zoom)
     view = camera.get_view();
-    projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
+    // projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
+
+    {
+      // aspect ratio prevent view from being stretched
+      projection3d = glm::perspective(glm::radians(camera.fov), window.width / (2.0f * window.height), 1.0f, 50.f);
+      // projection2d = glm::ortho(0.0f, (float) window.width / 2.0f, 0.0f, (float) window.height);
+
+      // right view
+      // where to project rendered scene on window (origin at lower-left corner)
+      glViewport(window.width / 2, 0, window.width / 2, window.height);
+
+      // draw level tiles surfaces on right view
+      level.set_transform({ glm::mat4(1.0f), view, projection3d });
+      level.draw({
+        {"position_light", position_light},
+      });
+
+      // left view
+      // where to project rendered scene on window (origin at lower-left corner)
+      glViewport(0, 0, window.width / 2, window.height);
+
+      // draw level tiles surfaces on left view
+      level.set_transform({ glm::mat4(1.0f), view, projection3d });
+      level.draw({
+        {"position_light", position_light},
+      });
+    }
 
     ///
     // apply to surface the texture drawn to framebuffer
@@ -243,8 +273,6 @@ int main() {
     // draw animated & textured wave from plane using triangle strips
     float time = glfwGetTime();
     plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
-    glm::vec3 color_light(1.0f, 1.0f, 1.0f);
-    glm::vec3 position_light(5.0f, 3.0f, 2.0f);
 
     plane.draw({
       {"texture2d", texture_plane},
@@ -281,12 +309,6 @@ int main() {
     ));
     cube_basic.set_transform({ model_light, view, projection3d });
     cube_basic.draw({ {"color", color_light} });
-
-    // draw level tiles surfaces
-    level.set_transform({ glm::mat4(1.0f), view, projection3d });
-    level.draw({
-      {"position_light", position_light},
-    });
 
     // draw illuminated cube
     /*
