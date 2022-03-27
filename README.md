@@ -1,3 +1,6 @@
+# Screenshot
+![Screenshot](/screenshots/screenshot-2022-03-27.png)
+
 # How to run
 ```console
 # clone repo with its submodules
