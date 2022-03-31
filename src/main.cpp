@@ -120,12 +120,12 @@ int main() {
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
   Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
-  Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {0, "texture_coord", 3, 12, 6}});
+  Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {1, "texture_coord", 3, 12, 6}});
   // Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
-  Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
-  Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}});
-  Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}});
-  Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {0, "normal", 3, 6, 3}});
+  Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {1, "normal", 3, 12, 9}});
+  Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {1, "texture_coord", 2, 4, 2}});
+  Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
+  Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
@@ -145,13 +145,19 @@ int main() {
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
   Font font("assets/fonts/Vera.ttf");
-  TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 4, 0}, {0, "texture_coord", 2, 4, 2}}, font);
+  TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 4, 0}, {1, "texture_coord", 2, 4, 2}}, font);
 
   // load 3d model from .obj file & its renderer
   Profiler profiler;
   profiler.start();
-  Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture);
-  Model suzanne(importer, "assets/models/suzanne/suzanne.obj", pgm_matcap);
+  Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture, {
+    {0, "position", 3, 8, 0},
+    {1, "texture_coord", 2, 8, 6}
+  });
+  Model suzanne(importer, "assets/models/suzanne/suzanne.obj", pgm_matcap, {
+    {0, "position", 3, 8, 0},
+    {1, "normal", 3, 8, 3},
+  });
   Player player(importer);
   player.calculate_bounding_box();
   profiler.stop();
@@ -219,8 +225,21 @@ int main() {
 
     // update transformation matrices (camera fov changes on zoom)
     view = camera.get_view();
-    // projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
+    projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
 
+    // cube with outline using two-passes rendering & stencil buffer
+    // must be called just after clearing the stencil buffer (before any other drawing)
+    glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
+    cube_basic.set_transform({ model_cube_outline, view, projection3d });
+    cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
+
+    // draw level tiles surfaces on right view
+    level.set_transform({ glm::mat4(1.0f), view, projection3d });
+    level.draw({
+      {"position_light", position_light},
+    });
+
+    /*
     {
       // aspect ratio prevent view from being stretched
       projection3d = glm::perspective(glm::radians(camera.fov), window.width / (2.0f * window.height), 1.0f, 50.f);
@@ -246,6 +265,7 @@ int main() {
         {"position_light", position_light},
       });
     }
+    */
 
     ///
     // apply to surface the texture drawn to framebuffer
@@ -260,11 +280,6 @@ int main() {
     });
     surface.draw({ {"texture2d", texture_framebuffer } });
     ///
-
-    // cube with outline using two-passes rendering & stencil buffer
-    glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
-    cube_basic.set_transform({ model_cube_outline, view, projection3d });
-    cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
     // draw textured terrain using triangle strips
     terrain.set_transform({ glm::mat4(1.0f), view, projection3d });

@@ -13,7 +13,7 @@
  */
 Target::Target(const glm::vec3& position):
   m_program("assets/shaders/color.vert", "assets/shaders/color.frag"),
-  renderer(m_program, VBO(Cube{}), {{0, "position", 3, 12, 0}, {0, "color", 3, 12, 3}}),  // render colored cube
+  renderer(m_program, VBO(Cube{}), {{0, "position", 3, 12, 0}, {1, "color", 3, 12, 3}}),  // render colored cube
   is_dead(false),
   m_position(position)
 {

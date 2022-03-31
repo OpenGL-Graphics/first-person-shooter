@@ -12,8 +12,7 @@ Renderer::Renderer(const Program& program, const VBO& vbo, const std::vector<Att
   m_vao.bind();
   m_vbo.bind();
 
-  for (Attribute attribute : attributes) {
-    attribute.id = m_program.define_attribute(attribute.name);
+  for (const Attribute& attribute : attributes) {
     m_vao.set_attribute(attribute);
   }
 

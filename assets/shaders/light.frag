@@ -1,4 +1,4 @@
-#version 130
+#version 330 core
 
 // different colors for each material & light components
 struct Material {

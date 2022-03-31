@@ -14,7 +14,7 @@ Splatmap::Splatmap():
   m_program("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag"),
   m_image("assets/images/terrain/heightmap.png"),
   m_vbo(Terrain(m_image)),
-  m_renderer(m_program, m_vbo, {{0, "position", 3, 8, 0}, {0, "normal", 3, 8, 3}, {0, "texture_coord", 2, 8, 6}})
+  m_renderer(m_program, m_vbo, {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}})
 {
   // vertex or fragment shaders failed to compile
   if (m_program.has_failed()) {

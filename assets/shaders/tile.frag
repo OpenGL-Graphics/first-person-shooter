@@ -1,4 +1,4 @@
-#version 130
+#version 330 core
 
 in vec2 texture_coord_vert;
 in vec3 position_vert;

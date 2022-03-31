@@ -9,16 +9,10 @@
  * @param path Path to 3D model
  * @param program Shaders (texture for gun, basic color for tree)
  */
-Model::Model(Assimp::Importer& importer, const std::string& path, const Program& program):
+Model::Model(Assimp::Importer& importer, const std::string& path, const Program& program, const std::vector<Attribute>& attributes):
   m_program(program),
   m_model(path, importer),
-
-  // same order for attributes as in `AssimpUtil::Mesh::vertexes`
-  m_renderer(m_program, m_model, {
-    {0, "position", 3, 8, 0},
-    {0, "normal", 3, 8, 3},
-    {0, "texture_coord", 2, 8, 6}
-  })
+  m_renderer(m_program, m_model, attributes)
 {
   // vertex or fragment shaders failed to compile
   if (m_program.has_failed()) {

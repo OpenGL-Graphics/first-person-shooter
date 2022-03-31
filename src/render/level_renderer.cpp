@@ -18,13 +18,16 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
   // renderers for walls/floors, props (trees)
   m_renderer_wall(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {
     {0, "position", 2, 4, 0},
-    {0, "texture_coord", 2, 4, 2},
+    {1, "texture_coord", 2, 4, 2},
   }),
   m_renderer_floor(program_tile, VBO(Surface(glm::vec2(m_tilemap.n_cols - 1, m_tilemap.n_rows - 1))), {
     {0, "position", 2, 4, 0},
-    {0, "texture_coord", 2, 4, 2},
+    {1, "texture_coord", 2, 4, 2},
   }),
-  m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag")),
+  // doesn't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
+  m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag"), {
+    {0, "position", 3, 8, 0},
+  }),
 
   m_textures {
     {"wall_diffuse", Texture2D(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0)},
@@ -97,6 +100,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
  */
 void LevelRenderer::draw(const Uniforms& u) {
   // normal matrix for transforming normal vec to world space (inverse() not defined in glsl-1.30)
+  // update-31-03-2022: should be available now in glsl-4.50
   Uniforms uniforms = u;
   uniforms["normal_mat"] = glm::inverseTranspose(glm::mat3(m_transformation.model));
 

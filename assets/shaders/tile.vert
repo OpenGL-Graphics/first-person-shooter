@@ -1,7 +1,7 @@
-#version 130
+#version 330 core
 
-in vec2 position;
-in vec2 texture_coord;
+layout (location = 0) in vec2 position;
+layout (location = 1) in vec2 texture_coord;
 
 // opengl tranformation matrices
 uniform mat4 model;      // object coord -> world coord

@@ -15,7 +15,7 @@ private:
   ModelRenderer m_renderer;
 
 public:
-  Model(Assimp::Importer& importer, const std::string& path, const Program& program);
+  Model(Assimp::Importer& importer, const std::string& path, const Program& program, const std::vector<Attribute>& attributes);
   void draw(const Uniforms& uniforms={});
   void set_transform(const Transformation& t);
   void free();
