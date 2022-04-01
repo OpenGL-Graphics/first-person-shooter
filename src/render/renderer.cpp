@@ -57,6 +57,7 @@ void Renderer::move(const glm::vec3& offset) {
  * @param Uniforms Unordered map (key, values) of vars to pass to shader
  *        Passed as const ref. as we cannot have default param values with refs.
  * @param mode GL_TRIANGLES for most meshes, GL_TRIANGLE_STRIP for grids (i.e. terrain & plane)
+ *             GL_LINES to draw a line between each pair of successive vertexes
  */
 void Renderer::draw(const Uniforms& u, GLenum mode) {
   // 3d position of model
@@ -111,7 +112,4 @@ void Renderer::draw_with_outlines(const Uniforms& u) {
 void Renderer::free() {
   m_vao.free();
   m_vbo.free();
-
-  // TODO: program lifecycle managed internally by renderer
-  // m_program.free();
 }

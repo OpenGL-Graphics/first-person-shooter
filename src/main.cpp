@@ -7,14 +7,17 @@
 
 #include "window.hpp"
 #include "navigation/camera.hpp"
+
 #include "geometries/cube.hpp"
 #include "geometries/surface.hpp"
 #include "geometries/plane.hpp"
 #include "geometries/sphere.hpp"
+
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
 #include "render/model_renderer.hpp"
 #include "render/level_renderer.hpp"
+
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
 #include "controls/key_handler.hpp"
@@ -29,6 +32,7 @@
 #include "entities/splatmap.hpp"
 #include "entities/model.hpp"
 #include "entities/sprite.hpp"
+#include "entities/gizmo.hpp"
 
 #include "framebuffer.hpp"
 #include "framebuffer_exception.hpp"
@@ -162,6 +166,9 @@ int main() {
   player.calculate_bounding_box();
   profiler.stop();
   profiler.print("Loading 3D models");
+
+  // xyz gizmo
+  Gizmo gizmo(pgm_basic);
 
   // transformation matrices
   glm::mat4 view = camera.get_view();
@@ -325,6 +332,12 @@ int main() {
     cube_basic.set_transform({ model_light, view, projection3d });
     cube_basic.draw({ {"color", color_light} });
 
+    // draw xyz gizmo at origin using GL_LINES
+    glm::mat4 model_line(1.0f);
+    gizmo.set_transform({ model_line, view, projection3d });
+    gizmo.draw();
+
+
     // draw illuminated cube
     /*
     cube_light.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 4.0f, 4.0f)), view, projection3d });
@@ -484,6 +497,7 @@ int main() {
   glass.free();
   gun.free();
   suzanne.free();
+  gizmo.free();
 
   // destroy shaders programs
   pgm_basic.free();
