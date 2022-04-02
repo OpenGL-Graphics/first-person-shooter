@@ -20,7 +20,7 @@ struct Renderer {
   Transformation transformation;
 
   Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes);
-  virtual void draw(const Uniforms& u={}, GLenum mode=GL_TRIANGLES) final;
+  virtual void draw(const Uniforms& u={}, GLenum mode=GL_TRIANGLES, unsigned int count=0, size_t offset=0) final;
   void draw_with_outlines(const Uniforms& u);
   virtual void free() final;
   void set_transform(const Transformation& t);

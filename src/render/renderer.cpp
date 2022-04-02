@@ -58,8 +58,10 @@ void Renderer::move(const glm::vec3& offset) {
  *        Passed as const ref. as we cannot have default param values with refs.
  * @param mode GL_TRIANGLES for most meshes, GL_TRIANGLE_STRIP for grids (i.e. terrain & plane)
  *             GL_LINES to draw a line between each pair of successive vertexes
+ * @param n_elements # of elements (i.e. indices) to draw (used only by `geometry/gizmo.cpp`)
+ * @param offset Indice to start rendering from in EBO (used only by `geometry/gizmo.cpp`)
  */
-void Renderer::draw(const Uniforms& u, GLenum mode) {
+void Renderer::draw(const Uniforms& u, GLenum mode, unsigned int count, size_t offset) {
   // 3d position of model
   Uniforms uniforms = u;
   uniforms["model"] = transformation.model;
@@ -73,9 +75,10 @@ void Renderer::draw(const Uniforms& u, GLenum mode) {
   m_program.use();
 
   // pass shaders uniforms & draw attributes in bound VAO (using EBO vertexes indices)
+  // offset given to `glDrawElements()` in bytes
   m_program.set_uniforms(uniforms);
-  glDrawElements(mode, m_vbo.n_elements, GL_UNSIGNED_INT, 0);
-  // glDrawArrays(GL_TRIANGLES, 0, m_vbo.n_vertexes);
+  unsigned int n_elements = (count == 0) ? m_vbo.n_elements : count;
+  glDrawElements(mode, n_elements, GL_UNSIGNED_INT, (GLvoid *) (offset * sizeof(GLuint)));
 
   m_vao.unbind();
   m_program.unuse();

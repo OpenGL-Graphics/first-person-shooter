@@ -12,6 +12,8 @@
 #include "geometries/surface.hpp"
 #include "geometries/plane.hpp"
 #include "geometries/sphere.hpp"
+#include "geometries/gizmo.hpp"
+#include "geometries/grid_lines.hpp"
 
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
@@ -32,7 +34,6 @@
 #include "entities/splatmap.hpp"
 #include "entities/model.hpp"
 #include "entities/sprite.hpp"
-#include "entities/gizmo.hpp"
 
 #include "framebuffer.hpp"
 #include "framebuffer_exception.hpp"
@@ -130,6 +131,8 @@ int main() {
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {1, "texture_coord", 2, 4, 2}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
+  Renderer gizmo(pgm_basic, VBO(Gizmo()), { {0, "position", 3, 3, 0} });
+  Renderer grid(pgm_basic, VBO(GridLines()), { {0, "position", 3, 3, 0} });
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
@@ -166,9 +169,6 @@ int main() {
   player.calculate_bounding_box();
   profiler.stop();
   profiler.print("Loading 3D models");
-
-  // xyz gizmo
-  Gizmo gizmo(pgm_basic);
 
   // transformation matrices
   glm::mat4 view = camera.get_view();
@@ -333,9 +333,16 @@ int main() {
     cube_basic.draw({ {"color", color_light} });
 
     // draw xyz gizmo at origin using GL_LINES
-    glm::mat4 model_line(1.0f);
-    gizmo.set_transform({ model_line, view, projection3d });
-    gizmo.draw();
+    glm::mat4 model_gizmo(1.0f);
+    gizmo.set_transform({ model_gizmo, view, projection3d });
+    gizmo.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f)} }, GL_LINES, 2, 0);
+    gizmo.draw({ {"color", glm::vec3(0.0f, 1.0f, 0.0f)} }, GL_LINES, 2, 2);
+    gizmo.draw({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} }, GL_LINES, 2, 4);
+
+    // draw horizontal 2d grid using GL_LINES
+    glm::mat4 model_grid(1.0f);
+    grid.set_transform({ model_grid, view, projection3d });
+    grid.draw({ {"color", glm::vec3(1.0f, 1.0f, 1.0f)} }, GL_LINES);
 
 
     // draw illuminated cube
@@ -492,12 +499,13 @@ int main() {
   surface_glyph.free();
   plane.free();
   sphere.free();
+  gizmo.free();
+  grid.free();
 
   // free 2d & 3d entities
   glass.free();
   gun.free();
   suzanne.free();
-  gizmo.free();
 
   // destroy shaders programs
   pgm_basic.free();
