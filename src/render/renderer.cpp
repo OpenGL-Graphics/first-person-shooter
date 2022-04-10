@@ -31,6 +31,7 @@ void Renderer::set_transform(const Transformation& t) {
 
   // calculate bounding box from positions in local coords in vbo
   // then update bounding box in world coords from model matrix (avoids incremental translation)
+  // TODO: Why bbox is being calculated for all type renderers???
   bounding_box = BoundingBox(m_vbo.positions);
   bounding_box.transform(model_mat);
 }

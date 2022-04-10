@@ -21,15 +21,22 @@ in vec3 position_vert;
 uniform Material material;
 uniform Light light;
 uniform vec3 position_camera;
+uniform mat4 model;
 
 out vec4 color_out;
 
 void main() {
+  // can't transform normal vec to world-coord using model matrix
+  // https://learnopengl.com/Lighting/Basic-Lighting
+  // TODO: don't calculate normal_mat for each fragment (pass as uniform)
+  mat3 normal_mat = mat3(transpose(inverse(model)));
+  vec3 normal = normalize(normal_mat * normal_vert);
+
   // ambiant light constant
   vec3 ambiant = material.ambiant * light.ambiant;
 
   // diffuse light depends on light beam & fragment normal
-  vec3 normal_vec = normalize(normal_vert);
+  vec3 normal_vec = normalize(normal);
   vec3 light_vec = normalize(light.position - position_vert);
   float strength_diffuse = max(dot(light_vec, normal_vec), 0.0);
   vec3 diffuse = (strength_diffuse * material.diffuse) * light.diffuse;

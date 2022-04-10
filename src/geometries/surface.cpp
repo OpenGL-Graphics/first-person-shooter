@@ -48,11 +48,11 @@ std::vector<glm::vec3> Surface::get_positions() const {
  */
 std::vector<float> Surface::_get_vertexes() {
   return {
-    //coord(x,y) texture(u,v)
-    0.0f, 0.0f, 0.0f,       0.0f,
-    1.0f, 0.0f, m_uv_max.x, 0.0f,
-    1.0f, 1.0f, m_uv_max.x, m_uv_max.y,
-    0.0f, 1.0f, 0.0f,       m_uv_max.y,
+    //coord(x,y) texture(u,v)           normal(nx,ny,nz)
+    0.0f, 0.0f, 0.0f,       0.0f,       0.0f, 0.0f, 1.0f,
+    1.0f, 0.0f, m_uv_max.x, 0.0f,       0.0f, 0.0f, 1.0f,
+    1.0f, 1.0f, m_uv_max.x, m_uv_max.y, 0.0f, 0.0f, 1.0f,
+    0.0f, 1.0f, 0.0f,       m_uv_max.y, 0.0f, 0.0f, 1.0f,
   };
 };
 

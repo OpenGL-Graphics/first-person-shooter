@@ -29,7 +29,9 @@
 #include "profiling/profiler.hpp"
 #include "levels/tilemap.hpp"
 #include "audio/audio.hpp"
+
 #include "globals/score.hpp"
+#include "globals/lights.hpp"
 
 #include "entities/splatmap.hpp"
 #include "entities/model.hpp"
@@ -128,7 +130,7 @@ int main() {
   Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {1, "texture_coord", 3, 12, 6}});
   // Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {1, "normal", 3, 12, 9}});
-  Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 4, 0}, {1, "texture_coord", 2, 4, 2}});
+  Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "texture_coord", 2, 7, 2}, {2, "normal", 3, 7, 4}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
   Renderer gizmo(pgm_basic, VBO(Gizmo()), { {0, "position", 3, 3, 0} });
@@ -171,8 +173,8 @@ int main() {
   profiler.print("Loading 3D models");
 
   // transformation matrices
-  glm::mat4 view = camera.get_view();
-  glm::mat4 projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
+  glm::mat4 view;
+  glm::mat4 projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0e-3f, 50.f);
   glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
 
   // cubes to collide with (cube_texture)
@@ -197,10 +199,6 @@ int main() {
   // handler for keyboard inputs
   KeyHandler key_handler(window, camera, player);
 
-  // light
-  glm::vec3 color_light(1.0f, 1.0f, 1.0f);
-  glm::vec3 position_light(5.0f, 3.0f, 2.0f);
-
   // enable depth test & blending & stencil test (for outlines)
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
@@ -212,6 +210,10 @@ int main() {
   while (!window.is_closed()) {
     // orient player's movements relative to camera horizontal angle (yaw)
     player.orient(camera);
+
+    // update transformation matrices (camera fov changes on zoom)
+    view = camera.get_view();
+    projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 0.5f, 32.0f);
 
     {
       // clear framebuffer's attached color buffer in every frame
@@ -230,10 +232,6 @@ int main() {
     glClearColor(background.r, background.g, background.b, background.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    // update transformation matrices (camera fov changes on zoom)
-    view = camera.get_view();
-    projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0f, 50.f);
-
     // cube with outline using two-passes rendering & stencil buffer
     // must be called just after clearing the stencil buffer (before any other drawing)
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
@@ -243,7 +241,11 @@ int main() {
     // draw level tiles surfaces on right view
     level.set_transform({ glm::mat4(1.0f), view, projection3d });
     level.draw({
-      {"position_light", position_light},
+      {"position_camera", camera.position},
+
+      {"positions_lights[0]", lights[0].position},
+      {"positions_lights[1]", lights[1].position},
+      {"positions_lights[2]", lights[2].position},
     });
 
     /*
@@ -259,7 +261,7 @@ int main() {
       // draw level tiles surfaces on right view
       level.set_transform({ glm::mat4(1.0f), view, projection3d });
       level.draw({
-        {"position_light", position_light},
+        {"position_light", lights[0].position},
       });
 
       // left view
@@ -269,7 +271,7 @@ int main() {
       // draw level tiles surfaces on left view
       level.set_transform({ glm::mat4(1.0f), view, projection3d });
       level.draw({
-        {"position_light", position_light},
+        {"position_light", lights[0].position},
       });
     }
     */
@@ -298,39 +300,63 @@ int main() {
 
     plane.draw({
       {"texture2d", texture_plane},
-      {"light.position", position_light},
-      {"light.ambiant", 0.2f * color_light},
-      {"light.diffuse", 0.5f * color_light},
-      {"light.specular", color_light},
+      {"light.position", lights[0].position},
+      {"light.ambiant", 0.2f * lights[0].color},
+      {"light.diffuse", 0.5f * lights[0].color},
+      {"light.specular", lights[0].color},
       {"time", time},
     }, GL_TRIANGLE_STRIP);
 
-    // shaded sphere
-    glm::mat4 model_sphere(glm::scale(
-      glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 2.0f, 6.0f)),
-      glm::vec3(0.5f)
-    ));
-    sphere.set_transform({ model_sphere, view, projection3d });
-    sphere.draw({
-      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
-      {"material.shininess", 32.0f},
-      {"light.position", position_light},
-      {"light.ambiant", 0.2f * color_light},
-      {"light.diffuse", 0.5f * color_light},
-      {"light.specular", color_light},
-      {"position_camera", camera.position},
-    });
+    // shaded rotating sphere (rotate around light)
+    // https://stackoverflow.com/a/53765106/2228912
+    glm::vec3 positions_sphere[3] = {
+      glm::vec3( 7.0f, 1.5f, 6.0f),
+      glm::vec3(16.0f, 1.5f, 6.0f),
+      glm::vec3(26.5f, 1.5f, 6.0f),
+    };
 
-    // draw light cube (scaling then translation: transf. matrix = (I * T) * S)
+    for (size_t i_light = 0; i_light < 3; ++i_light) {
+      glm::vec3 pivot = lights[i_light].position;
+      glm::mat4 model_sphere(glm::scale(
+        glm::translate(
+          glm::translate(
+            glm::rotate(
+              glm::translate(glm::mat4(1.0f), pivot), // moving pivot to its original pos.
+              static_cast<float>(glfwGetTime()),
+              glm::vec3(0.0f, 1.0f, 0.0f)
+            ),
+            -pivot // bringing pivot to origin first
+          ),
+          positions_sphere[i_light] // initial position (also makes radius smaller)
+        ),
+        glm::vec3(0.5f)
+      ));
+
+      sphere.set_transform({ model_sphere, view, projection3d });
+      sphere.draw({
+        {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
+        {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
+        {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
+        // {"material.shininess", 32.0f},
+        {"material.shininess", 4.0f}, // bigger specular reflection
+        {"light.position", lights[i_light].position},
+        {"light.ambiant", 0.2f * lights[i_light].color},
+        {"light.diffuse", 0.5f * lights[i_light].color},
+        {"light.specular", lights[i_light].color},
+        {"position_camera", camera.position},
+      });
+    }
+
+    // draw 3 light cubes (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
-    glm::mat4 model_light(glm::scale(
-      glm::translate(glm::mat4(1.0f), position_light),
-      glm::vec3(0.2f)
-    ));
-    cube_basic.set_transform({ model_light, view, projection3d });
-    cube_basic.draw({ {"color", color_light} });
+    for (size_t i_light = 0; i_light < 3; ++i_light) {
+      glm::mat4 model_light(glm::scale(
+        glm::translate(glm::mat4(1.0f), lights[i_light].position),
+        glm::vec3(0.2f)
+      ));
+      cube_basic.set_transform({ model_light, view, projection3d });
+      cube_basic.draw({ {"color", lights[i_light].color} });
+    }
 
     // draw xyz gizmo at origin using GL_LINES
     glm::mat4 model_gizmo(1.0f);
@@ -353,10 +379,10 @@ int main() {
       {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
       {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
       {"material.shininess", 32.0f},
-      {"light.position", position_light},
-      {"light.ambiant", 0.2f * color_light},
-      {"light.diffuse", 0.5f * color_light},
-      {"light.specular", color_light},
+      {"light.position", lights[0].position},
+      {"light.ambiant", 0.2f * lights[0].color},
+      {"light.diffuse", 0.5f * lights[0].color},
+      {"light.specular", lights[0].color},
       {"position_camera", camera.position},
     });
     */
