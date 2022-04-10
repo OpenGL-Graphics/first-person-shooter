@@ -6,7 +6,7 @@ in vec3 normal_vert;
 
 uniform sampler2D texture_diffuse;
 uniform sampler2D texture_normal;
-uniform mat4 model;
+uniform mat4 normal_mat;
 uniform vec3 positions_lights[3];
 uniform vec3 position_camera;
 
@@ -28,8 +28,7 @@ void main() {
 
   // can't transform normal vec to world-coord using model matrix
   // https://learnopengl.com/Lighting/Basic-Lighting
-  mat3 normal_mat = mat3(transpose(inverse(model)));
-  vec3 normal = normalize(normal_mat * normal_vert);
+  vec3 normal = normalize(mat3(normal_mat) * normal_vert);
 
   // sum-up color contributions from all walls
   vec3 sum_contributions = vec3(0.0, 0.0, 0.0);
@@ -60,14 +59,15 @@ vec3 calculateLightContribution(vec4 color, vec3 position_light, vec3 normal) {
     normal_vec = normal_vec_neg;
   }
 
-  vec3 diffuse = 0.5 * strength_diffuse * color.xyz;
+  vec3 diffuse = 1.0 * strength_diffuse * color.xyz;
 
   // specular light depends on reflected light beam on fragment & camera position
   vec3 camera_vec = normalize(position_camera - position_vert);
   vec3 light_reflect_vec = reflect(-light_vec, normal_vec);
-  float shininess = 32.0;
+  // float shininess = 32.0;
+  float shininess = 4.0;
   float strength_specular = pow(max(dot(light_reflect_vec, camera_vec), 0.0), shininess);
-  vec3 specular = 0.2 * strength_specular * color.xyz;
+  vec3 specular = 0.5 * strength_specular * color.xyz;
 
   // attenuation: https://learnopengl.com/Lighting/Light-casters
   float dist = length(position_light - position_vert);

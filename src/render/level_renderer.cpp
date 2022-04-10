@@ -166,18 +166,20 @@ void LevelRenderer::draw(const Uniforms& u) {
 
       // render tile surface (or two tiles surfaces for corners): wall or door
       for (size_t i_surface = 0; i_surface < n_surfaces; ++i_surface) {
-        // vertical scaling then rotation around y-axis then translation
-        m_renderer_wall.set_transform({
-          glm::scale(
-            glm::rotate(
-              glm::translate(glm::mat4(1.0f), position_tile),
-              angle[i_surface],
-              glm::vec3(0.0f, 1.0f, 0.0f)
-            ),
-            glm::vec3(1.0f, m_height, 1.0f)
-          ), m_transformation.view, m_transformation.projection
-        });
+        // calculate normal matrix only once (instead of doing it in shader for every vertex)
+        glm::mat4 model = glm::scale(
+          glm::rotate(
+            glm::translate(glm::mat4(1.0f), position_tile),
+            angle[i_surface],
+            glm::vec3(0.0f, 1.0f, 0.0f)
+          ),
+          glm::vec3(1.0f, m_height, 1.0f)
+        );
+        glm::mat4 normal_mat = glm::inverseTranspose(model);
+        uniforms["normal_mat"] = normal_mat;
 
+        // vertical scaling then rotation around y-axis then translation
+        m_renderer_wall.set_transform({ model, m_transformation.view, m_transformation.projection });
         m_renderer_wall.draw(uniforms);
       }
     }
@@ -197,20 +199,23 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
  * @param size Amount by which to scale surface on xy vertical plan
  * @param height Elevation of surface (i.e. translation on y-axis)
  */
-void LevelRenderer::draw_horizontal_surface(const Uniforms& uniforms, const glm::vec2& size, float height) {
-  // xy scaling then rotation around x-axis then translation
+void LevelRenderer::draw_horizontal_surface(const Uniforms& u, const glm::vec2& size, float height) {
+  // calculate normal matrix only once (instead of doing it in shader for every vertex)
   float angle = glm::radians(90.0f);
-  m_renderer_floor.set_transform({
-    glm::scale(
-      glm::rotate(
-        glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
-        angle,
-        glm::vec3(1.0f, 0.0f, 0.0f)
-      ),
-      glm::vec3(size.x, size.y, 1.0f)
-    ), m_transformation.view, m_transformation.projection
-  });
+  glm::mat4 model = glm::scale(
+    glm::rotate(
+      glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
+      angle,
+      glm::vec3(1.0f, 0.0f, 0.0f)
+    ),
+    glm::vec3(size.x, size.y, 1.0f)
+  );
+  glm::mat4 normal_mat = glm::inverseTranspose(model);
 
+  // xy scaling then rotation around x-axis then translation
+  Uniforms uniforms = u;
+  uniforms["normal_mat"] = normal_mat;
+  m_renderer_floor.set_transform({ model, m_transformation.view, m_transformation.projection });
   m_renderer_floor.draw(uniforms);
 }
 

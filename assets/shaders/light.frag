@@ -21,16 +21,14 @@ in vec3 position_vert;
 uniform Material material;
 uniform Light light;
 uniform vec3 position_camera;
-uniform mat4 model;
+uniform mat4 normal_mat;
 
 out vec4 color_out;
 
 void main() {
   // can't transform normal vec to world-coord using model matrix
   // https://learnopengl.com/Lighting/Basic-Lighting
-  // TODO: don't calculate normal_mat for each fragment (pass as uniform)
-  mat3 normal_mat = mat3(transpose(inverse(model)));
-  vec3 normal = normalize(normal_mat * normal_vert);
+  vec3 normal = normalize(mat3(normal_mat) * normal_vert);
 
   // ambiant light constant
   vec3 ambiant = material.ambiant * light.ambiant;

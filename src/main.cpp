@@ -1,9 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 
 #include "window.hpp"
 #include "navigation/camera.hpp"
@@ -72,7 +74,8 @@ int main() {
   // create then install vertex & fragment shaders on GPU
   // TODO: Factory to produce singletons `Program`s to avoid duplication in Gun & Player
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-  Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
+  // Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
+  Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/tile.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
   Program pgm_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
@@ -161,7 +164,8 @@ int main() {
   profiler.start();
   Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture, {
     {0, "position", 3, 8, 0},
-    {1, "texture_coord", 2, 8, 6}
+    {1, "normal", 3, 8, 3},
+    {2, "texture_coord", 2, 8, 6}
   });
   Model suzanne(importer, "assets/models/suzanne/suzanne.obj", pgm_matcap, {
     {0, "position", 3, 8, 0},
@@ -307,7 +311,7 @@ int main() {
       {"time", time},
     }, GL_TRIANGLE_STRIP);
 
-    // shaded rotating sphere (rotate around light)
+    // shaded sphere rotating around light
     // https://stackoverflow.com/a/53765106/2228912
     glm::vec3 positions_sphere[3] = {
       glm::vec3( 7.0f, 1.5f, 6.0f),
@@ -332,6 +336,9 @@ int main() {
         glm::vec3(0.5f)
       ));
 
+      // calculate normal matrix only once (instead of doing it in shader for every vertex)
+      glm::mat4 normal_mat = glm::inverseTranspose(model_sphere);
+
       sphere.set_transform({ model_sphere, view, projection3d });
       sphere.draw({
         {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
@@ -344,6 +351,8 @@ int main() {
         {"light.diffuse", 0.5f * lights[i_light].color},
         {"light.specular", lights[i_light].color},
         {"position_camera", camera.position},
+
+        {"normal_mat", normal_mat},
       });
     }
 
@@ -438,21 +447,30 @@ int main() {
     // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin
     // stick gun at bottom of screen
-    gun.set_transform({
-      glm::scale(
+    // calculate normal matrix only once (instead of doing it in shader for every vertex)
+    glm::mat4 model_gun = glm::scale(
+      glm::rotate(
         glm::rotate(
-          glm::rotate(
-            glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, -0.7f, -2.0f)),
-            glm::radians(25.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f)
-          ),
-          glm::radians(15.0f),
-          glm::vec3(1.0f, 0.0f, 0.0f)
+          glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, -0.7f, -2.0f)),
+          glm::radians(25.0f),
+          glm::vec3(0.0f, 1.0f, 0.0f)
         ),
-        glm::vec3(0.15f)
-      ), glm::mat4(1.0f), projection3d
+        glm::radians(15.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f)
+      ),
+      glm::vec3(0.15f)
+    );
+    glm::mat4 normal_mat = glm::inverseTranspose(model_gun);
+
+    gun.set_transform({ model_gun, glm::mat4(1.0f), projection3d });
+    gun.draw({
+      {"position_camera", camera.position},
+      {"positions_lights[0]", lights[0].position},
+      {"positions_lights[1]", lights[1].position},
+      {"positions_lights[2]", lights[2].position},
+
+      {"normal_mat", normal_mat},
     });
-    gun.draw();
 
     // last to render: transparent surfaces to ensure blending with background
     glass.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 1.0f, 5.0f)), view, projection3d });
