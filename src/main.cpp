@@ -74,8 +74,7 @@ int main() {
   // create then install vertex & fragment shaders on GPU
   // TODO: Factory to produce singletons `Program`s to avoid duplication in Gun & Player
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-  // Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag");
-  Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/tile.frag");
+  Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
   Program pgm_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
@@ -337,6 +336,7 @@ int main() {
       ));
 
       // calculate normal matrix only once (instead of doing it in shader for every vertex)
+      // normal vec to world space (when non-uniform scaling): https://learnopengl.com/Lighting/Basic-Lighting
       glm::mat4 normal_mat = glm::inverseTranspose(model_sphere);
 
       sphere.set_transform({ model_sphere, view, projection3d });
@@ -447,7 +447,6 @@ int main() {
     // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin
     // stick gun at bottom of screen
-    // calculate normal matrix only once (instead of doing it in shader for every vertex)
     glm::mat4 model_gun = glm::scale(
       glm::rotate(
         glm::rotate(
@@ -460,6 +459,9 @@ int main() {
       ),
       glm::vec3(0.15f)
     );
+
+    // calculate normal matrix only once (instead of doing it in shader for every vertex)
+    // normal vec to world space (when non-uniform scaling): https://learnopengl.com/Lighting/Basic-Lighting
     glm::mat4 normal_mat = glm::inverseTranspose(model_gun);
 
     gun.set_transform({ model_gun, glm::mat4(1.0f), projection3d });

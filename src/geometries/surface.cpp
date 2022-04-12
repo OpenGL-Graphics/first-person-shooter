@@ -1,10 +1,10 @@
 #include "geometries/surface.hpp"
 
 /**
- * @param uv_max Needed to avoid stretching wall texture when scaling it up in `LevelRenderer`
+ * @param size Needed to avoid stretching wall texture (i.e. uv-coords follow xyz coords)
  */
-Surface::Surface(const glm::vec2& uv_max):
-  m_uv_max(uv_max)
+Surface::Surface(const glm::vec2& size):
+  m_size(size)
 {
   // cannot be init in constructor's member initalizer list as they're members of base class
   m_vertexes = _get_vertexes();
@@ -25,22 +25,6 @@ void Surface::set_n_elements() {
   m_n_elements = 3 * n_triangles;
 }
 
-std::vector<float> Surface::get_vertexes() const {
-  return m_vertexes;
-}
-
-unsigned int Surface::get_n_elements() const {
-  return m_n_elements;
-}
-
-std::vector<unsigned int> Surface::get_indices() const {
-  return m_indices;
-}
-
-std::vector<glm::vec3> Surface::get_positions() const {
-  return m_positions;
-}
-
 /**
  * xy only for position as z-coord set to 0 in vertex shader
  * origin: lower-left corner for opengl textures
@@ -48,11 +32,11 @@ std::vector<glm::vec3> Surface::get_positions() const {
  */
 std::vector<float> Surface::_get_vertexes() {
   return {
-    //coord(x,y) texture(u,v)           normal(nx,ny,nz)
-    0.0f, 0.0f, 0.0f,       0.0f,       0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, m_uv_max.x, 0.0f,       0.0f, 0.0f, 1.0f,
-    1.0f, 1.0f, m_uv_max.x, m_uv_max.y, 0.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 0.0f,       m_uv_max.y, 0.0f, 0.0f, 1.0f,
+    //coord(x,y)        texture(u,v)        normal(nx,ny,nz)
+    0.0f,     0.0f,     0.0f,     0.0f,     0.0f, 0.0f, 1.0f,
+    m_size.x, 0.0f,     m_size.x, 0.0f,     0.0f, 0.0f, 1.0f,
+    m_size.x, m_size.y, m_size.x, m_size.y, 0.0f, 0.0f, 1.0f,
+    0.0f,     m_size.y, 0.0f,     m_size.y, 0.0f, 0.0f, 1.0f,
   };
 };
 

@@ -9,15 +9,18 @@ uniform mat4 model;      // object coord -> world coord
 uniform mat4 view;       // world coord  -> camera coord
 uniform mat4 projection; // camera coord -> ndc coord
 
-out vec2 texture_coord_vert;
-out vec3 position_vert;
-out vec3 normal_vert;
+// interface block (name matches in frag shader)
+out VS_OUT {
+  vec2 texture_coord_vert;
+  vec3 position_vert;
+  vec3 normal_vert; // not used! (normal retrieved from `texture_normal`)
+} vs_out;
 
 /* modified from `assets/texture_surface.vert` */
 void main() {
   gl_Position = projection * view * model * vec4(position, 0.0, 1.0);
 
-  texture_coord_vert = texture_coord;
-  position_vert = (model * vec4(position, 0.0, 1.0)).xyz;
-  normal_vert = normal;
+  vs_out.texture_coord_vert = texture_coord;
+  vs_out.position_vert = (model * vec4(position, 0.0, 1.0)).xyz;
+  vs_out.normal_vert = normal;
 }

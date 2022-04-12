@@ -50,7 +50,7 @@ private:
   glm::vec3 m_position;
   std::unordered_map<std::string, Texture2D> m_textures;
 
-  void draw_horizontal_surface(const Uniforms& u, const glm::vec2& size, float height);
+  void draw_horizontal_surface(const Uniforms& u, float height);
 };
 
 #endif // LEVEL_RENDERER_HPP

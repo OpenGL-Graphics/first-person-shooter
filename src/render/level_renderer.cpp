@@ -167,13 +167,10 @@ void LevelRenderer::draw(const Uniforms& u) {
       // render tile surface (or two tiles surfaces for corners): wall or door
       for (size_t i_surface = 0; i_surface < n_surfaces; ++i_surface) {
         // calculate normal matrix only once (instead of doing it in shader for every vertex)
-        glm::mat4 model = glm::scale(
-          glm::rotate(
-            glm::translate(glm::mat4(1.0f), position_tile),
-            angle[i_surface],
-            glm::vec3(0.0f, 1.0f, 0.0f)
-          ),
-          glm::vec3(1.0f, m_height, 1.0f)
+        glm::mat4 model = glm::rotate(
+          glm::translate(glm::mat4(1.0f), position_tile),
+          angle[i_surface],
+          glm::vec3(0.0f, 1.0f, 0.0f)
         );
         glm::mat4 normal_mat = glm::inverseTranspose(model);
         uniforms["normal_mat"] = normal_mat;
@@ -196,19 +193,15 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
 
 /**
  * Draw horizontal surface at given height
- * @param size Amount by which to scale surface on xy vertical plan
  * @param height Elevation of surface (i.e. translation on y-axis)
  */
-void LevelRenderer::draw_horizontal_surface(const Uniforms& u, const glm::vec2& size, float height) {
+void LevelRenderer::draw_horizontal_surface(const Uniforms& u, float height) {
   // calculate normal matrix only once (instead of doing it in shader for every vertex)
   float angle = glm::radians(90.0f);
-  glm::mat4 model = glm::scale(
-    glm::rotate(
-      glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
-      angle,
-      glm::vec3(1.0f, 0.0f, 0.0f)
-    ),
-    glm::vec3(size.x, size.y, 1.0f)
+  glm::mat4 model = glm::rotate(
+    glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
+    angle,
+    glm::vec3(1.0f, 0.0f, 0.0f)
   );
   glm::mat4 normal_mat = glm::inverseTranspose(model);
 
@@ -224,7 +217,7 @@ void LevelRenderer::draw_floor(const Uniforms& u) {
   Uniforms uniforms = u;
   uniforms["texture_diffuse"] = m_textures["floor_diffuse"];
   uniforms["texture_normal"] = m_textures["floor_normal"];
-  draw_horizontal_surface(uniforms, {m_tilemap.n_cols - 1, m_tilemap.n_rows - 1}, 0.0f);
+  draw_horizontal_surface(uniforms, 0.0f);
 }
 
 /* Draw horizontal floor covering top of tilemap */
@@ -232,7 +225,7 @@ void LevelRenderer::draw_ceiling(const Uniforms& u) {
   Uniforms uniforms = u;
   uniforms["texture_diffuse"] = m_textures["ceiling_diffuse"];
   uniforms["texture_normal"] = m_textures["ceiling_normal"];
-  draw_horizontal_surface(uniforms, {m_tilemap.n_cols - 1, m_tilemap.n_rows - 1}, m_height);
+  draw_horizontal_surface(uniforms, m_height);
 }
 
 /**
