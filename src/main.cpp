@@ -136,7 +136,7 @@ int main() {
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "texture_coord", 2, 7, 2}, {2, "normal", 3, 7, 4}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
-  Renderer cylinder(pgm_basic, VBO(Cylinder(8)), {{0, "position", 3, 3, 0}});
+  Renderer cylinder(pgm_light, VBO(Cylinder(32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
   Renderer gizmo(pgm_basic, VBO(Gizmo()), { {0, "position", 3, 3, 0} });
   Renderer grid(pgm_basic, VBO(GridLines()), { {0, "position", 3, 3, 0} });
 
@@ -348,10 +348,12 @@ int main() {
         {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
         // {"material.shininess", 32.0f},
         {"material.shininess", 4.0f}, // bigger specular reflection
+
         {"light.position", lights[i_light].position},
         {"light.ambiant", 0.2f * lights[i_light].color},
         {"light.diffuse", 0.5f * lights[i_light].color},
         {"light.specular", lights[i_light].color},
+
         {"position_camera", camera.position},
 
         {"normal_mat", normal_mat},
@@ -371,8 +373,24 @@ int main() {
 
     // draw a green cylinder
     glm::mat4 model_cylinder = glm::translate(glm::mat4(1.0f), glm::vec3(4, 1, 4));
+    glm::mat4 normal_mat_cylinder = glm::inverseTranspose(model_cylinder);
     cylinder.set_transform({ model_cylinder, view, projection3d });
-    cylinder.draw({ {"color", glm::vec3(0.0f, 1.0f, 0.0f)} });
+    cylinder.draw({
+      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
+      // {"material.shininess", 32.0f},
+      {"material.shininess", 4.0f}, // bigger specular reflection
+
+      {"light.position", lights[0].position},
+      {"light.ambiant", 0.2f * lights[0].color},
+      {"light.diffuse", 0.5f * lights[0].color},
+      {"light.specular", lights[0].color},
+
+      {"position_camera", camera.position},
+
+      {"normal_mat", normal_mat_cylinder},
+    });
 
     // draw xyz gizmo at origin using GL_LINES
     glm::mat4 model_gizmo(1.0f);
