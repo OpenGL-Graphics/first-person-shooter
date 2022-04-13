@@ -3,54 +3,53 @@
 
 #include "geometries/cylinder.hpp"
 
+/* Calculate vertexes & indices on creation */
 Cylinder::Cylinder(int n_corners):
   m_n_corners(n_corners)
 {
-  // calculate vertexes coords on creation
-  set_vertexes();
-  set_n_elements();
+  _set_vertexes();
+  _set_indices();
 }
 
-void Cylinder::set_vertexes() {
-  // three corners of each slice, in each circle
-  float angle = 2*M_PI / m_n_corners;
+void Cylinder::_set_vertexes() {
+  // center of bottom circle & its corners (then same for top circle)
+  float angle_step = 2*M_PI / m_n_corners;
 
-  for (auto i_circle : {0.0f, 1.0f}) {
+  for (auto y_circle : { 0.0f, 1.0f }) {
+    m_vertexes.insert(m_vertexes.end(), { 0.0f, y_circle, 0.0f });
+
     for (size_t step = 0; step < m_n_corners; step++) {
-      float angle_begin = step * angle;
-      float angle_end = (step + 1) * angle;
-
-      m_vertexes.insert(m_vertexes.end(), {std::cos(angle_begin), i_circle, std::sin(angle_begin)});
-      m_vertexes.insert(m_vertexes.end(), {0.0f, i_circle, 0.0f});
-      m_vertexes.insert(m_vertexes.end(), {std::cos(angle_end), i_circle, std::sin(angle_end)});
+      float angle = step * angle_step;
+      m_vertexes.insert(m_vertexes.end(), {std::cos(angle), y_circle, std::sin(angle)});
     }
   }
+}
 
-  // link bottom and top circles vertexes using 2 triangles/face (skip center of circle)
-  int n_elements = m_vertexes.size();
-  int n_elements_circle = n_elements / 2;
-  for (size_t i_vertex = 0; i_vertex < n_elements_circle; i_vertex += 9) {
-    m_vertexes.insert(m_vertexes.end(), {m_vertexes[i_vertex], m_vertexes[i_vertex + 1], m_vertexes[i_vertex + 2]});
-    m_vertexes.insert(m_vertexes.end(), {m_vertexes[(i_vertex + 6)], m_vertexes[(i_vertex + 6) + 1], m_vertexes[(i_vertex + 6) + 2]});
-    m_vertexes.insert(m_vertexes.end(), {m_vertexes[(i_vertex+n_elements_circle)], m_vertexes[(i_vertex+n_elements_circle) + 1], m_vertexes[(i_vertex+n_elements_circle) + 2]});
-
-    m_vertexes.insert(m_vertexes.end(), {m_vertexes[(i_vertex+n_elements_circle)], m_vertexes[(i_vertex+n_elements_circle) + 1], m_vertexes[(i_vertex+n_elements_circle) + 2]});
-    m_vertexes.insert(m_vertexes.end(), {m_vertexes[(i_vertex+n_elements_circle + 6)], m_vertexes[(i_vertex+n_elements_circle + 6) + 1], m_vertexes[(i_vertex+n_elements_circle + 6) + 2]});
-    m_vertexes.insert(m_vertexes.end(), {m_vertexes[(i_vertex + 6)], m_vertexes[(i_vertex + 6) + 1], m_vertexes[(i_vertex + 6) + 2]});
+void Cylinder::_set_indices() {
+  // triangles of bottom circle
+  unsigned int i_center_bottom = 0;
+  for (unsigned int i_vertex = 1; i_vertex <= m_n_corners; ++i_vertex) {
+    m_indices.insert(m_indices.end(), { i_center_bottom, i_vertex, i_vertex % m_n_corners + 1 });
   }
-}
 
-void Cylinder::set_n_elements() {
-  int n_vertexes_circles = 2 * (m_n_corners * 3);
-  int n_vertexes_sides = m_n_corners * 2 * 3;
-  m_n_elements = n_vertexes_circles + n_vertexes_sides;
-}
+  // triangles of top circle
+  unsigned int n_vertexes = m_vertexes.size() / 3;
+  unsigned int n_vertexes_circle = n_vertexes / 2;
+  unsigned int i_center_top = n_vertexes_circle;
 
+  for (unsigned int i_vertex = 1; i_vertex <= m_n_corners; ++i_vertex) {
+    unsigned int i_vertex_current = i_vertex + i_center_top;
+    unsigned int i_vertex_next = (i_vertex % m_n_corners + 1) + i_center_top;
+    m_indices.insert(m_indices.end(), { i_center_top, i_vertex_current, i_vertex_next });
+  }
 
-std::vector<float> Cylinder::get_vertexes() const {
-  return m_vertexes;
+  // pairs of triangles for each side face
+  for (unsigned int i_vertex = 1; i_vertex <= m_n_corners; ++i_vertex) {
+    m_indices.insert(m_indices.end(), { i_vertex, i_vertex % m_n_corners + 1, i_vertex + i_center_top });
+    m_indices.insert(m_indices.end(), { i_vertex % m_n_corners + 1, i_vertex % m_n_corners + i_center_top + 1, i_vertex + i_center_top });
+  }
 }
 
 unsigned int Cylinder::get_n_elements() const {
-  return m_n_elements;
+  return m_indices.size();
 }

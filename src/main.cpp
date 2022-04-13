@@ -14,6 +14,7 @@
 #include "geometries/surface.hpp"
 #include "geometries/plane.hpp"
 #include "geometries/sphere.hpp"
+#include "geometries/cylinder.hpp"
 #include "geometries/gizmo.hpp"
 #include "geometries/grid_lines.hpp"
 
@@ -135,6 +136,7 @@ int main() {
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "texture_coord", 2, 7, 2}, {2, "normal", 3, 7, 4}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
+  Renderer cylinder(pgm_basic, VBO(Cylinder(8)), {{0, "position", 3, 3, 0}});
   Renderer gizmo(pgm_basic, VBO(Gizmo()), { {0, "position", 3, 3, 0} });
   Renderer grid(pgm_basic, VBO(GridLines()), { {0, "position", 3, 3, 0} });
 
@@ -367,6 +369,11 @@ int main() {
       cube_basic.draw({ {"color", lights[i_light].color} });
     }
 
+    // draw a green cylinder
+    glm::mat4 model_cylinder = glm::translate(glm::mat4(1.0f), glm::vec3(4, 1, 4));
+    cylinder.set_transform({ model_cylinder, view, projection3d });
+    cylinder.draw({ {"color", glm::vec3(0.0f, 1.0f, 0.0f)} });
+
     // draw xyz gizmo at origin using GL_LINES
     glm::mat4 model_gizmo(1.0f);
     gizmo.set_transform({ model_gizmo, view, projection3d });
@@ -545,6 +552,7 @@ int main() {
   surface_glyph.free();
   plane.free();
   sphere.free();
+  cylinder.free();
   gizmo.free();
   grid.free();
 

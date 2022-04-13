@@ -145,7 +145,7 @@ void Terrain::set_normals() {
 }
 
 /**
- * Needed by `VBO()` otherwise would call `Geometry::get_n_vertexes()`
+ * Needed by `VBO()` otherwise would call `Geometry::get_n_elements()`
  * Number of elements to draw (i.e. # of indices in triangle strip mode)
  * https://stackoverflow.com/a/14842779/2228912
  */

@@ -24,7 +24,7 @@ protected:
   /* coordinates for position/normal/texture-coord */
   std::vector<float> m_vertexes;
 
-  /* # of elements to render */
+  /* # of elements (indices) to render */
   int m_n_elements;
 
   /* faces (triangles formed by vertexes indexes) */
