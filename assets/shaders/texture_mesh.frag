@@ -5,7 +5,7 @@ in VS_OUT {
   vec2 texture_coord_vert;
   vec3 position_vert;
   vec3 normal_vert;
-  // mat3 tbn_mat;
+  mat3 tbn_mat;
 } fs_in;
 
 uniform sampler2D texture_diffuse;
@@ -23,16 +23,14 @@ vec3 calculateLightContribution(vec4 color, vec3 position_light, vec3 normal);
 void main() {
   vec4 color = texture(texture_diffuse, fs_in.texture_coord_vert);
 
-  /*
   // normal-mapping based shading: convert image from [0, 1] to [-1, 1]
   // normal vector from texture image: https://learnopengl.com/Advanced-Lighting/Normal-Mapping
   vec3 normal_vec = texture(texture_normal, fs_in.texture_coord_vert).rgb;
   normal_vec = normalize(normal_vec * 2.0 - 1.0);
-  */
 
-  // can't transform normal vec to world-coord using model matrix
-  // https://learnopengl.com/Lighting/Basic-Lighting
-  vec3 normal = normalize(mat3(normal_mat) * fs_in.normal_vert);
+  // TBN matrix to transform from tangent to world space
+  // https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+  vec3 normal = normalize(mat3(fs_in.tbn_mat) * normal_vec);
 
   // sum-up color contributions from all walls
   vec3 sum_contributions = vec3(0.0, 0.0, 0.0);

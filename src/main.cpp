@@ -114,6 +114,10 @@ int main() {
   // 2D texture for flat grid plane (shape made as a sin wave in vertex shader)
   Texture2D texture_plane(Image("assets/images/plane/wave.png"));
 
+  // texture for cylinder pillar
+  Texture2D texture_cylinder_diffuse(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0);
+  Texture2D texture_cylinder_normal(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1);
+
   // empty texture to fill when drawing to framebuffer
   Image image_framebuffer(window.width, window.height, GL_RGB, NULL);
   Texture2D texture_framebuffer(image_framebuffer);
@@ -136,7 +140,7 @@ int main() {
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "texture_coord", 2, 7, 2}, {2, "normal", 3, 7, 4}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
-  Renderer cylinder(pgm_light, VBO(Cylinder(32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
+  Renderer cylinder(pgm_texture, VBO(Cylinder(32, 0.25f, 3.5f)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer gizmo(pgm_basic, VBO(Gizmo()), { {0, "position", 3, 3, 0} });
   Renderer grid(pgm_basic, VBO(GridLines()), { {0, "position", 3, 3, 0} });
 
@@ -371,25 +375,29 @@ int main() {
       cube_basic.draw({ {"color", lights[i_light].color} });
     }
 
-    // draw a green cylinder
-    glm::mat4 model_cylinder = glm::translate(glm::mat4(1.0f), glm::vec3(4, 1, 4));
-    glm::mat4 normal_mat_cylinder = glm::inverseTranspose(model_cylinder);
-    cylinder.set_transform({ model_cylinder, view, projection3d });
+    // draw a 2 textured cylinders (pillars
+    glm::mat4 model_cylinder1 = glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8));
+    cylinder.set_transform({ model_cylinder1, view, projection3d });
     cylinder.draw({
-      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
-      // {"material.shininess", 32.0f},
-      {"material.shininess", 4.0f}, // bigger specular reflection
-
-      {"light.position", lights[0].position},
-      {"light.ambiant", 0.2f * lights[0].color},
-      {"light.diffuse", 0.5f * lights[0].color},
-      {"light.specular", lights[0].color},
-
       {"position_camera", camera.position},
+      {"positions_lights[0]", lights[0].position},
+      {"positions_lights[1]", lights[1].position},
+      {"positions_lights[2]", lights[2].position},
+      {"normal_mat", glm::inverseTranspose(model_cylinder1)},
+      {"texture_diffuse", texture_cylinder_diffuse},
+      {"texture_normal", texture_cylinder_normal},
+    });
 
-      {"normal_mat", normal_mat_cylinder},
+    glm::mat4 model_cylinder2 = glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8));
+    cylinder.set_transform({ model_cylinder2, view, projection3d });
+    cylinder.draw({
+      {"position_camera", camera.position},
+      {"positions_lights[0]", lights[0].position},
+      {"positions_lights[1]", lights[1].position},
+      {"positions_lights[2]", lights[2].position},
+      {"normal_mat", glm::inverseTranspose(model_cylinder2)},
+      {"texture_diffuse", texture_cylinder_diffuse},
+      {"texture_normal", texture_cylinder_normal},
     });
 
     // draw xyz gizmo at origin using GL_LINES
@@ -549,6 +557,9 @@ int main() {
   texture_matcap.free();
   texture_plane.free();
   texture_framebuffer.free();
+
+  texture_cylinder_diffuse.free();
+  texture_cylinder_normal.free();
 
   Glyphs glyphs(surface_glyph.get_glyphs());
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {

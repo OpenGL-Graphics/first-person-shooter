@@ -1,11 +1,18 @@
+#include <iostream>
+
 #include "geometries/cylinder.hpp"
 
 /* Calculate vertexes & indices on creation */
-Cylinder::Cylinder(int n_corners):
-  m_n_corners(n_corners)
+Cylinder::Cylinder(int n_corners, float radius, float height):
+  // duplicated statring corner for cylinder seam (avoids stretching uv between last & 1st point)
+  // https://stackoverflow.com/a/36308796/2228912
+  m_n_corners(n_corners + 1),
+
+  m_radius(radius),
+  m_height(height)
 {
   // reserve space for position & normal coords for every vertex (1: center of circle)
-  unsigned int n_vertexes_circle = 1 + n_corners;
+  unsigned int n_vertexes_circle = 1 + m_n_corners;
   unsigned int n_vertexes = 2 * n_vertexes_circle;
   m_vertexes.resize(m_n_coords * n_vertexes);
 
@@ -13,27 +20,37 @@ Cylinder::Cylinder(int n_corners):
   set_positions();
   set_indices();
   set_normals();
+  set_texture_coords();
 }
 
 void Cylinder::set_positions() {
-  // center of bottom circle & its corners (then same for top circle)
-  float angle_step = 2*M_PI / m_n_corners;
-  unsigned int i_vertex = 0;
+  // ignore last vertex (i.e. seam)
+  float angle_step = 2*M_PI / (m_n_corners - 1);
+  unsigned int i_coord = 0;
+  const unsigned int stride = m_n_coords - 3;
 
-  for (auto y_circle : { 0.0f, 1.0f }) {
-    m_vertexes[i_vertex++] = 0.0f;
-    m_vertexes[i_vertex++] = y_circle;
-    m_vertexes[i_vertex++] = 0.0f;
-    i_vertex += 3;
+  for (auto y_circle : { 0.0f, m_height }) {
+    // center of top/bottom circle
+    m_vertexes[i_coord++] = 0.0f;
+    m_vertexes[i_coord++] = y_circle;
+    m_vertexes[i_coord++] = 0.0f;
+    i_coord += stride;
 
-    for (size_t step = 0; step < m_n_corners; step++) {
+    // corners of top/bottom circle
+    for (size_t step = 0; step < m_n_corners - 1; step++) {
       float angle = step * angle_step;
 
-      m_vertexes[i_vertex++] = std::cos(angle);
-      m_vertexes[i_vertex++] = y_circle;
-      m_vertexes[i_vertex++] = std::sin(angle);
-      i_vertex += 3;
+      m_vertexes[i_coord++] = m_radius * std::cos(angle);
+      m_vertexes[i_coord++] = y_circle;
+      m_vertexes[i_coord++] = m_radius * std::sin(angle);
+      i_coord += stride;
     }
+
+    // seam same as starting corner (corner closing cylinder to avoid stretching uv)
+    m_vertexes[i_coord++] = m_radius * std::cos(0.0f);
+    m_vertexes[i_coord++] = y_circle;
+    m_vertexes[i_coord++] = m_radius * std::sin(0.0f);
+    i_coord += stride;
   }
 }
 
@@ -53,7 +70,11 @@ void Cylinder::set_normals() {
 
     glm::vec3 v0 = vertex1 - vertex0;
     glm::vec3 v1 = vertex2 - vertex1;
-    glm::vec3 normal = glm::normalize(glm::cross(v0, v1));
+    glm::vec3 normal = glm::cross(v0, v1);
+
+    // cross-prod. = zero vector for seam (same start & end point) => normalized to NaN
+    if (normal != glm::vec3(0))
+      normal = glm::normalize(normal);
 
     normals[i_vertex0] += normal;
     normals[i_vertex1] += normal;
@@ -93,6 +114,29 @@ void Cylinder::set_indices() {
   for (unsigned int i_vertex = 1; i_vertex <= m_n_corners; ++i_vertex) {
     m_indices.insert(m_indices.end(), { i_vertex % m_n_corners + 1, i_vertex, i_vertex + i_center_top });
     m_indices.insert(m_indices.end(), { i_vertex % m_n_corners + 1, i_vertex + i_center_top, i_vertex % m_n_corners + i_center_top + 1 });
+  }
+}
+
+/* Repeat uv-texture coords (i.e. uv > 1) to avoid stretching it */
+void Cylinder::set_texture_coords() {
+  const unsigned int offset_uv = 6;
+  unsigned int i_coord = offset_uv;
+
+  float circumference = 2*M_PI * m_radius;
+  float step = circumference / (m_n_corners - 1);
+
+  for (auto v_circle : { 0.0f, m_height }) {
+    // center of top/bottom circle (ignored)
+    m_vertexes[i_coord++] = 0.0f;
+    m_vertexes[i_coord++] = v_circle;
+    i_coord += offset_uv;
+
+    // top/bottom circle corners
+    for (unsigned int i_corner = 0; i_corner < m_n_corners; i_corner++) {
+      m_vertexes[i_coord++] = i_corner * step;
+      m_vertexes[i_coord++] = v_circle;
+      i_coord += offset_uv;
+    }
   }
 }
 
