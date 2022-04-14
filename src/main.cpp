@@ -147,9 +147,6 @@ int main() {
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
 
-  // sprites from texture image & 2d surface geometry
-  Sprite glass(Image("assets/images/surfaces/window.png"));
-
   // accord. to doc: better to reuse importer, & destroys scene (3d model) once out of scope
   Assimp::Importer importer;
 
@@ -304,7 +301,6 @@ int main() {
     terrain.draw();
 
     // draw animated & textured wave from plane using triangle strips
-    float time = glfwGetTime();
     plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
 
     plane.draw({
@@ -313,7 +309,7 @@ int main() {
       {"light.ambiant", 0.2f * lights[0].color},
       {"light.diffuse", 0.5f * lights[0].color},
       {"light.specular", lights[0].color},
-      {"time", time},
+      {"time", static_cast<float>(glfwGetTime())},
     }, GL_TRIANGLE_STRIP);
 
     // shaded sphere rotating around light
@@ -507,10 +503,6 @@ int main() {
       {"normal_mat", normal_mat},
     });
 
-    // last to render: transparent surfaces to ensure blending with background
-    glass.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 1.0f, 5.0f)), view, projection3d });
-    glass.draw();
-
     // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
     glm::mat4 model_hud_health(glm::scale(
       glm::translate(
@@ -586,7 +578,6 @@ int main() {
   grid.free();
 
   // free 2d & 3d entities
-  glass.free();
   gun.free();
   suzanne.free();
 

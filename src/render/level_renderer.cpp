@@ -15,7 +15,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
   m_height(3.5f),
   m_tilemap(tilemap),
 
-  // renderers for walls/floors, props (trees)
+  // renderers for walls/floors
   m_renderer_wall(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {
     {0, "position", 2, 7, 0},
     {1, "texture_coord", 2, 7, 2},
@@ -26,9 +26,18 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     {1, "texture_coord", 2, 7, 2},
     {2, "normal", 3, 7, 4},
   }),
-  // doesn't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
+
+  // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
   m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag"), {
     {0, "position", 3, 8, 0},
+  }),
+
+  // window & wall above/below it
+  m_window(Image("assets/images/surfaces/window.png")),
+  m_renderer_wall_half(program_tile, VBO(Surface(glm::vec2(1.0f, m_height/2.0f - 1.0f/2.0f))), {
+    {0, "position", 2, 7, 0},
+    {1, "texture_coord", 2, 7, 2},
+    {2, "normal", 3, 7, 4},
   }),
 
   m_textures {
@@ -127,7 +136,9 @@ void LevelRenderer::draw(const Uniforms& u) {
             m_transformation.view, m_transformation.projection });
           m_tree.draw(uniforms);
           continue;
-          break;
+        case Tilemap::Tiles::WINDOW:
+          draw_window(uniforms, position_tile);
+          continue;
         case Tilemap::Tiles::SPACE:
           continue;
         case Tilemap::Tiles::WALL_H:
@@ -181,6 +192,37 @@ void LevelRenderer::draw(const Uniforms& u) {
       }
     }
   }
+}
+
+/* Draw window at mid y-coord of `position_tile` with half-walls below & above it */
+void LevelRenderer::draw_window(const Uniforms& u, const glm::vec3& position_tile) {
+  float height_window = 1.0f;
+  float z_window_bottom = m_height/2.0f - height_window/2.0f;
+  glm::vec3 position_window(position_tile.x, z_window_bottom, position_tile.z);
+
+  // TODO: transparent surfaces should be last to render to ensure blending with background
+  m_window.set_transform({
+    glm::translate(glm::mat4(1.0f), position_window),
+    m_transformation.view, m_transformation.projection
+  });
+  m_window.draw();
+
+  // wall below window
+  Uniforms uniforms = u;
+  uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
+  uniforms["texture_normal"] = m_textures["wall_normal"];
+
+  glm::mat4 model_top = glm::translate(glm::mat4(1.0f), position_tile);
+  uniforms["normal_mat"] = glm::inverseTranspose(model_top);
+  m_renderer_wall_half.set_transform({ model_top, m_transformation.view, m_transformation.projection });
+  m_renderer_wall_half.draw(uniforms);
+
+  // wall above window
+  float z_window_top = z_window_bottom + height_window;
+  glm::mat4 model_bottom = glm::translate(glm::mat4(1.0f), glm::vec3(position_tile.x, z_window_top, position_tile.z));
+  uniforms["normal_mat"] = glm::inverseTranspose(model_bottom);
+  m_renderer_wall_half.set_transform({ model_bottom, m_transformation.view, m_transformation.projection });
+  m_renderer_wall_half.draw(uniforms);
 }
 
 /* Draw targets */
@@ -241,6 +283,8 @@ void LevelRenderer::free() {
   m_renderer_wall.free();
   m_renderer_floor.free();
   m_tree.free();
+  m_window.free();
+  m_renderer_wall_half.free();
   Targets::free();
 
   for (const auto& item : m_textures) {

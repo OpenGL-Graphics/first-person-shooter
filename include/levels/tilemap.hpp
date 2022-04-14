@@ -21,6 +21,7 @@ struct Tilemap {
 
     // props
     TREE = 't',
+    WINDOW = 'w',
 
     // compounds wall composed of two perpendicular walls
     WALL_L = 'L',

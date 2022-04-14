@@ -7,9 +7,9 @@
 const float SPEED = 0.1f;
 
 Player::Player(Assimp::Importer& importer):
-  m_program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_surface.frag"),
+  m_program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag"),
   m_model("assets/models/cube-textured/cube-textured.obj", importer),
-  m_renderer(m_program, m_model, {{0, "position", 3, 8, 0}, {0, "texture_coord", 2, 8, 6}}),
+  m_renderer(m_program, m_model, {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}}),
   m_forward_dir(0.0f, 0.0f, -1.0f),
   m_is_dead(false)
 {

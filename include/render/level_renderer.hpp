@@ -6,8 +6,10 @@
 #include "render/renderer.hpp"
 #include "levels/tilemap.hpp"
 #include "program.hpp"
+
 #include "entities/target.hpp"
 #include "entities/model.hpp"
+#include "entities/sprite.hpp"
 
 /**
  * Renderer for level items (e.g. walls, doors...)
@@ -40,8 +42,12 @@ private:
   Renderer m_renderer_wall;
   Renderer m_renderer_floor;
 
-  /* same grass prop rendered multiple times */
+  /* tree props rendered multiple times */
   Model m_tree;
+
+  /* Window & wall below/above it (different uv from `m_renderer_wall`) */
+  Sprite m_window;
+  Renderer m_renderer_wall_half;
 
   /* transformation matrixes (view, projection) passed to tiles renderers before `draw()` */
   Transformation m_transformation;
@@ -51,6 +57,7 @@ private:
   std::unordered_map<std::string, Texture2D> m_textures;
 
   void draw_horizontal_surface(const Uniforms& u, float height);
+  void draw_window(const Uniforms& u, const glm::vec3& position_tile);
 };
 
 #endif // LEVEL_RENDERER_HPP
