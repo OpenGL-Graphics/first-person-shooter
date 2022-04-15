@@ -154,32 +154,12 @@ void Cylinder::set_texture_coords() {
 /* Tangent vector in TBN matrix (for normal mapping) */
 void Cylinder::set_tangents() {
   unsigned int n_vertexes = m_vertexes.size() / m_n_coords;
-  std::vector<glm::vec3> tangents(n_vertexes, glm::vec3(0.0f));
 
-  for (size_t i_indice = 0; i_indice < m_indices.size() - 2; i_indice += 3) {
-    unsigned int i_vertex0 = m_indices[i_indice];
-    unsigned int i_vertex1 = m_indices[i_indice + 1];
-    unsigned int i_vertex2 = m_indices[i_indice + 2];
-
-    glm::vec3 vertex0 = {m_vertexes[m_n_coords * i_vertex0], m_vertexes[m_n_coords * i_vertex0 + 1], m_vertexes[m_n_coords * i_vertex0 + 2]};
-    glm::vec3 vertex1 = {m_vertexes[m_n_coords * i_vertex1], m_vertexes[m_n_coords * i_vertex1 + 1], m_vertexes[m_n_coords * i_vertex1 + 2]};
-    glm::vec3 vertex2 = {m_vertexes[m_n_coords * i_vertex2], m_vertexes[m_n_coords * i_vertex2 + 1], m_vertexes[m_n_coords * i_vertex2 + 2]};
-
-    // tangent vector always parallel to horizontal xz plane
-    glm::vec3 tangent = (vertex0.y == vertex1.y) ? vertex1 - vertex0 : vertex2 - vertex1;
-
-    // cross-prod. = zero vector for seam (same start & end point) => normalized to NaN
-    if (tangent != glm::vec3(0))
-      tangent = glm::normalize(tangent);
-
-    tangents[i_vertex0] += tangent;
-    tangents[i_vertex1] += tangent;
-    tangents[i_vertex2] += tangent;
-  }
-
-  // averaging sum of vectors is equivalent to normalizing it (same dir., diff. mag)
+  // tangent from cross-prod between bitangent (y-axis) & normal
   for (size_t i_vertex = 0; i_vertex < n_vertexes; ++i_vertex) {
-    glm::vec3 tangent = glm::normalize(tangents[i_vertex]);
+    glm::vec3 bitangent(0.0f, 1.0f, 0.0f);
+    glm::vec3 normal(m_vertexes[m_n_coords * i_vertex + 3], m_vertexes[m_n_coords * i_vertex + 4], m_vertexes[m_n_coords * i_vertex + 5]);
+    glm::vec3 tangent = glm::normalize(glm::cross(bitangent, normal));
 
     // vertex's tangent coords inserted after xyz/normal/uv
     m_vertexes[m_n_coords * i_vertex + 8 ] = tangent.x;
