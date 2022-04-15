@@ -34,8 +34,9 @@ Model::Model(const std::string& path, Assimp::Importer& importer):
     // assign material's diffuse color to mesh
     set_mesh_color(material, i_mesh);
 
-    // assign first material's diffuse texture to mesh
-    set_mesh_texture(material, i_mesh);
+    // assign first material's diffuse & normal texture to mesh
+    set_mesh_texture(material, i_mesh, aiTextureType_DIFFUSE);
+    set_mesh_texture(material, i_mesh, aiTextureType_HEIGHT);
   }
 }
 
@@ -52,33 +53,40 @@ void Model::set_mesh_color(aiMaterial* material, unsigned int index) {
 }
 
 /**
- * Set mesh texture from material's diffuse texture image
+ * Set mesh texture from material's diffuse texture image (textures freed in `ModelRenderer`)
  *
  * @param material Material to extract texture from
  * @param index Array position of mesh
+ * @param type Texture type (diffuse, normal...)
  */
-void Model::set_mesh_texture(aiMaterial* material, unsigned int index) {
-  unsigned int n_textures_diffuse = material->GetTextureCount(aiTextureType_DIFFUSE);
-  std::cout << "n_textures_diffuse: " << n_textures_diffuse << '\n';
-
+void Model::set_mesh_texture(aiMaterial* material, unsigned int index, aiTextureType type) {
   // get path to image used in first diffuse texture
+  unsigned int n_textures_diffuse = material->GetTextureCount(type);
   aiString filename_image;
   unsigned int index_texture = 0;
-  material->GetTexture(aiTextureType_DIFFUSE, index_texture, &filename_image);
-  std::cout << "n_textures_diffuse: " << n_textures_diffuse << " - path_texture: " << filename_image.C_Str() << '\n';
+  material->GetTexture(type, index_texture, &filename_image);
+  std::cout << "n_textures: " << n_textures_diffuse << " - filename texture: " << filename_image.C_Str() << '\n';
 
-  // load image only if wasn't loaded before
+  // texture image already loaded before (meshes can share same texture)
   std::string path_image = m_directory + "/" + filename_image.C_Str();
   auto it_texture = m_textures_loaded.find(path_image);
   if (it_texture != m_textures_loaded.end()) {
-    meshes[index].texture = it_texture->second;
+    if (type == aiTextureType_DIFFUSE)
+      meshes[index].texture_diffuse = it_texture->second;
+    else if (type == aiTextureType_HEIGHT)
+      meshes[index].texture_normal = it_texture->second;
     return;
   }
 
-  // texture from image
-  Texture2D texture(Image{path_image});
+  // load texture from image
+  GLenum texture_unit = (type == aiTextureType_DIFFUSE) ? GL_TEXTURE0 : GL_TEXTURE1;
+  Texture2D texture(Image{path_image}, texture_unit);
   m_textures_loaded[path_image] = texture;
-  meshes[index].texture = texture;
+
+  if (type == aiTextureType_DIFFUSE)
+    meshes[index].texture_diffuse = texture;
+  else if (type == aiTextureType_HEIGHT)
+    meshes[index].texture_normal = texture;
 }
 
 /**
@@ -87,11 +95,19 @@ void Model::set_mesh_texture(aiMaterial* material, unsigned int index) {
  */
 bool Model::load_scene(Assimp::Importer& importer) {
   // flags ensures each face has 3 vertexes indices
-  m_scene = importer.ReadFile(m_path, aiProcess_Triangulate);
+  // calculate TBN matrix for normal mapping: https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+  m_scene = importer.ReadFile(m_path, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
 
   if (m_scene == NULL) {
     return false;
   }
 
   return true;
+}
+
+/* Free meshes textures (diffuse & normal) */
+void Model::free() {
+  for (const auto& pair : m_textures_loaded) {
+    pair.second.free();
+  }
 }

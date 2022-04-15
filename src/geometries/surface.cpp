@@ -32,11 +32,11 @@ void Surface::set_n_elements() {
  */
 std::vector<float> Surface::_get_vertexes() {
   return {
-    //coord(x,y)        texture(u,v)        normal(nx,ny,nz)
-    0.0f,     0.0f,     0.0f,     0.0f,     0.0f, 0.0f, 1.0f,
-    m_size.x, 0.0f,     m_size.x, 0.0f,     0.0f, 0.0f, 1.0f,
-    m_size.x, m_size.y, m_size.x, m_size.y, 0.0f, 0.0f, 1.0f,
-    0.0f,     m_size.y, 0.0f,     m_size.y, 0.0f, 0.0f, 1.0f,
+    //coord(x,y)        normal(nx,ny,nz)  texture(u,v)
+    0.0f,     0.0f,     0.0f, 0.0f, 1.0f, 0.0f,     0.0f,
+    m_size.x, 0.0f,     0.0f, 0.0f, 1.0f, m_size.x, 0.0f,
+    m_size.x, m_size.y, 0.0f, 0.0f, 1.0f, m_size.x, m_size.y,
+    0.0f,     m_size.y, 0.0f, 0.0f, 1.0f, 0.0f,     m_size.y,
   };
 };
 

@@ -29,10 +29,8 @@ This app was tested on the following drivers:
 
 # Resources
 - [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
-- [Backpack 3D model][backpack]: 3D model in obj ascii format.
 
 [health-bar]: https://opengameart.org/content/rpg-hud-bars
-[backpack]: https://learnopengl.com/Model-Loading/Model
 
 ---
 

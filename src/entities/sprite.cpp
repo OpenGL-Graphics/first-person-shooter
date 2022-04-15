@@ -13,8 +13,8 @@ Sprite::Sprite(const Texture2D& texture):
   m_program("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag"),
   renderer(m_program, VBO(Surface()), {
     {0, "position", 2, 7, 0},
-    {1, "texture_coord", 2, 7, 2},
-    {2, "normal", 3, 7, 4}
+    {1, "normal", 3, 7, 2},
+    {2, "texture_coord", 2, 7, 5},
   })
 {
   // vertex or fragment shaders failed to compile

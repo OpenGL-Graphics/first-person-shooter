@@ -35,8 +35,8 @@ void ModelRenderer::draw(const Uniforms& u, bool with_outlines) {
     // retrieve material color from mesh
     AssimpUtil::Mesh mesh = m_model.meshes[i_renderer];
     uniforms["color"] = mesh.color;
-    // uniforms["texture2d"] = mesh.texture;
-    uniforms["texture_diffuse"] = mesh.texture;
+    uniforms["texture_diffuse"] = mesh.texture_diffuse;
+    uniforms["texture_normal"] = mesh.texture_normal;
     Renderer renderer = renderers[i_renderer];
 
     if (with_outlines) {
@@ -47,7 +47,10 @@ void ModelRenderer::draw(const Uniforms& u, bool with_outlines) {
   }
 }
 
+/* Free loaded textures & vbo/vao buffers */
 void ModelRenderer::free() {
+  m_model.free();
+
   for (Renderer& renderer : renderers) {
     renderer.free();
   }

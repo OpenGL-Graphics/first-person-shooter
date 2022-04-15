@@ -21,6 +21,13 @@ Cylinder::Cylinder(int n_corners, float radius, float height):
   set_indices();
   set_normals();
   set_texture_coords();
+  set_tangents();
+
+  /*
+  for (unsigned int i_indice = 0; i_indice < m_indices.size(); ++i_indice) {
+    std::cout << m_indices[i_indice] << " ";
+  }
+  */
 }
 
 void Cylinder::set_positions() {
@@ -59,7 +66,12 @@ void Cylinder::set_normals() {
   unsigned int n_vertexes = m_vertexes.size() / m_n_coords;
   std::vector<glm::vec3> normals(n_vertexes, glm::vec3(0.0f));
 
-  for (size_t i_indice = 0; i_indice < m_indices.size() - 2; i_indice += 3) {
+  // skip triangles of bottom & top circles (hidden) to avoid further smoothing of normals
+  size_t i_indice = 0;
+  i_indice += 3 * m_n_corners;
+  i_indice += 3 * m_n_corners;
+
+  for (; i_indice < m_indices.size() - 2; i_indice += 3) {
     unsigned int i_vertex0 = m_indices[i_indice];
     unsigned int i_vertex1 = m_indices[i_indice + 1];
     unsigned int i_vertex2 = m_indices[i_indice + 2];
@@ -119,24 +131,60 @@ void Cylinder::set_indices() {
 
 /* Repeat uv-texture coords (i.e. uv > 1) to avoid stretching it */
 void Cylinder::set_texture_coords() {
-  const unsigned int offset_uv = 6;
-  unsigned int i_coord = offset_uv;
+  unsigned int i_coord = 0;
 
   float circumference = 2*M_PI * m_radius;
   float step = circumference / (m_n_corners - 1);
 
   for (auto v_circle : { 0.0f, m_height }) {
     // center of top/bottom circle (ignored)
-    m_vertexes[i_coord++] = 0.0f;
-    m_vertexes[i_coord++] = v_circle;
-    i_coord += offset_uv;
+    m_vertexes[i_coord + 6] = 0.0f;
+    m_vertexes[i_coord + 7] = v_circle;
+    i_coord += m_n_coords;
 
     // top/bottom circle corners
     for (unsigned int i_corner = 0; i_corner < m_n_corners; i_corner++) {
-      m_vertexes[i_coord++] = i_corner * step;
-      m_vertexes[i_coord++] = v_circle;
-      i_coord += offset_uv;
+      m_vertexes[i_coord + 6] = i_corner * step;
+      m_vertexes[i_coord + 7] = v_circle;
+      i_coord += m_n_coords;
     }
+  }
+}
+
+/* Tangent vector in TBN matrix (for normal mapping) */
+void Cylinder::set_tangents() {
+  unsigned int n_vertexes = m_vertexes.size() / m_n_coords;
+  std::vector<glm::vec3> tangents(n_vertexes, glm::vec3(0.0f));
+
+  for (size_t i_indice = 0; i_indice < m_indices.size() - 2; i_indice += 3) {
+    unsigned int i_vertex0 = m_indices[i_indice];
+    unsigned int i_vertex1 = m_indices[i_indice + 1];
+    unsigned int i_vertex2 = m_indices[i_indice + 2];
+
+    glm::vec3 vertex0 = {m_vertexes[m_n_coords * i_vertex0], m_vertexes[m_n_coords * i_vertex0 + 1], m_vertexes[m_n_coords * i_vertex0 + 2]};
+    glm::vec3 vertex1 = {m_vertexes[m_n_coords * i_vertex1], m_vertexes[m_n_coords * i_vertex1 + 1], m_vertexes[m_n_coords * i_vertex1 + 2]};
+    glm::vec3 vertex2 = {m_vertexes[m_n_coords * i_vertex2], m_vertexes[m_n_coords * i_vertex2 + 1], m_vertexes[m_n_coords * i_vertex2 + 2]};
+
+    // tangent vector always parallel to horizontal xz plane
+    glm::vec3 tangent = (vertex0.y == vertex1.y) ? vertex1 - vertex0 : vertex2 - vertex1;
+
+    // cross-prod. = zero vector for seam (same start & end point) => normalized to NaN
+    if (tangent != glm::vec3(0))
+      tangent = glm::normalize(tangent);
+
+    tangents[i_vertex0] += tangent;
+    tangents[i_vertex1] += tangent;
+    tangents[i_vertex2] += tangent;
+  }
+
+  // averaging sum of vectors is equivalent to normalizing it (same dir., diff. mag)
+  for (size_t i_vertex = 0; i_vertex < n_vertexes; ++i_vertex) {
+    glm::vec3 tangent = glm::normalize(tangents[i_vertex]);
+
+    // vertex's tangent coords inserted after xyz/normal/uv
+    m_vertexes[m_n_coords * i_vertex + 8 ] = tangent.x;
+    m_vertexes[m_n_coords * i_vertex + 9 ] = tangent.y;
+    m_vertexes[m_n_coords * i_vertex + 10] = tangent.z;
   }
 }
 

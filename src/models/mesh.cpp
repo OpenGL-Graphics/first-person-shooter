@@ -14,30 +14,38 @@ Mesh::Mesh(aiMesh* mesh):
   material = m_mesh->mMaterialIndex;
 }
 
-/* Set mesh vertexes consisting of positions, normals, and texture coord */
+/* Set mesh vertexes consisting of positions, normals, uv texture coord, and tangent (i.e. local x-axis) */
 void Mesh::set_vertexes() {
   aiVector3D* xyz_coords = m_mesh->mVertices;
   aiVector3D* normals_coords = m_mesh->mNormals;
   aiVector3D* texture_coords = m_mesh->mTextureCoords[0];
+  aiVector3D* tangents_coords = m_mesh->mTangents;
 
   unsigned int n_vertexes = m_mesh->mNumVertices;
-  unsigned int n_coords_position = 3;
-  unsigned int n_coords_normal = 3;
-  unsigned int n_coords_texture = 2;
-  unsigned int n_coords_vertex = n_coords_position + n_coords_normal;
-  if (texture_coords != NULL)  // not all meshes have texture coordinates
-    n_coords_vertex += n_coords_texture;
+  const unsigned int n_coords_position = 3;
+  const unsigned int n_coords_normal = 3;
+  const unsigned int n_coords_texture = 2;
+  const unsigned int n_coords_tangent = 3;
+
+  // not all meshes have normals (also tangents computing requires normals) & texture coordinates
+  unsigned int n_coords_vertex = n_coords_position;
+  n_coords_vertex += (normals_coords != NULL) ? n_coords_normal : 0;
+  n_coords_vertex += (texture_coords != NULL) ? n_coords_texture : 0;
+  n_coords_vertex += (tangents_coords != NULL) ? n_coords_tangent : 0;
 
   vertexes.resize(n_vertexes * n_coords_vertex);
   positions.resize(n_vertexes);
 
   for (size_t i_vertex = 0; i_vertex < n_vertexes; ++i_vertex) {
-    std::vector<float> vertex = {
-      xyz_coords[i_vertex].x, xyz_coords[i_vertex].y, xyz_coords[i_vertex].z,
-      normals_coords[i_vertex].x, normals_coords[i_vertex].y, normals_coords[i_vertex].z,
-    };
-    if (texture_coords != NULL)  // not all meshes have texture coordinates
-      vertex.insert(vertex.end(), {texture_coords[i_vertex].x, texture_coords[i_vertex].y});
+    std::vector<float> vertex = { xyz_coords[i_vertex].x, xyz_coords[i_vertex].y, xyz_coords[i_vertex].z };
+
+    // not all meshes have normals (also tangents computing requires normals) & texture coordinates
+    if (normals_coords != NULL)
+      vertex.insert(vertex.end(), { normals_coords[i_vertex].x, normals_coords[i_vertex].y, normals_coords[i_vertex].z });
+    if (texture_coords != NULL)
+      vertex.insert(vertex.end(), { texture_coords[i_vertex].x, texture_coords[i_vertex].y });
+    if (tangents_coords != NULL)
+      vertex.insert(vertex.end(), { tangents_coords[i_vertex].x, tangents_coords[i_vertex].y, tangents_coords[i_vertex].z });
 
     std::copy(vertex.begin(), vertex.end(), vertexes.begin() + i_vertex*n_coords_vertex);
     positions[i_vertex] = glm::vec3(xyz_coords[i_vertex].x, xyz_coords[i_vertex].y, xyz_coords[i_vertex].z);

@@ -18,26 +18,26 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
   // renderers for walls/floors
   m_renderer_wall(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {
     {0, "position", 2, 7, 0},
-    {1, "texture_coord", 2, 7, 2},
-    {2, "normal", 3, 7, 4},
+    {1, "normal", 3, 7, 2},
+    {2, "texture_coord", 2, 7, 5},
   }),
   m_renderer_floor(program_tile, VBO(Surface(glm::vec2(m_tilemap.n_cols - 1, m_tilemap.n_rows - 1))), {
     {0, "position", 2, 7, 0},
-    {1, "texture_coord", 2, 7, 2},
-    {2, "normal", 3, 7, 4},
+    {1, "normal", 3, 7, 2},
+    {2, "texture_coord", 2, 7, 5},
   }),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
   m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag"), {
-    {0, "position", 3, 8, 0},
+    {0, "position", 3, 11, 0},
   }),
 
   // window & wall above/below it
   m_window(Image("assets/images/surfaces/window.png")),
   m_renderer_wall_half(program_tile, VBO(Surface(glm::vec2(1.0f, m_height/2.0f - 1.0f/2.0f))), {
     {0, "position", 2, 7, 0},
-    {1, "texture_coord", 2, 7, 2},
-    {2, "normal", 3, 7, 4},
+    {1, "normal", 3, 7, 2},
+    {2, "texture_coord", 2, 7, 5},
   }),
 
   m_textures {

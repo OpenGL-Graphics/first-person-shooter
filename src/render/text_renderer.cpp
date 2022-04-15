@@ -27,11 +27,12 @@ void TextRenderer::draw_text(const std::string& text, const Uniforms& u) {
     // Origin is lower-left corner for texture & upper-left corner for bitmap
     float x_prime = x + bearing_x;
     const std::vector<float> vertexes = {
-      x_prime,         bearing_y,             0.0f, 0.0f,
-      x_prime + width, bearing_y,             1.0f, 0.0f,
-      x_prime + width, -(height - bearing_y), 1.0f, 1.0f,
+      //coord(x,y)                            normal(nx,ny,nz)  texture(u,v)
+      x_prime,         bearing_y,             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+      x_prime + width, bearing_y,             0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+      x_prime + width, -(height - bearing_y), 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
       // x_prime + width, -(height - bearing_y), 1.0f, 1.0f,
-      x_prime,         -(height - bearing_y), 0.0f, 1.0f,
+      x_prime,         -(height - bearing_y), 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
       // x_prime,         bearing_y,             0.0f, 0.0f,
     };
     // use EBO to pass vertexes indices

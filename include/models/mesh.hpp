@@ -23,7 +23,8 @@ namespace AssimpUtil {
 
     unsigned int material;
     glm::vec3 color;
-    Texture2D texture;
+    Texture2D texture_diffuse;
+    Texture2D texture_normal;
 
     Mesh();
     Mesh(aiMesh* mesh);

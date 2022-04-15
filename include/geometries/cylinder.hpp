@@ -9,8 +9,8 @@ public:
   unsigned int get_n_elements() const override;
 
 private:
-  /* # of coords by vertex (xyz & normal & texture coords) */
-  const unsigned int m_n_coords = 8;
+  /* # of coords by vertex (xyz & normal & texture coords & tangent) */
+  const unsigned int m_n_coords = 11;
 
   int m_n_corners;
   float m_radius;
@@ -20,6 +20,7 @@ private:
   void set_normals();
   void set_indices();
   void set_texture_coords();
+  void set_tangents();
 };
 
 #endif // CYLINDER_HPP

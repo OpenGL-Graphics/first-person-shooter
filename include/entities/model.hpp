@@ -1,5 +1,5 @@
-#ifndef GUN_HPP
-#define GUN_HPP
+#ifndef MODEL_ENTITY_HPP
+#define MODEL_ENTITY_HPP
 
 #include "render/model_renderer.hpp"
 
@@ -21,4 +21,4 @@ public:
   void free();
 };
 
-#endif // GUN_HPP
+#endif // MODEL_ENTITY_HPP

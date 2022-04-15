@@ -20,15 +20,13 @@
 
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
-#include "render/model_renderer.hpp"
 #include "render/level_renderer.hpp"
 
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
 #include "controls/key_handler.hpp"
 #include "controls/mouse_handler.hpp"
-#include "models/mesh.hpp"
-#include "models/model.hpp"
+
 #include "profiling/profiler.hpp"
 #include "levels/tilemap.hpp"
 #include "audio/audio.hpp"
@@ -71,6 +69,7 @@ int main() {
 
   // camera
   Camera camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  // Camera camera(glm::vec3(13.0f, 2.0f, 5.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
   // create then install vertex & fragment shaders on GPU
   // TODO: Factory to produce singletons `Program`s to avoid duplication in Gun & Player
@@ -137,10 +136,15 @@ int main() {
   Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {1, "texture_coord", 3, 12, 6}});
   // Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {1, "normal", 3, 12, 9}});
-  Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "texture_coord", 2, 7, 2}, {2, "normal", 3, 7, 4}});
+  Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
-  Renderer cylinder(pgm_texture, VBO(Cylinder(32, 0.25f, 3.5f)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
+  Renderer cylinder(pgm_texture, VBO(Cylinder(32, 0.25f, 3.5f)), {
+    {0, "position", 3, 11, 0},
+    {1, "normal", 3, 11, 3},
+    {2, "texture_coord", 2, 11, 6},
+    {3, "tangent", 3, 11, 8},
+  });
   Renderer gizmo(pgm_basic, VBO(Gizmo()), { {0, "position", 3, 3, 0} });
   Renderer grid(pgm_basic, VBO(GridLines()), { {0, "position", 3, 3, 0} });
 
@@ -159,19 +163,22 @@ int main() {
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
   Font font("assets/fonts/Vera.ttf");
-  TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 4, 0}, {1, "texture_coord", 2, 4, 2}}, font);
+  TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 7, 0}, {2, "texture_coord", 2, 7, 5}}, font);
 
   // load 3d model from .obj file & its renderer
   Profiler profiler;
   profiler.start();
   Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture, {
-    {0, "position", 3, 8, 0},
-    {1, "normal", 3, 8, 3},
-    {2, "texture_coord", 2, 8, 6}
+    {0, "position", 3, 11, 0},
+    {1, "normal", 3, 11, 3},
+    {2, "texture_coord", 2, 11, 6},
+    {3, "tangent", 3, 11, 8},
   });
-  Model suzanne(importer, "assets/models/suzanne/suzanne.obj", pgm_matcap, {
-    {0, "position", 3, 8, 0},
-    {1, "normal", 3, 8, 3},
+  Model suzanne(importer, "assets/models/suzanne/suzanne.obj", pgm_texture, {
+    {0, "position", 3, 11, 0},
+    {1, "normal", 3, 11, 3},
+    {2, "texture_coord", 2, 11, 6},
+    {3, "tangent", 3, 11, 8},
   });
   Player player(importer);
   player.calculate_bounding_box();
@@ -431,12 +438,6 @@ int main() {
       {"texture_matcap", texture_matcap},
     });
 
-    // render 3d model for suzanne with matcap shader
-    suzanne.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 2.0f, 2.0f)), view, projection3d });
-    suzanne.draw({
-      {"texture_matcap", texture_matcap},
-    });
-
     // draw color cube (rotated around x-axis)
     /*
     cube_color.set_transform({
@@ -491,7 +492,7 @@ int main() {
 
     // calculate normal matrix only once (instead of doing it in shader for every vertex)
     // normal vec to world space (when non-uniform scaling): https://learnopengl.com/Lighting/Basic-Lighting
-    glm::mat4 normal_mat = glm::inverseTranspose(model_gun);
+    glm::mat4 normal_mat_gun = glm::inverseTranspose(model_gun);
 
     gun.set_transform({ model_gun, glm::mat4(1.0f), projection3d });
     gun.draw({
@@ -500,7 +501,20 @@ int main() {
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
 
-      {"normal_mat", normal_mat},
+      {"normal_mat", normal_mat_gun},
+    });
+
+    // render 3d model for suzanne with matcap shader
+    glm::mat4 model_suzanne = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 2.0f, 2.0f));
+    glm::mat4 normal_mat_suzanne = glm::inverseTranspose(model_suzanne);
+    suzanne.set_transform({ model_suzanne, view, projection3d });
+    suzanne.draw({
+      {"position_camera", camera.position},
+      {"positions_lights[0]", lights[0].position},
+      {"positions_lights[1]", lights[1].position},
+      {"positions_lights[2]", lights[2].position},
+
+      {"normal_mat", normal_mat_suzanne},
     });
 
     // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
@@ -577,7 +591,7 @@ int main() {
   gizmo.free();
   grid.free();
 
-  // free 2d & 3d entities
+  // free 3d entities
   gun.free();
   suzanne.free();
 
