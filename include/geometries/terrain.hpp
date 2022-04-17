@@ -15,8 +15,9 @@ public:
   unsigned int get_n_elements() const override;
 
 private:
-  /* used to magnify/reduce size of grid */
-  const float scale = 1.0f / 100;
+  /* used to magnify/reduce size of grid (horizontally & vertically) */
+  const float xz_scale = 1.0f / 5;
+  const float y_scale = 1.0f / 100;
 
   /* heightmap image */
   Image m_image;

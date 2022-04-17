@@ -3,6 +3,8 @@
 #include <assimp/postprocess.h>
 
 #include "models/model.hpp"
+#include "models/model_exception.hpp"
+
 #include "texture.hpp"
 
 using namespace AssimpUtil;
@@ -17,8 +19,7 @@ Model::Model(const std::string& path, Assimp::Importer& importer):
   m_directory(m_path.substr(0, m_path.find_last_of('/')))
 {
   if (!load_scene(importer)) {
-    std::cout << "Failed to load scene from 3D model" << '\n';
-    return;
+    throw ModelException();
   }
 
   // append each mesh to use for render later

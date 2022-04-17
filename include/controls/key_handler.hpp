@@ -2,7 +2,7 @@
 #define KEY_HANDLER_HPP
 
 #include "window.hpp"
-#include "entities/player.hpp"
+#include "navigation/camera.hpp"
 
 /**
  * Subject class in the Observer design pattern

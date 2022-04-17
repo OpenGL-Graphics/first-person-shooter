@@ -28,8 +28,14 @@ $ apt install libglfw3-dev libassimp-dev
 
 # Resources
 - [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
+- Textures downloaded from [textures.com][textures.com].
+- [Low poly sniper][lowpoly-sniper]
+- [Samurai][samurai]
 
 [health-bar]: https://opengameart.org/content/rpg-hud-bars
+[textures.com]: https://www.textures.com
+[lowpoly-sniper]: https://opengameart.org/content/low-poly-stylized-sniper
+[samurai]: https://opengameart.org/content/3d-lowpoly-samurai-with-animations-fbx-format
 
 ---
 

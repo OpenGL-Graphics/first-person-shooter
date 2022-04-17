@@ -6,7 +6,7 @@
 /* static class */
 class Targets {
 public:
-  static std::vector<Target> cubes;
+  static std::vector<Target> samurais;
   static void add(const Target& target);
   static void free();
 

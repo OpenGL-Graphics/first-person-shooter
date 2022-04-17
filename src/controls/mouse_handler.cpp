@@ -38,7 +38,10 @@ void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, in
     // play gun shot sound
     m_audio->play_2d("assets/audio/gun_shot.mp3");
 
-    for (Target& target : Targets::cubes) {
+    for (Target& target : Targets::samurais) {
+      if (target.is_dead)
+        continue;
+
       BoundingBox bounding_box = target.bounding_box;
       bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 

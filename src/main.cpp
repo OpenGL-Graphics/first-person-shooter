@@ -131,7 +131,6 @@ int main() {
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
   Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
-  // Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {1, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
@@ -228,11 +227,14 @@ int main() {
     cube_basic.set_transform({ model_cube_outline, view, projection3d });
     cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
+    // draw textured terrain using triangle strips
+    terrain.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.5f, -14)), view, projection3d });
+    terrain.draw();
+
     // draw level tiles surfaces on right view
     level.set_transform({ glm::mat4(1.0f), view, projection3d });
     level.draw({
       {"position_camera", camera.position},
-
       {"positions_lights[0]", lights[0].position},
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
@@ -279,10 +281,6 @@ int main() {
     });
     surface.draw({ {"texture2d", texture_framebuffer } });
     ///
-
-    // draw textured terrain using triangle strips
-    terrain.set_transform({ glm::mat4(1.0f), view, projection3d });
-    terrain.draw();
 
     // draw animated & textured wave from plane using triangle strips
     plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
@@ -392,23 +390,6 @@ int main() {
     grid.set_transform({ model_grid, view, projection3d });
     grid.draw({ {"color", glm::vec3(1.0f, 1.0f, 1.0f)} }, GL_LINES);
 
-
-    // draw illuminated cube
-    /*
-    cube_light.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 4.0f, 4.0f)), view, projection3d });
-    cube_light.draw({
-      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
-      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
-      {"material.shininess", 32.0f},
-      {"light.position", lights[0].position},
-      {"light.ambiant", 0.2f * lights[0].color},
-      {"light.diffuse", 0.5f * lights[0].color},
-      {"light.specular", lights[0].color},
-      {"position_camera", camera.position},
-    });
-    */
-
     // draw shaded cube using matcap
     cube_matcap.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 6.0f)), view, projection3d });
     cube_matcap.draw({
@@ -445,8 +426,8 @@ int main() {
       {"normal_mat", normal_mat_gun},
     });
 
-    // render 3d model for suzanne with matcap shader
-    glm::mat4 model_suzanne = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 2.0f, 2.0f));
+    // render 3d model for suzanne with normal mapping
+    glm::mat4 model_suzanne = glm::translate(glm::mat4(1.0f), glm::vec3(8.0f, 2.0f, 2.0f));
     glm::mat4 normal_mat_suzanne = glm::inverseTranspose(model_suzanne);
     suzanne.set_transform({ model_suzanne, view, projection3d });
     suzanne.draw({
@@ -521,7 +502,6 @@ int main() {
   level.free();
   terrain.free();
   cube_basic.free();
-  // cube_light.free();
   cube_matcap.free();
   surface.free();
   surface_glyph.free();

@@ -9,7 +9,7 @@
  * as vertexes indices start from 0 for all meshes (otherwise they would overwrite)
  */
 struct ModelRenderer {
-  // used by class `characters/Player`
+  /* used by class `entities/Player` & `entities/Target` to calculate bbox */
   std::vector<Renderer> renderers;
 
   ModelRenderer(const Program& program, const AssimpUtil::Model& model, const std::vector<Attribute>& attributes);

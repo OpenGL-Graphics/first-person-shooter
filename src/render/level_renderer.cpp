@@ -80,8 +80,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
           angle = glm::radians(-90.0f);
           break;
         case Tilemap::Tiles::ENEMMY: // non-mobile enemies
-          glm::vec3 position_target = position_tile + glm::vec3(0.0f, 0.5f, 0.0f);
-          Targets::add(Target(position_target));
+          Targets::add(Target(importer, position_tile));
           continue;
       }
 
@@ -110,15 +109,14 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
  * @param uniforms Uniforms passed to shader
  */
 void LevelRenderer::draw(const Uniforms& u) {
-  Uniforms uniforms = u;
-
   // draw floor & ceiling & targets
-  draw_floor(uniforms);
-  draw_ceiling(uniforms);
-  draw_targets(uniforms);
+  draw_floor(u);
+  draw_ceiling(u);
+  draw_targets(u);
 
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
     for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
+      Uniforms uniforms = u;
       Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
       glm::vec3 position_tile = {i_col, 0, i_row};
       position_tile += m_position;
@@ -227,8 +225,17 @@ void LevelRenderer::draw_window(const Uniforms& u, const glm::vec3& position_til
 
 /* Draw targets */
 void LevelRenderer::draw_targets(const Uniforms& u) {
-  for (Target& target : Targets::cubes) {
-    target.set_transform(m_transformation);
+  Uniforms uniforms = u;
+
+  for (Target& target : Targets::samurais) {
+    // add-up level & target translation offsets
+    glm::vec3 position_level = m_transformation.model[3];
+    glm::vec3 position = position_level + target.position;
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+
+    glm::mat4 normal_mat = glm::inverseTranspose(model);
+    uniforms["normal_mat"] = normal_mat;
+    target.set_transform({ model, m_transformation.view, m_transformation.projection });
     target.draw(u);
   }
 }
