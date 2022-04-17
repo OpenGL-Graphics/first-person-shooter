@@ -78,13 +78,11 @@ int main() {
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
   Program pgm_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
-  Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   Program pgm_matcap("assets/shaders/matcap.vert", "assets/shaders/matcap.frag");
   Program pgm_plane("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag");
-  if (pgm_texture_cube.has_failed() || pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_tile.has_failed() ||
-      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed() ||
-      pgm_plane.has_failed()) {
+  if (pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_tile.has_failed() || pgm_light.has_failed() ||
+      pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed() || pgm_plane.has_failed()) {
     window.destroy();
     throw ShaderException();
   }
@@ -133,7 +131,6 @@ int main() {
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
   Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
-  Renderer cube_texture(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {1, "texture_coord", 3, 12, 6}});
   // Renderer cube_light(pgm_light, vbo_cube, {{0, "position", 3, 12, 0}, {0, "normal", 3, 12, 9}});
   Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {1, "normal", 3, 12, 9}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
@@ -180,8 +177,6 @@ int main() {
     {2, "texture_coord", 2, 11, 6},
     {3, "tangent", 3, 11, 8},
   });
-  Player player(importer);
-  player.calculate_bounding_box();
   profiler.stop();
   profiler.print("Loading 3D models");
 
@@ -190,27 +185,12 @@ int main() {
   glm::mat4 projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0e-3f, 50.f);
   glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
 
-  // cubes to collide with (cube_texture)
-  std::vector<glm::vec3> positions = {
-    glm::vec3(-1.0f, 0.0f, -2.0f),
-    glm::vec3(-1.0f, 0.0f, -3.0f),
-    glm::vec3(-1.0f, 0.0f, -4.0f),
-  };
-
-  // targets to mouse cursor intersection
-  /*
-  Target target_cube_basic(pgm_basic);
-  Target target_cube_texture(pgm_texture_cube);
-  Target target_cube_light(pgm_light);
-  std::vector<Target *> targets = {&target_cube_basic, &target_cube_texture, &target_cube_light};
-  */
-
   // callback for processing mouse click (after init static members)
   MouseHandler::init(&window, &camera, &audio);
   window.attach_mouse_listeners(MouseHandler::on_mouse_move, MouseHandler::on_mouse_click, MouseHandler::on_mouse_scroll);
 
   // handler for keyboard inputs
-  KeyHandler key_handler(window, camera, player);
+  KeyHandler key_handler(window, camera);
 
   // enable depth test & blending & stencil test (for outlines)
   glEnable(GL_DEPTH_TEST);
@@ -221,9 +201,6 @@ int main() {
 
   // main loop
   while (!window.is_closed()) {
-    // orient player's movements relative to camera horizontal angle (yaw)
-    player.orient(camera);
-
     // update transformation matrices (camera fov changes on zoom)
     view = camera.get_view();
     projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 0.5f, 32.0f);
@@ -438,42 +415,6 @@ int main() {
       {"texture_matcap", texture_matcap},
     });
 
-    // draw color cube (rotated around x-axis)
-    /*
-    cube_color.set_transform({
-      glm::rotate(
-        glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f)),
-        glm::radians(45.0f),
-        glm::vec3(1.0f, 0.0f, 0.0f)
-      ),
-      view, projection3d });
-    target_cube_color.draw();
-    */
-
-    // draw 3x texture cubes
-    /*
-    std::vector<BoundingBox> bounding_boxes;
-    for (const glm::vec3& position : positions) {
-      cube_texture.set_transform({ glm::translate(glm::mat4(1.0f), position), view, projection3d });
-      target_cube_texture.draw({ {"texture3d", texture_cube} });
-      bounding_boxes.push_back(cube_texture.bounding_box);
-    }
-    */
-
-    // draw textured cube 3d model
-    player.set_transform({ glm::mat4(1.0f), view, projection3d });
-    player.draw();
-
-
-    // remove static textured cubes on collision with moving PC
-    /*
-    int i_bounding_box;
-    if ((i_bounding_box = player.bounding_box.check_collision(bounding_boxes)) != BoundingBox::NO_COLLISION) {
-      std::cout << "Collision with " << i_bounding_box << '\n';
-      positions.erase(positions.begin() + i_bounding_box);
-    }
-    */
-
     // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin
     // stick gun at bottom of screen
@@ -580,7 +521,6 @@ int main() {
   level.free();
   terrain.free();
   cube_basic.free();
-  cube_texture.free();
   // cube_light.free();
   cube_matcap.free();
   surface.free();
@@ -597,7 +537,6 @@ int main() {
 
   // destroy shaders programs
   pgm_basic.free();
-  pgm_texture_cube.free();
   pgm_texture.free();
   pgm_texture_surface.free();
   pgm_tile.free();

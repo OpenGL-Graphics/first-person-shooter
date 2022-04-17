@@ -1,14 +1,13 @@
 #include "controls/key_handler.hpp"
 
-KeyHandler::KeyHandler(const Window& window, Camera& camera, Player& pc):
+KeyHandler::KeyHandler(const Window& window, Camera& camera):
   m_window(window),
-  m_camera(camera),
-  m_pc(pc)
+  m_camera(camera)
 {
 }
 
 /**
- * Respond to keyboard inputs by notifying observers (iow. by moving camera/pc)
+ * Respond to keyboard inputs by notifying observers (iow. by moving camera)
  * Listener for keypress events, called on every frame of mainloop
  */
 void KeyHandler::on_keypress() {
@@ -35,14 +34,4 @@ void KeyHandler::on_keypress() {
     if (m_window.is_key_pressed(GLFW_KEY_R))
       m_camera.move(Direction::UP);
   }
-
-  // move pc (textured cube)
-  if (m_window.is_key_pressed(GLFW_KEY_UP))
-    m_pc.move(Direction::FORWARD);
-  if (m_window.is_key_pressed(GLFW_KEY_DOWN))
-    m_pc.move(Direction::BACKWARD);
-  if (m_window.is_key_pressed(GLFW_KEY_LEFT))
-    m_pc.move(Direction::LEFT);
-  if (m_window.is_key_pressed(GLFW_KEY_RIGHT))
-    m_pc.move(Direction::RIGHT);
 }

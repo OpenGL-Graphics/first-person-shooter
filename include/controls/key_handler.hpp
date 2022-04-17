@@ -6,11 +6,11 @@
 
 /**
  * Subject class in the Observer design pattern
- * receives input from keyboard and notifies (i.e. moves) PC & camera respectively
+ * receives input from keyboard and notifies (i.e. moves) camera
  */
 class KeyHandler {
 public:
-  KeyHandler(const Window& window, Camera& camera, Player& pc);
+  KeyHandler(const Window& window, Camera& camera);
   void on_keypress();
 
 private:
@@ -18,7 +18,6 @@ private:
 
   /* Observers (references so they can be modified) */
   Camera& m_camera;
-  Player& m_pc;
 };
 
 #endif // KEY_HANDLER_HPP
