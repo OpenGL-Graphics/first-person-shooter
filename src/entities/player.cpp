@@ -19,8 +19,13 @@ Player::Player(Assimp::Importer& importer):
 void Player::calculate_bounding_box() {
   std::vector<glm::vec3> renderers_bounds;
   for (Renderer& renderer : m_renderer.renderers) {
-    renderers_bounds.push_back(renderer.bounding_box.min);
-    renderers_bounds.push_back(renderer.bounding_box.max);
+    // calculate bounding box from positions in local coords in vbo
+    // then update bounding box in world coords from model matrix (avoids incremental translation)
+    BoundingBox bounding_box(renderer.vbo.positions);
+    bounding_box.transform(m_transformation.model);
+
+    renderers_bounds.push_back(bounding_box.min);
+    renderers_bounds.push_back(bounding_box.max);
   }
 
   bounding_box = BoundingBox(renderers_bounds);
@@ -48,9 +53,26 @@ void Player::move(Direction direction) {
 
   // move meshes & recalculate model's bounding box
   for (Renderer& renderer : m_renderer.renderers) {
-    renderer.move(offset);
+    move_renderer(offset);
   }
   calculate_bounding_box();
+}
+
+/**
+ * Translate from current position (model matrix) by given offset
+ * Note: bounding box is in world coords while vertexes are in local coords,
+ *       hence the different transformation matrices.
+ */
+void Player::move_renderer(const glm::vec3& offset) {
+  // translation vector at 4th column of transformation matrix (i.e. model matrix)
+  // vertexes in local coords, hence new_position = old_position + offset
+  glm::vec3 position = m_transformation.model[3];
+  position += offset;
+  m_transformation.model = glm::translate(glm::mat4(1.0f), position);
+
+  // translate bbox instead of reclalculating it each time (like `set_transform()`)
+  // update bounding box in world coords using offset
+  bounding_box.transform(glm::translate(glm::mat4(1.0f), offset));
 }
 
 /**
@@ -81,7 +103,8 @@ void Player::draw(const Uniforms& uniforms) {
 }
 
 void Player::set_transform(const Transformation& t) {
-  m_renderer.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 2.5f, 10.0f)), t.view, t.projection });
+  m_transformation = { glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 2.5f, 10.0f)), t.view, t.projection };
+  m_renderer.set_transform(m_transformation);
 }
 
 /* Free renderer (vao/vbo buffers), and shader program */

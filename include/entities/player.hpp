@@ -3,8 +3,10 @@
 
 #include "render/model_renderer.hpp"
 #include "navigation/camera.hpp"
+#include "math/transformation.hpp"
+#include "physics/bounding_box.hpp"
 
-/* Player character */
+/* Player character (Unused) */
 struct Player {
   /* for collision detection */
   BoundingBox bounding_box;
@@ -30,6 +32,11 @@ private:
   /* delegate drawing to model renderer */
   AssimpUtil::Model m_model;
   ModelRenderer m_renderer;
+
+  /* used to move (translate) player */
+  Transformation m_transformation;
+
+  void move_renderer(const glm::vec3& offset);
 };
 
 #endif // PLAYER_HPP

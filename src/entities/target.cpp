@@ -37,7 +37,13 @@ void Target::draw(const Uniforms& uniforms) {
  * Translate target to position from tilemap
  */
 void Target::set_transform(const Transformation& t) {
-  renderer.set_transform({ glm::translate(glm::mat4(1.0f), m_position), t.view, t.projection });
+  Transformation transformation = { glm::translate(glm::mat4(1.0f), m_position), t.view, t.projection };
+  renderer.set_transform(transformation);
+
+  // calculate bounding box from positions in local coords in vbo
+  // then update bounding box in world coords from model matrix (avoids incremental translation)
+  bounding_box = BoundingBox(renderer.vbo.positions);
+  bounding_box.transform(transformation.model);
 }
 
 /* Free renderer (vao/vbo buffers) & shader program */

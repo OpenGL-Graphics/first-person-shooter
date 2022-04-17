@@ -3,8 +3,8 @@
 #include "render/text_renderer.hpp"
 #include "geometries/surface.hpp"
 
-TextRenderer::TextRenderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes, const Font& font):
-  Renderer(program, vbo, attributes),
+TextRenderer::TextRenderer(const Program& program, const VBO& vertex_buffer, const std::vector<Attribute>& attributes, const Font& font):
+  Renderer(program, vertex_buffer, attributes),
   m_glyphs(font.extract_glyphs())
 {
 }
@@ -36,7 +36,7 @@ void TextRenderer::draw_text(const std::string& text, const Uniforms& u) {
       // x_prime,         bearing_y,             0.0f, 0.0f,
     };
     // use EBO to pass vertexes indices
-    m_vbo.update(Surface(vertexes));
+    vbo.update(Surface(vertexes));
 
     // render character & advance to following one
     Renderer::draw(uniforms);

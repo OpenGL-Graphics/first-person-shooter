@@ -2,6 +2,7 @@
 #define TARGET_HPP
 
 #include "render/renderer.hpp"
+#include "physics/bounding_box.hpp"
 
 /**
  * Target to destroy on intersection with mouse cursor
@@ -16,6 +17,9 @@ private:
 
 public:
   Renderer renderer;
+
+  /* for collision detection */
+  BoundingBox bounding_box;
 
   /* kill target on intersection with mouse cursor */
   bool is_dead;

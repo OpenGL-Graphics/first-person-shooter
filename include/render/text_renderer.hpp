@@ -7,7 +7,7 @@
 
 class TextRenderer : public Renderer {
 public:
-  TextRenderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes, const Font& font);
+  TextRenderer(const Program& program, const VBO& vertex_buffer, const std::vector<Attribute>& attributes, const Font& font);
   void draw_text(const std::string& text, const Uniforms& u={});
   Glyphs get_glyphs() const;
 

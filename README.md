@@ -22,10 +22,9 @@ To install the needed dependencies on Ubuntu:
 $ apt install libglfw3-dev libassimp-dev
 ```
 
-# Test
-This app was tested on the following drivers:
-- Opengl-3.0 & GLSL-1.30
-- Opengl-4.6 & GLSL-4.60
+# Requirements
+- Opengl 3.3+
+- GLSL 3.3+
 
 # Resources
 - [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.

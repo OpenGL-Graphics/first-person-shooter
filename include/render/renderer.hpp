@@ -8,31 +8,22 @@
 #include "vertexes/attribute.hpp"
 #include "vertexes/vao.hpp"
 #include "vertexes/vbo.hpp"
-#include "physics/bounding_box.hpp"
 #include "math/transformation.hpp"
 
 struct Renderer {
-  BoundingBox bounding_box;
-  /* Used to translate level's surfaces (i.e. tiles) */
-  glm::mat4 model_mat;
+  /* accessed in derived class `TextRenderer` & in `Player` */
+  VBO vbo;
 
-  /* Used in `LevelRenderer` */
-  Transformation transformation;
-
-  Renderer(const Program& program, const VBO& vbo, const std::vector<Attribute>& attributes);
+  Renderer(const Program& program, const VBO& vertex_buffer, const std::vector<Attribute>& attributes);
   virtual void draw(const Uniforms& u={}, GLenum mode=GL_TRIANGLES, unsigned int count=0, size_t offset=0) final;
   void draw_with_outlines(const Uniforms& u);
   virtual void free() final;
   void set_transform(const Transformation& t);
-  void move(const glm::vec3& offset);
-
-protected:
-  // accessed in derived class `TextRenderer`
-  VBO m_vbo;
 
 private:
   VAO m_vao;
   Program m_program;
+  Transformation m_transformation;
 };
 
 #endif // RENDERER_HPP

@@ -4,6 +4,7 @@
 #include "math/transformation.hpp"
 #include "globals/score.hpp"
 #include "globals/targets.hpp"
+#include "physics/bounding_box.hpp"
 
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 Camera* MouseHandler::m_camera;
@@ -38,7 +39,7 @@ void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, in
     m_audio->play_2d("assets/audio/gun_shot.mp3");
 
     for (Target& target : Targets::cubes) {
-      BoundingBox bounding_box = target.renderer.bounding_box;
+      BoundingBox bounding_box = target.bounding_box;
       bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 
       // remove target & increase score on intersection
