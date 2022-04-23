@@ -200,6 +200,9 @@ int main() {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
 
+  // take this line as a ref. to calculate initial fps (not `glfwInit()`)
+  window.init_timer();
+
   // main loop
   while (!window.is_closed()) {
     // update transformation matrices (camera fov changes on zoom)
@@ -485,6 +488,9 @@ int main() {
 
     // continuous jumping/falling after press on <spacebar>
     camera.update();
+
+    // calculate fps
+    window.show_fps();
   }
 
   // destroy textures
