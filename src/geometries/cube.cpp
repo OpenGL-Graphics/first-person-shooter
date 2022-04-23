@@ -5,6 +5,7 @@
  *   - u, v, w: in [0, 1] with point (0, 0) being lower-left corner,
  *              if outside the range, GL_CLAMP_TO_EDGE can clamp coords in [0, 1]
  * https://www.khronos.org/opengl/wiki/Cubemap_Texture
+ * https://learnopengl.com/Advanced-OpenGL/Cubemaps
  */
 #include "geometries/cube.hpp"
 

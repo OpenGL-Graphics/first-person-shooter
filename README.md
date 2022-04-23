@@ -28,7 +28,7 @@ $ apt install libglfw3-dev libassimp-dev
 
 # Resources
 - [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
-- Textures downloaded from [textures.com][textures.com].
+- Textures (incl. skybox) downloaded from [textures.com][textures.com].
 - [Low poly sniper][lowpoly-sniper]
 - [Samurai][samurai]
 

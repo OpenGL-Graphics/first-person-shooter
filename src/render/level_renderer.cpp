@@ -80,6 +80,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
           angle = glm::radians(-90.0f);
           break;
         case Tilemap::Tiles::ENEMMY: // non-mobile enemies
+          // TODO: same instance should be drawn multiple times
           Targets::add(Target(importer, position_tile));
           continue;
       }

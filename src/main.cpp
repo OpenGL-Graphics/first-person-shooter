@@ -76,37 +76,39 @@ int main() {
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
+  Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
   Program pgm_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  Program pgm_matcap("assets/shaders/matcap.vert", "assets/shaders/matcap.frag");
   Program pgm_plane("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag");
-  if (pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_tile.has_failed() || pgm_light.has_failed() ||
-      pgm_basic.has_failed() || pgm_text.has_failed() || pgm_matcap.has_failed() || pgm_plane.has_failed()) {
+  if (pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_cube.has_failed() || pgm_tile.has_failed() ||
+      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_plane.has_failed()) {
     window.destroy();
     throw ShaderException();
   }
 
-  // 3D cube texture
+  // 3D cube texture for skybox (left-handed coords system for cubemaps)
+  // See faces order: https://www.khronos.org/opengl/wiki/Cubemap_Texture
   std::vector<std::string> paths_images {
-    "assets/images/cube/brick1.jpg",
-    "assets/images/cube/brick1.jpg",
-    "assets/images/cube/roof.jpg",
-    "assets/images/cube/roof.jpg",
-    "assets/images/cube/brick2.jpg",
-    "assets/images/cube/brick2.jpg",
+    "assets/images/skybox/posx.jpg", // pos-x (right face)
+    "assets/images/skybox/negx.jpg", // neg-x (left face)
+    "assets/images/skybox/posy.jpg", // pos-y (top face)
+    "assets/images/skybox/negy.jpg", // neg-y (bottom face)
+    "assets/images/skybox/posz.jpg", // pos-z (front face)
+    "assets/images/skybox/negz.jpg", // neg-z (back face)
   };
+
+  // cubemap images have their origin at upper-left corner (=> don't flip)
+  // https://stackoverflow.com/a/11690553/2228912
   std::vector<Image> images;
-  std::transform(paths_images.begin(), paths_images.end(), std::back_inserter(images), [](const std::string& path) { return Image(path); });
-  Texture3D texture_cube(images);
+  std::transform(paths_images.begin(), paths_images.end(), std::back_inserter(images), [](const std::string& path) {
+    return Image(path, false);
+  });
+  Texture3D texture_skybox(images);
 
   // 2D textures for HUDS
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
   Texture2D texture_surface_crosshair(Image("assets/images/surfaces/crosshair.png"));
-
-  // matcap texture (use 2nd texture slot as 1st one used for 3d model's texture, ie. Suzanne)
-  // Texture2D texture_matcap(Image("assets/images/matcap/046363_0CC3C3_049B9B_04ACAC-512px.png"), GL_TEXTURE1);
-  Texture2D texture_matcap(Image("assets/images/matcap/326666_66CBC9_C0B8AE_52B3B4-512px.png"), GL_TEXTURE1);
 
   // 2D texture for flat grid plane (shape made as a sin wave in vertex shader)
   Texture2D texture_plane(Image("assets/images/plane/wave.png"));
@@ -130,8 +132,8 @@ int main() {
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   VBO vbo_cube(Cube{});
-  Renderer cube_basic(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
-  Renderer cube_matcap(pgm_matcap, vbo_cube, {{0, "position", 3, 12, 0}, {1, "normal", 3, 12, 9}});
+  Renderer cube(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
+  Renderer skybox(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {1, "texture_coord", 3, 12, 6}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
@@ -210,10 +212,10 @@ int main() {
       framebuffer.clear({ 1.0f, 1.0f, 1.0f, 1.0f });
 
       // draw red cube to texture attached to framebuffer
-      cube_basic.set_transform({
+      cube.set_transform({
         glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.0f, 0.0f)),
         view, projection3d });
-      cube_basic.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f) } });
+      cube.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f) } });
       framebuffer.unbind();
     }
 
@@ -221,11 +223,25 @@ int main() {
     glClearColor(background.r, background.g, background.b, background.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+    // draw skybox
+    // https://learnopengl.com/Advanced-OpenGL/Cubemaps
+    // disable depth testing so skybox is always at background
+    // mandatory bcos of below otherwise cube will hide everything else (coz it closest to camera)
+    glDepthMask(GL_FALSE);
+
+    // no translation of skybox when camera moves
+    // camera initially at origin always inside skybox unit cube => skybox looks larger
+    glm::mat4 view_without_translation = glm::mat4(glm::mat3(view));
+    skybox.set_transform({ glm::scale(glm::mat4(1.0f), glm::vec3(2)),
+      view_without_translation, projection3d });
+    skybox.draw({ {"texture3d", texture_skybox} });
+    glDepthMask(GL_TRUE);
+
     // cube with outline using two-passes rendering & stencil buffer
     // must be called just after clearing the stencil buffer (before any other drawing)
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
-    cube_basic.set_transform({ model_cube_outline, view, projection3d });
-    cube_basic.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
+    cube.set_transform({ model_cube_outline, view, projection3d });
+    cube.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
     // draw textured terrain using triangle strips
     terrain.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.5f, -14)), view, projection3d });
@@ -349,8 +365,8 @@ int main() {
         glm::translate(glm::mat4(1.0f), lights[i_light].position),
         glm::vec3(0.2f)
       ));
-      cube_basic.set_transform({ model_light, view, projection3d });
-      cube_basic.draw({ {"color", lights[i_light].color} });
+      cube.set_transform({ model_light, view, projection3d });
+      cube.draw({ {"color", lights[i_light].color} });
     }
 
     // draw a 2 textured cylinders (pillars
@@ -389,12 +405,6 @@ int main() {
     glm::mat4 model_grid(1.0f);
     grid.set_transform({ model_grid, view, projection3d });
     grid.draw({ {"color", glm::vec3(1.0f, 1.0f, 1.0f)} }, GL_LINES);
-
-    // draw shaded cube using matcap
-    cube_matcap.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 1.0f, 6.0f)), view, projection3d });
-    cube_matcap.draw({
-      {"texture_matcap", texture_matcap},
-    });
 
     // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin
@@ -478,11 +488,10 @@ int main() {
   }
 
   // destroy textures
-  texture_cube.free();
+  texture_skybox.free();
 
   texture_surface_hud.free();
   texture_surface_crosshair.free();
-  texture_matcap.free();
   texture_plane.free();
   texture_framebuffer.free();
 
@@ -501,8 +510,8 @@ int main() {
   // destroy renderers of each shape (frees vao & vbo)
   level.free();
   terrain.free();
-  cube_basic.free();
-  cube_matcap.free();
+  cube.free();
+  skybox.free();
   surface.free();
   surface_glyph.free();
   plane.free();
@@ -519,10 +528,10 @@ int main() {
   pgm_basic.free();
   pgm_texture.free();
   pgm_texture_surface.free();
+  pgm_texture_cube.free();
   pgm_tile.free();
   pgm_light.free();
   pgm_text.free();
-  pgm_matcap.free();
   pgm_plane.free();
 
   // destroy sound engine & window & terminate glfw
