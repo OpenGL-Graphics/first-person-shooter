@@ -9,6 +9,17 @@
  * Multiple instance can have same renderer => use a pointer
  */
 struct Target {
+  /* kill target on intersection with mouse cursor */
+  bool is_dead;
+
+  /* Bounding box in local space (needed by LevelRenderer) */
+  BoundingBox bounding_box;
+
+  Target(Assimp::Importer& importer);
+  void draw(const Uniforms& uniforms={});
+  void set_transform(const Transformation& t);
+  void free();
+
 private:
   // program declared first (i.e. init first) as it's needed by renderer
   // https://stackoverflow.com/a/41886567/2228912
@@ -20,21 +31,6 @@ private:
   ModelRenderer m_renderer;
 
   void calculate_bounding_box();
-
-public:
-  /* for collision detection */
-  BoundingBox bounding_box;
-
-  /* used to calculate normal mat in `LevelRenderer` */
-  glm::vec3 position;
-
-  /* kill target on intersection with mouse cursor */
-  bool is_dead;
-
-  Target(Assimp::Importer& importer, const glm::vec3& pos);
-  void draw(const Uniforms& uniforms={});
-  void set_transform(const Transformation& t);
-  void free();
 };
 
 #endif // TARGET_HPP

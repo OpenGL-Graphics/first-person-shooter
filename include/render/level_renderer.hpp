@@ -6,6 +6,7 @@
 #include "render/renderer.hpp"
 #include "levels/tilemap.hpp"
 #include "program.hpp"
+#include "entries/target_entry.hpp"
 
 #include "entities/target.hpp"
 #include "entities/model.hpp"
@@ -17,6 +18,12 @@
 struct LevelRenderer {
   /* Used to block camera from going through walls */
   std::vector<glm::vec3> positions_walls;
+
+  /**
+   * Used to check for intersec. with mouse in `MouseHandler`
+   * TODO: externalize in `globals/`
+   */
+  static std::vector<TargetEntry> targets;
 
   LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer);
   void draw(const Uniforms& u={});
@@ -49,6 +56,9 @@ private:
   Sprite m_window;
   Renderer m_renderer_wall_half;
 
+  /* Target (enemy) to shoot */
+  Target m_target;
+
   /* transformation matrixes (view, projection) passed to tiles renderers before `draw()` */
   Transformation m_transformation;
 
@@ -58,6 +68,8 @@ private:
 
   void draw_horizontal_surface(const Uniforms& u, float height);
   void draw_window(const Uniforms& u, const glm::vec3& position_tile);
+
+  glm::mat4 get_model_target(const glm::vec3& position_target);
 };
 
 #endif // LEVEL_RENDERER_HPP

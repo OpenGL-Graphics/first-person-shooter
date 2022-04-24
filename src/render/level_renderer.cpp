@@ -5,7 +5,12 @@
 
 #include "render/level_renderer.hpp"
 #include "geometries/surface.hpp"
-#include "globals/targets.hpp"
+
+/**
+ * Static class members require a declaration in *.cpp (to allocate space for them)
+ * TODO: externalize in `globals/`
+ */
+std::vector<TargetEntry> LevelRenderer::targets;
 
 /**
  * Sets positions of walls tiles only once in constructor
@@ -39,6 +44,9 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},
   }),
+
+  // target (enemy) to shoot
+  m_target(importer),
 
   m_textures {
     {"wall_diffuse", Texture2D(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0)},
@@ -80,8 +88,9 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
           angle = glm::radians(-90.0f);
           break;
         case Tilemap::Tiles::ENEMMY: // non-mobile enemies
-          // TODO: same instance should be drawn multiple times
-          Targets::add(Target(importer, position_tile));
+          // world-space bbox calculated from `m_targets` local-space bbox in `set_transform()`
+          TargetEntry target_entry = { false, position_tile };
+          LevelRenderer::targets.push_back(target_entry);
           continue;
       }
 
@@ -101,8 +110,6 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
       }
     }
   }
-
-  // TODO: precalculate position of non-moving target cube in constructor
 }
 
 /**
@@ -228,16 +235,15 @@ void LevelRenderer::draw_window(const Uniforms& u, const glm::vec3& position_til
 void LevelRenderer::draw_targets(const Uniforms& u) {
   Uniforms uniforms = u;
 
-  for (Target& target : Targets::samurais) {
-    // add-up level & target translation offsets
-    glm::vec3 position_level = m_transformation.model[3];
-    glm::vec3 position = position_level + target.position;
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+  for (TargetEntry& target_entry : LevelRenderer::targets) {
+    if (target_entry.is_dead)
+      continue;
 
-    glm::mat4 normal_mat = glm::inverseTranspose(model);
+    glm::mat4 model_target = get_model_target(target_entry.position);
+    glm::mat4 normal_mat = glm::inverseTranspose(model_target);
     uniforms["normal_mat"] = normal_mat;
-    target.set_transform({ model, m_transformation.view, m_transformation.projection });
-    target.draw(u);
+    m_target.set_transform({ model_target, m_transformation.view, m_transformation.projection });
+    m_target.draw(u);
   }
 }
 
@@ -284,6 +290,22 @@ void LevelRenderer::draw_ceiling(const Uniforms& u) {
  */
 void LevelRenderer::set_transform(const Transformation& t) {
   m_transformation = t;
+
+  // update bbox to world coords using model matrix
+  for (TargetEntry& target_entry : LevelRenderer::targets) {
+    glm::mat4 model_target = get_model_target(target_entry.position);
+    target_entry.bounding_box = m_target.bounding_box;
+    target_entry.bounding_box.transform(model_target);
+  }
+}
+
+/* add-up level & target translation offsets */
+glm::mat4 LevelRenderer::get_model_target(const glm::vec3& position_target) {
+  glm::vec3 position_level = m_transformation.model[3];
+  glm::vec3 position = position_level + position_target;
+  glm::mat4 model_target = glm::translate(glm::mat4(1.0f), position);
+
+  return model_target;
 }
 
 /* Renderer lifecycle managed internally */
@@ -293,7 +315,7 @@ void LevelRenderer::free() {
   m_tree.free();
   m_window.free();
   m_renderer_wall_half.free();
-  Targets::free();
+  m_target.free();
 
   for (const auto& item : m_textures) {
     item.second.free();

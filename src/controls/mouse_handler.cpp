@@ -3,8 +3,10 @@
 #include "controls/mouse_handler.hpp"
 #include "math/transformation.hpp"
 #include "globals/score.hpp"
-#include "globals/targets.hpp"
 #include "physics/bounding_box.hpp"
+
+#include "entries/target_entry.hpp"
+#include "render/level_renderer.hpp"
 
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 Camera* MouseHandler::m_camera;
@@ -38,18 +40,20 @@ void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, in
     // play gun shot sound
     m_audio->play_2d("assets/audio/gun_shot.mp3");
 
-    for (Target& target : Targets::samurais) {
-      if (target.is_dead)
+    for (TargetEntry& target_entry : LevelRenderer::targets) {
+      if (target_entry.is_dead)
         continue;
 
-      BoundingBox bounding_box = target.bounding_box;
+      // TODO: too buggy! a line can intersect a target while gun faces the direction opposite to the target
+      BoundingBox bounding_box = target_entry.bounding_box;
       bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 
       // remove target & increase score on intersection
       if (is_intersecting) {
-        target.is_dead = true;
+        target_entry.is_dead = true;
         score++;
         std::cout << "Intersecting!" << '\n';
+        return;
       } else {
         std::cout << "Not intersecting!" << '\n';
       }

@@ -8,7 +8,7 @@
  * Targets are generated inside level accord. to tilemap
  * @param position Position extracted from tilemap
  */
-Target::Target(Assimp::Importer& importer, const glm::vec3& pos):
+Target::Target(Assimp::Importer& importer):
   m_program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag"),
   m_model("assets/models/samurai/samurai.obj", importer),
   m_renderer(m_program, m_model, {
@@ -18,13 +18,14 @@ Target::Target(Assimp::Importer& importer, const glm::vec3& pos):
     {3, "tangent", 3, 11, 8},
   }),
 
-  is_dead(false),
-  position(pos)
+  is_dead(false)
 {
   // vertex or fragment shaders failed to compile
   if (m_program.has_failed()) {
     throw ShaderException();
   }
+
+  calculate_bounding_box();
 }
 
 /* delegate drawing with OpenGL (buffers & shaders) to renderer */
@@ -49,10 +50,12 @@ void Target::set_transform(const Transformation& t) {
 
   m_transformation = { model, t.view, t.projection };
   m_renderer.set_transform(m_transformation);
-  calculate_bounding_box();
 }
 
-/* Calculate bounding box from bounding boxes of each mesh renderer */
+/**
+ * Calculate bounding box in local space from bounding boxes of each mesh renderer
+ * Called in constructor
+ */
 void Target::calculate_bounding_box() {
   // concatenate local vertexes xyz
   std::vector<glm::vec3> positions;
@@ -63,9 +66,7 @@ void Target::calculate_bounding_box() {
   }
 
   // calculate bounding box from positions in local coords in vbo
-  // then update bounding box in world coords from model matrix (avoids incremental translation)
   bounding_box = BoundingBox(positions);
-  bounding_box.transform(m_transformation.model);
 }
 
 /* Free renderer (vao/vbo buffers) & shader program */
