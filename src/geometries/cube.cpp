@@ -9,10 +9,14 @@
  */
 #include "geometries/cube.hpp"
 
-Cube::Cube() {
+/**
+ * @param is_skybox Skybox has internal triangles (i.e. indices) with CCW winding order (visible)
+ *                  => only internal faces are visible with face culling enabled
+ */
+Cube::Cube(bool is_skybox) {
   // cannot be init in constructor's member initalizer list as they're members of base class
   m_vertexes = VERTEXES;
-  m_indices = INDICES;
+  m_indices = (is_skybox) ? INDICES_INTERNAL : INDICES_EXTERNAL;
   m_positions = POSITIONS;
 
   // duplicated vertexes across triangles
@@ -37,72 +41,102 @@ std::vector<glm::vec3> Cube::get_positions() const {
   return m_positions;
 }
 
+// duplicated xyz vertexes bcos of different normals
 // origin: center of gravity
-// coord(x,y,z)        color(r,g,b)      texture(u,v,w)       normal(nx,ny,nz)
+// coord(x,y,z)        normal(nx,ny,nz)
 const std::vector<float> Cube::VERTEXES = {
   // negative-x (left face)
-  -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f, -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
-  -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f, -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
-  -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
-  -0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+  -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+  -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+  -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+  -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
    // positive-x (right face)
-   0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
-   0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-   0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-   0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f,  1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+   0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+   0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+   0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+   0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
    // negative-y (bottom face)
-  -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
-   0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
-   0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
-  -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+   0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+   0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
 
   // positive-y (top face)
-  -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f, -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-   0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-   0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f,  1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-  -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f, -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+  -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+   0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+   0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+  -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
 
   // negative-z (back face)
-  -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-   0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-   0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-  -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+  -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+   0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+   0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+  -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
   // positive-z (front face)
-  -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-   0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-   0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-  -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+  -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+   0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+   0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+  -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 };
 
-const std::vector<unsigned int> Cube::INDICES {
+/* For cubes with external faces visible (normal pointing outwards) */
+const std::vector<unsigned int> Cube::INDICES_EXTERNAL {
   // negative-x (left face)
   0, 1, 2,
   2, 3, 0,
 
   // positive-x (right face)
-  4, 5, 6,
-  6, 7, 4,
+  4, 6, 5,
+  4, 7, 6,
 
   // negative-y (bottom face)
   8, 9, 10,
   10, 11, 8,
 
   // positive-y (top face)
-  12, 13, 14,
-  14, 15, 12,
+  12, 14, 13,
+  12, 15, 14,
 
   // negative-z (back face)
-  16, 17, 18,
-  18, 19, 16,
+  16, 18, 17,
+  16, 19, 18,
 
   // positive-z (front face)
   20, 21, 22,
   22, 23, 20,
 };
 
+/* Skybox with internal faces visible (normal pointing inwards) */
+const std::vector<unsigned int> Cube::INDICES_INTERNAL {
+  // negative-x (left face)
+  0, 2, 1,
+  2, 0, 3,
+
+  // positive-x (right face)
+  4, 5, 6,
+  4, 6, 7,
+
+  // negative-y (bottom face)
+  8, 10, 9,
+  10, 8, 11,
+
+  // positive-y (top face)
+  12, 13, 14,
+  12, 14, 15,
+
+  // negative-z (back face)
+  16, 17, 18,
+  16, 18, 19,
+
+  // positive-z (front face)
+  20, 22, 21,
+  22, 20, 23,
+};
+
+// TODO: Is it not the same as VERTEXES?
 // copy of vertexes above containing only (x, y, z) coords
 const std::vector<glm::vec3> Cube::POSITIONS = {
   // negative-x (left face)

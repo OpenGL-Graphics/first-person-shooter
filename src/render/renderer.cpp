@@ -65,6 +65,9 @@ void Renderer::draw(const Uniforms& u, GLenum mode, unsigned int count, size_t o
  * @param Uniforms Unordered map (key, values) of vars to pass to shader
  */
 void Renderer::draw_with_outlines(const Uniforms& u) {
+  // clear stencil mask (so drawing doesn't have to happen at very beginning of main loop)
+  glClear(GL_STENCIL_BUFFER_BIT);
+
   // 1st render pass: always pass the stencil test & set ref=1 in stencil buffer for drawn fragments (pixels)
   glStencilFunc(GL_ALWAYS, 1, 0xff);
   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);

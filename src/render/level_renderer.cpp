@@ -249,13 +249,22 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
 
 /**
  * Draw horizontal surface at given height
- * @param height Elevation of surface (i.e. translation on y-axis)
+ * @param is_floor Needed when face culling enabled & same angle for floor/ceiling => hidden floor
  */
-void LevelRenderer::draw_horizontal_surface(const Uniforms& u, float height) {
+void LevelRenderer::draw_horizontal_surface(const Uniforms& u, bool is_floor) {
+  // floor rotated in opposite dir. (need to be shifted back to origin)
+  float angle = (is_floor) ? glm::radians(-90.0f) : glm::radians(90.0f);
+  const float y = (is_floor) ? 0 : m_height;
+  glm::vec3 position = m_position + glm::vec3(0.0f, y, 0.0f);
+
+  if (is_floor) {
+    unsigned int depth_map = m_tilemap.n_rows - 1;
+    position += glm::vec3(0, 0, depth_map);
+  }
+
   // calculate normal matrix only once (instead of doing it in shader for every vertex)
-  float angle = glm::radians(90.0f);
   glm::mat4 model = glm::rotate(
-    glm::translate(glm::mat4(1.0f), m_position + glm::vec3(0.0f, height, 0.0f)),
+    glm::translate(glm::mat4(1.0f), position),
     angle,
     glm::vec3(1.0f, 0.0f, 0.0f)
   );
@@ -273,7 +282,7 @@ void LevelRenderer::draw_floor(const Uniforms& u) {
   Uniforms uniforms = u;
   uniforms["texture_diffuse"] = m_textures["floor_diffuse"];
   uniforms["texture_normal"] = m_textures["floor_normal"];
-  draw_horizontal_surface(uniforms, 0.0f);
+  draw_horizontal_surface(uniforms, true);
 }
 
 /* Draw horizontal floor covering top of tilemap */
@@ -281,7 +290,7 @@ void LevelRenderer::draw_ceiling(const Uniforms& u) {
   Uniforms uniforms = u;
   uniforms["texture_diffuse"] = m_textures["ceiling_diffuse"];
   uniforms["texture_normal"] = m_textures["ceiling_normal"];
-  draw_horizontal_surface(uniforms, m_height);
+  draw_horizontal_surface(uniforms, false);
 }
 
 /**

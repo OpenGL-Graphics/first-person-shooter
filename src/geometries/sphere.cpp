@@ -63,7 +63,7 @@ void Sphere::set_vertexes() {
 void Sphere::set_indices() {
   // triangles from north-pole to horizontal circle just below it
   for (unsigned int i_lon = 1; i_lon < m_n_longitudes; i_lon++) {
-    m_indices.insert(m_indices.end(), { 0, i_lon, i_lon + 1 });
+    m_indices.insert(m_indices.end(), { 0, i_lon + 1, i_lon });
   }
 
   // close cycle at very top with last triangle
@@ -88,7 +88,7 @@ void Sphere::set_indices() {
 
       // two triangles in same face
       m_indices.insert(m_indices.end(), { i_p0, i_p1, i_p2 });
-      m_indices.insert(m_indices.end(), { i_p1, i_p2, i_p3 });
+      m_indices.insert(m_indices.end(), { i_p1, i_p3, i_p2 });
     }
 
     // close cycle with last face
@@ -97,7 +97,7 @@ void Sphere::set_indices() {
     unsigned int i_p2 = i_p0 + m_n_longitudes;
     unsigned int i_p3 = i_p1 + m_n_longitudes;
 
-    m_indices.insert(m_indices.end(), { i_p0, i_p1, i_p2 });
+    m_indices.insert(m_indices.end(), { i_p0, i_p2, i_p1 });
     m_indices.insert(m_indices.end(), { i_p1, i_p2, i_p3 });
   }
 
@@ -105,7 +105,7 @@ void Sphere::set_indices() {
   // triangles from second-to-last horizontal circle to south-pole
   unsigned int indice_last = m_n_longitudes * (m_n_latitudes - 1) + 1;
   for (unsigned int i_lon = 1; i_lon < m_n_longitudes; i_lon++) {
-    m_indices.insert(m_indices.end(), { indice_last, indice_last - i_lon, indice_last - (i_lon + 1) });
+    m_indices.insert(m_indices.end(), { indice_last, indice_last - (i_lon + 1), indice_last - i_lon });
   }
 
   // close cycle at very bottom with last triangle

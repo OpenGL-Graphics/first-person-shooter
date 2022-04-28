@@ -131,9 +131,8 @@ int main() {
   }
 
   // renderer (encapsulates VAO & VBO) for each shape to render
-  VBO vbo_cube(Cube{});
-  Renderer cube(pgm_basic, vbo_cube, {{0, "position", 3, 12, 0}});
-  Renderer skybox(pgm_texture_cube, vbo_cube, {{0, "position", 3, 12, 0}, {1, "texture_coord", 3, 12, 6}});
+  Renderer cube(pgm_basic, VBO(Cube()), {{0, "position", 3, 6, 0}});
+  Renderer skybox(pgm_texture_cube, VBO(Cube(true)), {{0, "position", 3, 6, 0}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
@@ -199,6 +198,10 @@ int main() {
   glEnable(GL_STENCIL_TEST);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glm::vec4 background(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(background.r, background.g, background.b, background.a);
+
+  // backface (where winding order is CW) not rendered (boost fps)
+  glEnable(GL_CULL_FACE);
 
   // take this line as a ref. to calculate initial fps (not `glfwInit()`)
   window.init_timer();
@@ -222,9 +225,8 @@ int main() {
       framebuffer.unbind();
     }
 
-    // clear color & depth & stencil buffers before rendering every frame
-    glClearColor(background.r, background.g, background.b, background.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    // clear color & depth buffers before rendering every frame
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // draw skybox
     // https://learnopengl.com/Advanced-OpenGL/Cubemaps
@@ -241,7 +243,6 @@ int main() {
     glDepthMask(GL_TRUE);
 
     // cube with outline using two-passes rendering & stencil buffer
-    // must be called just after clearing the stencil buffer (before any other drawing)
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
     cube.set_transform({ model_cube_outline, view, projection3d });
     cube.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });

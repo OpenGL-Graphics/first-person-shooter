@@ -66,7 +66,7 @@ private:
   glm::vec3 m_position;
   std::unordered_map<std::string, Texture2D> m_textures;
 
-  void draw_horizontal_surface(const Uniforms& u, float height);
+  void draw_horizontal_surface(const Uniforms& u, bool is_floor);
   void draw_window(const Uniforms& u, const glm::vec3& position_tile);
 
   glm::mat4 get_model_target(const glm::vec3& position_target);

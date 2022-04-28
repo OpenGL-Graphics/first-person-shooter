@@ -28,6 +28,10 @@ struct Tilemap {
     WALL_L_INV = 'I',
   };
 
+  /**
+   * `n_rows` includes horiz. wall character at beginning of map,
+   * which doesn't change map depth (z-coord)
+   */
   unsigned int n_rows;
   unsigned int n_cols;
   Map map;
