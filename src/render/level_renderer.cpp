@@ -33,8 +33,11 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
   }),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
-  m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag"), {
+  m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag"), {
     {0, "position", 3, 11, 0},
+    {1, "normal", 3, 11, 3},
+    {2, "texture_coord", 2, 11, 6},
+    {3, "tangent", 3, 11, 8},
   }),
 
   // window & wall above/below it
@@ -136,11 +139,7 @@ void LevelRenderer::draw(const Uniforms& u) {
         case Tilemap::Tiles::ENEMMY:
           continue;
         case Tilemap::Tiles::TREE:
-          // 3d model
-          m_tree.set_transform({
-            glm::translate(glm::mat4(1.0f), position_tile),  // origin: base of 3d model
-            m_transformation.view, m_transformation.projection });
-          m_tree.draw(uniforms);
+          draw_tree(u, position_tile);
           continue;
         case Tilemap::Tiles::WINDOW:
           draw_window(uniforms, position_tile);
@@ -200,6 +199,18 @@ void LevelRenderer::draw(const Uniforms& u) {
   }
 }
 
+/* Draw tree 3d model at given tile position */
+void LevelRenderer::draw_tree(const Uniforms& u, const glm::vec3& position_tile) {
+  // 3d model (origin: base of 3d model)
+  glm::mat4 model = glm::translate(glm::mat4(1.0f), position_tile);
+  m_tree.set_transform({ model, m_transformation.view, m_transformation.projection });
+
+  Uniforms uniforms = u;
+  glm::mat4 normal_mat = glm::inverseTranspose(model);
+  uniforms["normal_mat"] = normal_mat;
+  m_tree.draw(uniforms);
+}
+
 /* Draw window at mid y-coord of `position_tile` with half-walls below & above it */
 void LevelRenderer::draw_window(const Uniforms& u, const glm::vec3& position_tile) {
   float height_window = 1.0f;
@@ -243,7 +254,7 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
     glm::mat4 normal_mat = glm::inverseTranspose(model_target);
     uniforms["normal_mat"] = normal_mat;
     m_target.set_transform({ model_target, m_transformation.view, m_transformation.projection });
-    m_target.draw(u);
+    m_target.draw(uniforms);
   }
 }
 

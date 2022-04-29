@@ -382,8 +382,11 @@ int main() {
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
       {"normal_mat", glm::inverseTranspose(model_cylinder1)},
+
       {"texture_diffuse", texture_cylinder_diffuse},
       {"texture_normal", texture_cylinder_normal},
+      {"has_texture_diffuse", true},
+      {"has_texture_normal", true},
     });
 
     glm::mat4 model_cylinder2 = glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8));

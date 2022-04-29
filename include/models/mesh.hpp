@@ -26,6 +26,10 @@ namespace AssimpUtil {
     Texture2D texture_diffuse;
     Texture2D texture_normal;
 
+    /* differentiates meshes with color instead of diffuse texture (e.g. tree) in frag. shader */
+    bool has_texture_diffuse;
+    bool has_texture_normal;
+
     Mesh();
     Mesh(aiMesh* mesh);
 

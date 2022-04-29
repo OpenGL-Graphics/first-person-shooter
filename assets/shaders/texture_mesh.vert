@@ -23,7 +23,7 @@ void main() {
   gl_Position = projection * view * model * vec4(position, 1.0);
 
   vs_out.texture_coord_vert = texture_coord;
-  vs_out.normal_vert = normal;
+  vs_out.normal_vert = normalize(mat3(normal_mat) * normal);
   vs_out.position_vert = (model * vec4(position, 1.0)).xyz;
 
   // re-orthogonalize TBN vectors (bcoz of smoothing by averaging tangents in assimp)

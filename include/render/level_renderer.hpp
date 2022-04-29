@@ -68,6 +68,7 @@ private:
 
   void draw_horizontal_surface(const Uniforms& u, bool is_floor);
   void draw_window(const Uniforms& u, const glm::vec3& position_tile);
+  void draw_tree(const Uniforms& u, const glm::vec3& position_tile);
 
   glm::mat4 get_model_target(const glm::vec3& position_target);
 };

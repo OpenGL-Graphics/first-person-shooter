@@ -14,6 +14,11 @@ uniform mat4 normal_mat;
 uniform vec3 positions_lights[3];
 uniform vec3 position_camera;
 
+// tree meshes have diffuse colors but no textures (get normals from vertexes)
+uniform bool has_texture_diffuse;
+uniform bool has_texture_normal;
+uniform vec3 color;
+
 out vec4 color_out;
 
 /* functions declarations */
@@ -21,21 +26,24 @@ vec3 calculateLightContribution(vec4 color, vec3 position_light, vec3 normal);
 
 /* modified from `assets/texture_surface.frag` */
 void main() {
-  vec4 color = texture(texture_diffuse, fs_in.texture_coord_vert);
+  vec4 color_texture = (has_texture_diffuse) ? texture(texture_diffuse, fs_in.texture_coord_vert) : vec4(color, 1.0);
+  vec3 normal = fs_in.normal_vert;
 
-  // normal-mapping based shading: convert image from [0, 1] to [-1, 1]
-  // normal vector from texture image: https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-  vec3 normal_vec = texture(texture_normal, fs_in.texture_coord_vert).rgb;
-  normal_vec = normalize(normal_vec * 2.0 - 1.0);
+  if (has_texture_normal) {
+    // normal-mapping based shading: convert image from [0, 1] to [-1, 1]
+    // normal vector from texture image: https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+    vec3 normal_vec = texture(texture_normal, fs_in.texture_coord_vert).rgb;
+    normal_vec = normalize(normal_vec * 2.0 - 1.0);
 
-  // TBN matrix to transform from tangent to world space
-  // https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-  vec3 normal = normalize(mat3(fs_in.tbn_mat) * normal_vec);
+    // TBN matrix to transform from tangent to world space
+    // https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+    normal = normalize(mat3(fs_in.tbn_mat) * normal_vec);
+  }
 
   // sum-up color contributions from all walls
   vec3 sum_contributions = vec3(0.0, 0.0, 0.0);
   for (int i_light = 0; i_light < 3; i_light++) {
-    sum_contributions += calculateLightContribution(color, positions_lights[i_light], normal);
+    sum_contributions += calculateLightContribution(color_texture, positions_lights[i_light], normal);
   }
 
   // combine ambiant & diffuse contributions

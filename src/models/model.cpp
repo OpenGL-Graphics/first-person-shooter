@@ -32,13 +32,29 @@ Model::Model(const std::string& path, Assimp::Importer& importer):
     meshes[i_mesh] = Mesh(m_scene->mMeshes[i_mesh]);
     aiMaterial* material = m_scene->mMaterials[meshes[i_mesh].material];
 
-    // assign material's diffuse color to mesh
+    // assign material's diffuse color & textures to mesh (if any)
     set_mesh_color(material, i_mesh);
-
-    // assign first material's diffuse & normal texture to mesh
-    set_mesh_texture(material, i_mesh, aiTextureType_DIFFUSE);
-    set_mesh_texture(material, i_mesh, aiTextureType_HEIGHT);
+    load_textures(material, i_mesh);
   }
+}
+
+/**
+ * Load 1st diffuse & normal texture for given mesh
+ * @param index Array position of mesh
+ */
+void Model::load_textures(aiMaterial* material, unsigned int index) {
+  // set mesh fields needed in shader (to differentiate meshes with/without textures)
+  unsigned int n_textures_diffuse = material->GetTextureCount(aiTextureType_DIFFUSE);
+  unsigned int n_textures_normal = material->GetTextureCount(aiTextureType_HEIGHT);
+  meshes[index].has_texture_diffuse = n_textures_diffuse > 0;
+  meshes[index].has_texture_normal = n_textures_normal > 0;
+
+  // assign first material's diffuse normal texture to mesh (if any)
+  if(meshes[index].has_texture_diffuse)
+    set_mesh_texture(material, index, aiTextureType_DIFFUSE);
+
+  if(meshes[index].has_texture_normal)
+    set_mesh_texture(material, index, aiTextureType_HEIGHT);
 }
 
 /**
@@ -61,12 +77,11 @@ void Model::set_mesh_color(aiMaterial* material, unsigned int index) {
  * @param type Texture type (diffuse, normal...)
  */
 void Model::set_mesh_texture(aiMaterial* material, unsigned int index, aiTextureType type) {
-  // get path to image used in first diffuse texture
-  unsigned int n_textures_diffuse = material->GetTextureCount(type);
+  // get image path to first texture used
   aiString filename_image;
   unsigned int index_texture = 0;
   material->GetTexture(type, index_texture, &filename_image);
-  std::cout << "n_textures: " << n_textures_diffuse << " - filename texture: " << filename_image.C_Str() << '\n';
+  std::cout << "- Texture filename: " << filename_image.C_Str() << '\n';
 
   // texture image already loaded before (meshes can share same texture)
   std::string path_image = m_directory + "/" + filename_image.C_Str();

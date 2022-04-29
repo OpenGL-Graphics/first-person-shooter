@@ -33,6 +33,7 @@ namespace AssimpUtil {
     bool load_scene(Assimp::Importer& importer);
     void set_mesh_color(aiMaterial* material, unsigned int index);
     void set_mesh_texture(aiMaterial* material, unsigned int index, aiTextureType type);
+    void load_textures(aiMaterial* material, unsigned int index);
   };
 }
 

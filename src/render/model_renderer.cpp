@@ -34,6 +34,8 @@ void ModelRenderer::draw(const Uniforms& u, bool with_outlines) {
   for (size_t i_renderer = 0; i_renderer < renderers.size(); ++i_renderer) {
     // retrieve material color from mesh
     AssimpUtil::Mesh mesh = m_model.meshes[i_renderer];
+    uniforms["has_texture_diffuse"] = mesh.has_texture_diffuse;
+    uniforms["has_texture_normal"] = mesh.has_texture_normal;
     uniforms["color"] = mesh.color;
     uniforms["texture_diffuse"] = mesh.texture_diffuse;
     uniforms["texture_normal"] = mesh.texture_normal;
