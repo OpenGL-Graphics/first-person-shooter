@@ -23,17 +23,28 @@ void TextRenderer::draw_text(const std::string& text, const Uniforms& u) {
     float bearing_x = glyph.bearing.x;
     float bearing_y = glyph.bearing.y;
 
-    // Use dimensions & bearing to create glyph's bounding box
-    // Origin is lower-left corner for texture & upper-left corner for bitmap
+    /**
+     * Face triangles (see also graph in: https://learnopengl.com/In-Practice/Text-Rendering)
+     *  _u
+     * |
+     * v
+     *     0  3
+     * y   o--o
+     * |_x |\ |
+     *     | \|
+     *     o--o
+     *     1  2
+     */
+
+    // Use dimensions & bearing to create glyph's bounding box (xy origin at character baseline's left point)
+    // upper-left corner is character bitmap's origin (=> uv-coords origin at upper-left & v-axis inverted) - no flip-v with stb_image
     float x_prime = x + bearing_x;
     const std::vector<float> vertexes = {
       //coord(x,y)                            normal(nx,ny,nz)  texture(u,v)
-      x_prime,         bearing_y,             0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-      x_prime + width, bearing_y,             0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-      x_prime + width, -(height - bearing_y), 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-      // x_prime + width, -(height - bearing_y), 1.0f, 1.0f,
-      x_prime,         -(height - bearing_y), 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-      // x_prime,         bearing_y,             0.0f, 0.0f,
+      x_prime,         bearing_y,             0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // point (0)
+      x_prime,         -(height - bearing_y), 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // point (1)
+      x_prime + width, -(height - bearing_y), 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // point (2)
+      x_prime + width, bearing_y,             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // point (3)
     };
     // use EBO to pass vertexes indices
     vbo.update(Surface(vertexes));

@@ -38,15 +38,15 @@ std::vector<float> Surface::_get_vertexes() {
     m_size.x, m_size.y, 0.0f, 0.0f, 1.0f, m_size.x, m_size.y,
     0.0f,     m_size.y, 0.0f, 0.0f, 1.0f, 0.0f,     m_size.y,
   };
-};
+}
 
-const std::vector<unsigned int> Surface::INDICES {
+const std::vector<unsigned int> Surface::INDICES = {
   0, 1, 2, // triangle 1
   2, 3, 0, // triangle 2
 };
 
 // copy of vertexes above containing only (x, y) coords (z-coord = 0)
-const std::vector<glm::vec3> Surface::POSITIONS {
+const std::vector<glm::vec3> Surface::POSITIONS = {
   {0.0f, 0.0f, 0.0f},
   {1.0f, 0.0f, 0.0f},
   {1.0f, 1.0f, 0.0f},
