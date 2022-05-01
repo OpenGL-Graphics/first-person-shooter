@@ -27,9 +27,6 @@ struct LevelRenderer {
 
   LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer);
   void draw(const Uniforms& u={});
-  void draw_floor(const Uniforms& u);
-  void draw_ceiling(const Uniforms& u);
-  void draw_targets(const Uniforms& u);
   void set_transform(const Transformation& t);
   void free();
 
@@ -43,10 +40,11 @@ private:
   Tilemap m_tilemap;
 
   /**
-   * One renderer for walls tiles and another one for ceiling/floor
-   * wall tiles & ceiling/floor have different sizes => different uv-coords to avoid stretching texture
+   * Renderers for wall, window, & ceiling/floor tiles
+   * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
    */
   Renderer m_renderer_wall;
+  Renderer m_renderer_door;
   Renderer m_renderer_floor;
 
   /* tree props rendered multiple times */
@@ -64,11 +62,25 @@ private:
 
   /* position of level */
   glm::vec3 m_position;
+
+  /**
+   * textures
+   * Cubes used for walls as face culling hides back-face & lighting affect it similarly to front one
+   */
   std::unordered_map<std::string, Texture2D> m_textures;
+  Texture3D m_texture_wall;
+
+  /* positions of tiles elements (parsed only once in constructor) */
+  std::vector<glm::vec3> m_positions_doors;
 
   void draw_horizontal_surface(const Uniforms& u, bool is_floor);
+  void draw_floor(const Uniforms& u);
+  void draw_ceiling(const Uniforms& u);
+  void draw_targets(const Uniforms& u);
   void draw_window(const Uniforms& u, const glm::vec3& position_tile);
   void draw_tree(const Uniforms& u, const glm::vec3& position_tile);
+  void draw_doors(const Uniforms& u);
+  void draw_wall(const Uniforms& u, const glm::vec3& position_tile, float angle);
 
   glm::mat4 get_model_target(const glm::vec3& position_target);
 };

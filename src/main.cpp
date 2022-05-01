@@ -151,12 +151,6 @@ int main() {
   // accord. to doc: better to reuse importer, & destroys scene (3d model) once out of scope
   Assimp::Importer importer;
 
-  // load tilemap by parsing text file
-  Tilemap tilemap("assets/levels/map.txt");
-  glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
-  LevelRenderer level(pgm_tile, tilemap, position_level, importer);
-  camera.boundaries = level.positions_walls;
-
   // load font & assign its bitmap glyphs to textures
   VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
   Font font("assets/fonts/Vera.ttf");
@@ -179,6 +173,12 @@ int main() {
   });
   profiler.stop();
   profiler.print("Loading 3D models");
+
+  // load tilemap by parsing text file
+  Tilemap tilemap("assets/levels/map.txt");
+  glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
+  LevelRenderer level(pgm_tile, tilemap, position_level, importer);
+  camera.boundaries = level.positions_walls;
 
   // transformation matrices
   glm::mat4 view;
@@ -460,9 +460,9 @@ int main() {
     glm::mat4 model_hud_health(glm::scale(
       glm::translate(
         glm::mat4(1.0f),
-        glm::vec3(window.width - texture_surface_hud.get_width(), window.height - texture_surface_hud.get_height(), 0.0f)
+        glm::vec3(window.width - texture_surface_hud.width, window.height - texture_surface_hud.height, 0.0f)
       ),
-      glm::vec3(texture_surface_hud.get_width(), texture_surface_hud.get_height(), 1.0f)
+      glm::vec3(texture_surface_hud.width, texture_surface_hud.height, 1.0f)
     ));
     surface.set_transform({ model_hud_health, glm::mat4(1.0f), projection2d });
     surface.draw({ {"texture2d", texture_surface_hud} });
@@ -470,11 +470,11 @@ int main() {
     // draw crosshair gun target surface at center of screen
     glm::mat4 model_crosshair(glm::scale(
       glm::translate(glm::mat4(1.0f), glm::vec3(
-        window.width / 2.0f - texture_surface_crosshair.get_width() / 2.0f,
-        window.height / 2.0f - texture_surface_crosshair.get_height() / 2.0f,
+        window.width / 2.0f - texture_surface_crosshair.width / 2.0f,
+        window.height / 2.0f - texture_surface_crosshair.height / 2.0f,
         0.0f
       )),
-      glm::vec3(texture_surface_crosshair.get_width(), texture_surface_crosshair.get_height(), 1.0f)
+      glm::vec3(texture_surface_crosshair.width, texture_surface_crosshair.height, 1.0f)
     ));
     surface.set_transform({ model_crosshair, glm::mat4(1.0f), projection2d });
     surface.draw({ {"texture2d", texture_surface_crosshair} });

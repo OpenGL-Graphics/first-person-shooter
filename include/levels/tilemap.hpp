@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "texture.hpp"
-
 struct Tilemap {
   // types & enums constants
   using Map = std::vector<std::vector<char>>;

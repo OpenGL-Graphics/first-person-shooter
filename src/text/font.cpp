@@ -18,7 +18,7 @@ Glyphs Font::extract_glyphs() const {
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
     // grayscale bitmap from font character
     FT_Bitmap bitmap(char_to_bitmap(c));
-    Image image(bitmap.width, bitmap.rows, GL_RED, bitmap.buffer);
+    Image image(bitmap.width, bitmap.rows, 1, bitmap.buffer, false);
 
     // insert texture for glyph's bitmap into map
     glyphs.insert(std::pair<KeyGlyph, ValueGlyph>(c, {

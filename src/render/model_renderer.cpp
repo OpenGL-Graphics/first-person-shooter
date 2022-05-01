@@ -37,10 +37,15 @@ void ModelRenderer::draw(const Uniforms& u, bool with_outlines) {
     uniforms["has_texture_diffuse"] = mesh.has_texture_diffuse;
     uniforms["has_texture_normal"] = mesh.has_texture_normal;
     uniforms["color"] = mesh.color;
-    uniforms["texture_diffuse"] = mesh.texture_diffuse;
-    uniforms["texture_normal"] = mesh.texture_normal;
-    Renderer renderer = renderers[i_renderer];
 
+    // no need to pass empty texture created (in `Mesh`) by default constructor
+    if (mesh.has_texture_diffuse)
+      uniforms["texture_diffuse"] = mesh.texture_diffuse;
+
+    if (mesh.has_texture_normal)
+      uniforms["texture_normal"] = mesh.texture_normal;
+
+    Renderer renderer = renderers[i_renderer];
     if (with_outlines) {
       renderer.draw_with_outlines(uniforms);
     } else {

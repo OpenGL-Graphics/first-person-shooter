@@ -4,7 +4,9 @@
 #include <iostream>
 
 #include "render/level_renderer.hpp"
+
 #include "geometries/surface.hpp"
+#include "geometries/cube.hpp"
 
 /**
  * Static class members require a declaration in *.cpp (to allocate space for them)
@@ -21,7 +23,8 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
   m_tilemap(tilemap),
 
   // renderers for walls/floors
-  m_renderer_wall(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {
+  m_renderer_wall(Program("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag"), VBO(Cube()), {{0, "position", 3, 6, 0}}),
+  m_renderer_door(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {
     {0, "position", 2, 7, 0},
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},
@@ -61,16 +64,18 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     {"ceiling_diffuse", Texture2D(Image("assets/images/level/ceiling_diffuse.jpg"), GL_TEXTURE0)},
     {"ceiling_normal", Texture2D(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE1)},
   },
+  m_texture_wall(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0),
+
   m_position(position)
 {
   // TODO: only calculate world positions & angles in constructor (not in `draw()`)
-  std::cout << "rows: " << m_tilemap.n_rows << '\n';
-  std::cout << "cols: " << m_tilemap.n_cols << '\n';
+  std::cout << "Tilemap: " << m_tilemap.n_rows << " rows x " << m_tilemap.n_cols << " cols" << '\n';
 
   std::vector<Tilemap::Tiles> tiles_walls = {
     Tilemap::Tiles::WALL_H, Tilemap::Tiles::WALL_V, Tilemap::Tiles::WALL_L, Tilemap::Tiles::WALL_L_INV,
   };
 
+  // TODO: save position of elements (to avoid parsing tilemap twice)
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
     for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
       Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
@@ -78,6 +83,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
       position_tile += m_position;
 
       float angle = 0.0f;
+      TargetEntry target_entry;
       switch (tile) {
         case Tilemap::Tiles::WALL_H:
           break;
@@ -92,9 +98,14 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
           break;
         case Tilemap::Tiles::ENEMMY: // non-mobile enemies
           // world-space bbox calculated from `m_targets` local-space bbox in `set_transform()`
-          TargetEntry target_entry = { false, position_tile };
+          target_entry = { false, position_tile };
           LevelRenderer::targets.push_back(target_entry);
           continue;
+        case Tilemap::Tiles::DOOR_H:
+          m_positions_doors.push_back(position_tile);
+          break;
+        default:
+          break;
       }
 
       // save world position for walls (for collision with camera)
@@ -120,9 +131,10 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
  * @param uniforms Uniforms passed to shader
  */
 void LevelRenderer::draw(const Uniforms& u) {
-  // draw floor & ceiling & targets
+  // draw floor, ceiling, doors, & targets
   draw_floor(u);
   draw_ceiling(u);
+  draw_doors(u);
   draw_targets(u);
 
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
@@ -136,8 +148,6 @@ void LevelRenderer::draw(const Uniforms& u) {
 
       // choose angle/texture of surface accord. to tile
       switch (tile) {
-        case Tilemap::Tiles::ENEMMY:
-          continue;
         case Tilemap::Tiles::TREE:
           draw_tree(u, position_tile);
           continue;
@@ -147,40 +157,44 @@ void LevelRenderer::draw(const Uniforms& u) {
         case Tilemap::Tiles::SPACE:
           continue;
         case Tilemap::Tiles::WALL_H:
+          draw_wall(uniforms, position_tile, 0.0f);
+          /*
           uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
           uniforms["texture_normal"] = m_textures["wall_normal"];
+          */
           break;
         case Tilemap::Tiles::WALL_V:
+          draw_wall(uniforms, position_tile, 90.0f);
+          /*
           uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
           uniforms["texture_normal"] = m_textures["wall_normal"];
           angle[0] = glm::radians(90.0f);
+          */
           break;
         case Tilemap::Tiles::WALL_L:
+          /*
           // close gap in lower-left corner using two perpendicular surfaces
           uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
           uniforms["texture_normal"] = m_textures["wall_normal"];
           n_surfaces = 2;
           angle[0] = glm::radians(90.0f);
+          */
           break;
         case Tilemap::Tiles::WALL_L_INV:
+          /*
           // two perpendicular surfaces forming a reverse L-shape (Uppercase Gamma)
           uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
           uniforms["texture_normal"] = m_textures["wall_normal"];
           n_surfaces = 2;
           angle[0] = glm::radians(-90.0f);
+          */
           break;
-        case Tilemap::Tiles::DOOR_H:
-          uniforms["texture_diffuse"] = m_textures["door_diffuse"];
-          uniforms["texture_normal"] = m_textures["door_normal"];
-          break;
-        case Tilemap::Tiles::DOOR_V:
-          uniforms["texture_diffuse"] = m_textures["door_diffuse"];
-          uniforms["texture_normal"] = m_textures["door_normal"];
-          angle[0] = glm::radians(90.0f);
-          break;
+        default:
+          continue;
       }
 
       // render tile surface (or two tiles surfaces for corners): wall or door
+      /*
       for (size_t i_surface = 0; i_surface < n_surfaces; ++i_surface) {
         // calculate normal matrix only once (instead of doing it in shader for every vertex)
         glm::mat4 model = glm::rotate(
@@ -193,9 +207,57 @@ void LevelRenderer::draw(const Uniforms& u) {
 
         // vertical scaling then rotation around y-axis then translation
         m_renderer_wall.set_transform({ model, m_transformation.view, m_transformation.projection });
+        uniforms["color"] = glm::vec3(1, 0, 0);
         m_renderer_wall.draw(uniforms);
       }
+      */
     }
+  }
+}
+
+/* Draw wall rotated by `angle` (in deg) around y-axis at `position_tile` */
+void LevelRenderer::draw_wall(const Uniforms& u, const glm::vec3& position_tile, float angle) {
+  // Uniforms uniforms = u;
+  // uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
+  // uniforms["texture_normal"] = m_textures["wall_normal"];
+
+  // unit cube geometry centered around origin
+  glm::vec3 position = position_tile + glm::vec3(0.5f, m_height / 2.0f, 0.5f);
+
+  // calculate normal matrix only once (instead of doing it in shader for every vertex)
+  glm::mat4 model = glm::scale(
+    glm::rotate(
+      glm::translate(glm::mat4(1.0f), position),
+      glm::radians(angle),
+      glm::vec3(0.0f, 1.0f, 0.0f)
+    ),
+    glm::vec3(1.0f, m_height, 1.0f)
+  );
+  glm::mat4 normal_mat = glm::inverseTranspose(model);
+
+  Uniforms uniforms;
+  uniforms["normal_mat"] = normal_mat;
+  uniforms["texture3d"] = m_texture_wall;
+
+  // vertical scaling then rotation around y-axis then translation
+  m_renderer_wall.set_transform({ model, m_transformation.view, m_transformation.projection });
+  // uniforms["color"] = glm::vec3(1, 0, 0);
+  m_renderer_wall.draw(uniforms);
+}
+
+/* Draw doors at locations parsed in constructor */
+void LevelRenderer::draw_doors(const Uniforms& u) {
+  Uniforms uniforms = u;
+  uniforms["texture_diffuse"] = m_textures["door_diffuse"];
+  uniforms["texture_normal"] = m_textures["door_normal"];
+
+  for (const glm::vec3& position_door : m_positions_doors) {
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), position_door);
+    glm::mat4 normal_mat = glm::inverseTranspose(model);
+    uniforms["normal_mat"] = normal_mat;
+
+    m_renderer_door.set_transform({ model, m_transformation.view, m_transformation.projection });
+    m_renderer_door.draw(uniforms);
   }
 }
 
@@ -330,14 +392,20 @@ glm::mat4 LevelRenderer::get_model_target(const glm::vec3& position_target) {
 
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
+  // renderers
   m_renderer_wall.free();
+  m_renderer_door.free();
   m_renderer_floor.free();
+
+  // entities
   m_tree.free();
   m_window.free();
   m_renderer_wall_half.free();
   m_target.free();
 
-  for (const auto& item : m_textures) {
+  // textures
+  for (auto& item : m_textures) {
     item.second.free();
   }
+  m_texture_wall.free();
 }

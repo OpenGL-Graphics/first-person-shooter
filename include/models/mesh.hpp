@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <assimp/mesh.h>
 
-#include "texture.hpp"
+#include "texture_2d.hpp"
 
 /**
  * Wrapper around Assimp::aiMesh used to get vertexes & faces for given mesh

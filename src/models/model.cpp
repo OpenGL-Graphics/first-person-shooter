@@ -5,8 +5,6 @@
 #include "models/model.hpp"
 #include "models/model_exception.hpp"
 
-#include "texture.hpp"
-
 using namespace AssimpUtil;
 
 /**
@@ -123,7 +121,7 @@ bool Model::load_scene(Assimp::Importer& importer) {
 
 /* Free meshes textures (diffuse & normal) */
 void Model::free() {
-  for (const auto& pair : m_textures_loaded) {
+  for (auto& pair : m_textures_loaded) {
     pair.second.free();
   }
 }

@@ -46,6 +46,10 @@ void Camera::zoom(Zoom z) {
  * @param position_future Next position of camera
  */
 bool Camera::is_close_to_boundaries(const glm::vec3& position_future) {
+  ///
+  return false;
+  ///
+
   std::vector<float> distances;
   std::transform(boundaries.begin(), boundaries.end(), std::back_inserter(distances),
       [position_future](const glm::vec3& position_wall) { return glm::length(position_future - position_wall); });
