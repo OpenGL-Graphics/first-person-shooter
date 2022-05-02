@@ -34,7 +34,9 @@ protected:
   std::vector<Renderer> m_renderers;
 private:
   /* Height of walls & elevation of ceiling */
-  const float m_height;
+  const float m_height = 3.5;
+  const float m_wall_thickness = 0.2;
+  const float m_wall_tile_length = 1.0;
 
   /* declared before `m_renderer_floor` as nrows/ncols needed to avoid stretching texture */
   Tilemap m_tilemap;
@@ -80,7 +82,7 @@ private:
   void draw_window(const Uniforms& u, const glm::vec3& position_tile);
   void draw_tree(const Uniforms& u, const glm::vec3& position_tile);
   void draw_doors(const Uniforms& u);
-  void draw_wall(const Uniforms& u, const glm::vec3& position_tile, float angle);
+  void draw_wall(const glm::vec3& position_tile, char orientation);
 
   glm::mat4 get_model_target(const glm::vec3& position_target);
 };

@@ -19,7 +19,6 @@ std::vector<TargetEntry> LevelRenderer::targets;
  * Needed for collision with camera
  */
 LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
-  m_height(3.5f),
   m_tilemap(tilemap),
 
   // renderers for walls/floors
@@ -143,10 +142,9 @@ void LevelRenderer::draw(const Uniforms& u) {
       Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
       glm::vec3 position_tile = {i_col, 0, i_row};
       position_tile += m_position;
-      float angle[2] = {0.0f, 0.0f};
-      unsigned int n_surfaces = 1;
 
-      // choose angle/texture of surface accord. to tile
+      // draw tree, window, wall at position
+      // TODO: no need to parse tilemap in constructor & again here (at end this loop should be empty)
       switch (tile) {
         case Tilemap::Tiles::TREE:
           draw_tree(u, position_tile);
@@ -156,93 +154,85 @@ void LevelRenderer::draw(const Uniforms& u) {
           continue;
         case Tilemap::Tiles::SPACE:
           continue;
+
         case Tilemap::Tiles::WALL_H:
-          draw_wall(uniforms, position_tile, 0.0f);
-          /*
-          uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
-          uniforms["texture_normal"] = m_textures["wall_normal"];
-          */
+          draw_wall(position_tile, '-');
           break;
         case Tilemap::Tiles::WALL_V:
-          draw_wall(uniforms, position_tile, 90.0f);
-          /*
-          uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
-          uniforms["texture_normal"] = m_textures["wall_normal"];
-          angle[0] = glm::radians(90.0f);
-          */
+          draw_wall(position_tile, '|');
           break;
         case Tilemap::Tiles::WALL_L:
-          /*
-          // close gap in lower-left corner using two perpendicular surfaces
-          uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
-          uniforms["texture_normal"] = m_textures["wall_normal"];
-          n_surfaces = 2;
-          angle[0] = glm::radians(90.0f);
-          */
+          draw_wall(position_tile, 'L');
           break;
         case Tilemap::Tiles::WALL_L_INV:
-          /*
-          // two perpendicular surfaces forming a reverse L-shape (Uppercase Gamma)
-          uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
-          uniforms["texture_normal"] = m_textures["wall_normal"];
-          n_surfaces = 2;
-          angle[0] = glm::radians(-90.0f);
-          */
+          draw_wall(position_tile, 'I');
           break;
         default:
           continue;
       }
-
-      // render tile surface (or two tiles surfaces for corners): wall or door
-      /*
-      for (size_t i_surface = 0; i_surface < n_surfaces; ++i_surface) {
-        // calculate normal matrix only once (instead of doing it in shader for every vertex)
-        glm::mat4 model = glm::rotate(
-          glm::translate(glm::mat4(1.0f), position_tile),
-          angle[i_surface],
-          glm::vec3(0.0f, 1.0f, 0.0f)
-        );
-        glm::mat4 normal_mat = glm::inverseTranspose(model);
-        uniforms["normal_mat"] = normal_mat;
-
-        // vertical scaling then rotation around y-axis then translation
-        m_renderer_wall.set_transform({ model, m_transformation.view, m_transformation.projection });
-        uniforms["color"] = glm::vec3(1, 0, 0);
-        m_renderer_wall.draw(uniforms);
-      }
-      */
     }
   }
 }
 
-/* Draw wall rotated by `angle` (in deg) around y-axis at `position_tile` */
-void LevelRenderer::draw_wall(const Uniforms& u, const glm::vec3& position_tile, float angle) {
-  // Uniforms uniforms = u;
-  // uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
-  // uniforms["texture_normal"] = m_textures["wall_normal"];
+/**
+ * Draw wall rotated by `angle` (in deg) around y-axis at `position_tile`
+ * @param orientation same symbols as on tilemap: '-': horizontal, '|': vertical, 'L': two perpendicular walls, 'I': Inverted L-shaped walls
+ */
+void LevelRenderer::draw_wall(const glm::vec3& position_tile, char orientation) {
+  // TODO: should be in separate class!
+  // L-shaped and inverse L-shaped wall composed of two wall tiles
+  float angles[2];
+  unsigned n_walls = (orientation == 'L' || orientation == 'I') ? 2 : 1;
+  glm::vec3 offsets[2];
 
   // unit cube geometry centered around origin
-  glm::vec3 position = position_tile + glm::vec3(0.5f, m_height / 2.0f, 0.5f);
+  switch (orientation) {
+    case '-': // horizontal
+      angles[0] = 0;
+      offsets[0] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
+      break;
+    case '|': // vertical
+      angles[0] = 90;
+      offsets[0] = glm::vec3(m_wall_thickness / 2, m_height / 2, -m_wall_tile_length / 2);
+      break;
+    case 'L': // two perpendicular walls
+      angles[0] = 90;
+      angles[1] = 0;
+      offsets[0] = glm::vec3(m_wall_thickness / 2, m_height / 2, -m_wall_tile_length / 2);
+      offsets[1] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
+      break;
+    case 'I': // Inverted L-shaped walls
+      angles[0] = 0;
+      angles[1] = 90;
+      offsets[0] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
+      offsets[1] = glm::vec3(m_wall_thickness / 2, m_height / 2, m_wall_tile_length / 2);
+      break;
+  }
 
-  // calculate normal matrix only once (instead of doing it in shader for every vertex)
-  glm::mat4 model = glm::scale(
-    glm::rotate(
-      glm::translate(glm::mat4(1.0f), position),
-      glm::radians(angle),
-      glm::vec3(0.0f, 1.0f, 0.0f)
-    ),
-    glm::vec3(1.0f, m_height, 1.0f)
-  );
-  glm::mat4 normal_mat = glm::inverseTranspose(model);
+  for (size_t i_wall = 0; i_wall < n_walls; i_wall++) {
+    glm::vec3 offset = offsets[i_wall];
+    glm::vec3 position = position_tile + offset;
 
-  Uniforms uniforms;
-  uniforms["normal_mat"] = normal_mat;
-  uniforms["texture3d"] = m_texture_wall;
+    // calculate normal matrix only once (instead of doing it in shader for every vertex)
+    float angle = angles[i_wall];
+    glm::mat4 model = glm::scale(
+      glm::rotate(
+        glm::translate(glm::mat4(1.0f), position),
+        glm::radians(angle),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+      ),
+      glm::vec3(1.0f, m_height, m_wall_thickness)
+    );
 
-  // vertical scaling then rotation around y-axis then translation
-  m_renderer_wall.set_transform({ model, m_transformation.view, m_transformation.projection });
-  // uniforms["color"] = glm::vec3(1, 0, 0);
-  m_renderer_wall.draw(uniforms);
+    glm::mat4 normal_mat = glm::inverseTranspose(model);
+    Uniforms uniforms;
+    uniforms["normal_mat"] = normal_mat;
+    uniforms["texture3d"] = m_texture_wall;
+
+    // vertical scaling then rotation around y-axis then translation
+    m_renderer_wall.set_transform({ model, m_transformation.view, m_transformation.projection });
+    m_renderer_wall.draw(uniforms);
+  }
 }
 
 /* Draw doors at locations parsed in constructor */
