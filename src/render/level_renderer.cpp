@@ -21,8 +21,7 @@ std::vector<TargetEntry> LevelRenderer::targets;
 LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
   m_tilemap(tilemap),
 
-  // renderers for walls/floors
-  m_renderer_wall(Program("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag"), VBO(Cube()), {{0, "position", 3, 6, 0}}),
+  // renderers for doors/floors
   m_renderer_door(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {
     {0, "position", 2, 7, 0},
     {1, "normal", 3, 7, 2},
@@ -33,6 +32,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},
   }),
+  m_renderer_walls(),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
   m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag"), {
@@ -63,7 +63,6 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     {"ceiling_diffuse", Texture2D(Image("assets/images/level/ceiling_diffuse.jpg"), GL_TEXTURE0)},
     {"ceiling_normal", Texture2D(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE1)},
   },
-  m_texture_wall(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0),
 
   m_position(position)
 {
@@ -74,7 +73,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     Tilemap::Tiles::WALL_H, Tilemap::Tiles::WALL_V, Tilemap::Tiles::WALL_L, Tilemap::Tiles::WALL_GAMMA,
   };
 
-  // TODO: save position of elements (to avoid parsing tilemap twice)
+  // save position of tile objects (used in `draw()`)
   for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
     for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
       Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
@@ -85,18 +84,18 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
       TargetEntry target_entry;
       switch (tile) {
         case Tilemap::Tiles::WALL_H:
-          walls.push_back({ position_tile, WallOrientation::HORIZONTAL });
+          m_walls.push_back({ position_tile, WallOrientation::HORIZONTAL });
           break;
         case Tilemap::Tiles::WALL_V:
-          walls.push_back({ position_tile, WallOrientation::VERTICAL });
+          m_walls.push_back({ position_tile, WallOrientation::VERTICAL });
           angle = glm::radians(90.0f);
           break;
         case Tilemap::Tiles::WALL_L:
-          walls.push_back({ position_tile, WallOrientation::L_SHAPED });
+          m_walls.push_back({ position_tile, WallOrientation::L_SHAPED });
           angle = glm::radians(90.0f);
           break;
         case Tilemap::Tiles::WALL_GAMMA:
-          walls.push_back({ position_tile, WallOrientation::GAMMA_SHAPED });
+          m_walls.push_back({ position_tile, WallOrientation::GAMMA_SHAPED });
           angle = glm::radians(-90.0f);
           break;
         case Tilemap::Tiles::ENEMMY: // non-mobile enemies
@@ -144,75 +143,11 @@ void LevelRenderer::draw(const Uniforms& u) {
   draw_ceiling(u);
   draw_doors(u);
   draw_targets(u);
-  draw_walls();
+  m_renderer_walls.draw(m_walls);
   draw_trees(u);
 
   // called last for blending transparent window with objects in bg
   draw_windows(u);
-}
-
-/* Draw walls at positions parsed in constructor */
-void LevelRenderer::draw_walls() {
-  for (const WallEntry& wall : walls) {
-    draw_wall(wall);
-  }
-}
-
-/* Draw wall rotated by `angle` (in deg) around y-axis at `position_tile` */
-void LevelRenderer::draw_wall(const WallEntry& wall) {
-  // TODO: should be in separate class!
-  // L-shaped and inverse L-shaped wall composed of two wall tiles
-  float angles[2];
-  unsigned n_walls = (wall.orientation == WallOrientation::L_SHAPED || wall.orientation == WallOrientation::GAMMA_SHAPED) ? 2 : 1;
-  glm::vec3 offsets[2];
-
-  // unit cube geometry centered around origin
-  switch (wall.orientation) {
-    case WallOrientation::HORIZONTAL:
-      angles[0] = 0;
-      offsets[0] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
-      break;
-    case WallOrientation::VERTICAL:
-      angles[0] = 90;
-      offsets[0] = glm::vec3(m_wall_thickness / 2, m_height / 2, -m_wall_tile_length / 2);
-      break;
-    case WallOrientation::L_SHAPED:
-      angles[0] = 90;
-      angles[1] = 0;
-      offsets[0] = glm::vec3(m_wall_thickness / 2, m_height / 2, -m_wall_tile_length / 2);
-      offsets[1] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
-      break;
-    case WallOrientation::GAMMA_SHAPED:
-      angles[0] = 0;
-      angles[1] = 90;
-      offsets[0] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
-      offsets[1] = glm::vec3(m_wall_thickness / 2, m_height / 2, m_wall_tile_length / 2);
-  }
-
-  for (size_t i_wall = 0; i_wall < n_walls; i_wall++) {
-    glm::vec3 offset = offsets[i_wall];
-    glm::vec3 position = wall.position + offset;
-
-    // calculate normal matrix only once (instead of doing it in shader for every vertex)
-    float angle = angles[i_wall];
-    glm::mat4 model = glm::scale(
-      glm::rotate(
-        glm::translate(glm::mat4(1.0f), position),
-        glm::radians(angle),
-        glm::vec3(0.0f, 1.0f, 0.0f)
-      ),
-      glm::vec3(1.0f, m_height, m_wall_thickness)
-    );
-
-    glm::mat4 normal_mat = glm::inverseTranspose(model);
-    Uniforms uniforms;
-    uniforms["normal_mat"] = normal_mat;
-    uniforms["texture3d"] = m_texture_wall;
-
-    // vertical scaling then rotation around y-axis then translation
-    m_renderer_wall.set_transform({ model, m_transformation.view, m_transformation.projection });
-    m_renderer_wall.draw(uniforms);
-  }
 }
 
 /* Draw doors at locations parsed in constructor */
@@ -257,7 +192,7 @@ void LevelRenderer::draw_window(const Uniforms& u, const glm::vec3& position_til
   float z_window_bottom = m_height/2.0f - height_window/2.0f;
   glm::vec3 position_window(position_tile.x, z_window_bottom, position_tile.z);
 
-  // TODO: transparent surfaces should be last to render to ensure blending with background
+  // transparent surfaces last to render to ensure blending with background
   m_window.set_transform({
     glm::translate(glm::mat4(1.0f), position_window),
     m_transformation.view, m_transformation.projection
@@ -357,6 +292,9 @@ void LevelRenderer::set_transform(const Transformation& t) {
     target_entry.bounding_box = m_target.bounding_box;
     target_entry.bounding_box.transform(model_target);
   }
+
+  // drawing walls delegated to another class
+  m_renderer_walls.set_transform(t);
 }
 
 /* add-up level & target translation offsets */
@@ -371,9 +309,9 @@ glm::mat4 LevelRenderer::get_model_target(const glm::vec3& position_target) {
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
   // renderers
-  m_renderer_wall.free();
   m_renderer_door.free();
   m_renderer_floor.free();
+  m_renderer_walls.free();
 
   // entities
   m_tree.free();
@@ -385,5 +323,4 @@ void LevelRenderer::free() {
   for (auto& item : m_textures) {
     item.second.free();
   }
-  m_texture_wall.free();
 }
