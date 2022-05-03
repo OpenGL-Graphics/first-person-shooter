@@ -15,7 +15,7 @@
 std::vector<TargetEntry> LevelRenderer::targets;
 
 /**
- * Sets positions of walls tiles only once in constructor
+ * Sets positions of object tiles only once in constructor (origin at tilemap's upper-left corner)
  * Needed for collision with camera
  */
 LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
@@ -71,7 +71,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
   std::cout << "Tilemap: " << m_tilemap.n_rows << " rows x " << m_tilemap.n_cols << " cols" << '\n';
 
   std::vector<Tilemap::Tiles> tiles_walls = {
-    Tilemap::Tiles::WALL_H, Tilemap::Tiles::WALL_V, Tilemap::Tiles::WALL_L, Tilemap::Tiles::WALL_L_INV,
+    Tilemap::Tiles::WALL_H, Tilemap::Tiles::WALL_V, Tilemap::Tiles::WALL_L, Tilemap::Tiles::WALL_GAMMA,
   };
 
   // TODO: save position of elements (to avoid parsing tilemap twice)
@@ -85,14 +85,18 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
       TargetEntry target_entry;
       switch (tile) {
         case Tilemap::Tiles::WALL_H:
+          walls.push_back({ position_tile, WallOrientation::HORIZONTAL });
           break;
         case Tilemap::Tiles::WALL_V:
+          walls.push_back({ position_tile, WallOrientation::VERTICAL });
           angle = glm::radians(90.0f);
           break;
         case Tilemap::Tiles::WALL_L:
+          walls.push_back({ position_tile, WallOrientation::L_SHAPED });
           angle = glm::radians(90.0f);
           break;
-        case Tilemap::Tiles::WALL_L_INV:
+        case Tilemap::Tiles::WALL_GAMMA:
+          walls.push_back({ position_tile, WallOrientation::GAMMA_SHAPED });
           angle = glm::radians(-90.0f);
           break;
         case Tilemap::Tiles::ENEMMY: // non-mobile enemies
@@ -102,6 +106,12 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
           continue;
         case Tilemap::Tiles::DOOR_H:
           m_positions_doors.push_back(position_tile);
+          break;
+        case Tilemap::Tiles::WINDOW:
+          m_positions_windows.push_back(position_tile);
+          break;
+        case Tilemap::Tiles::TREE:
+          m_positions_trees.push_back(position_tile);
           break;
         default:
           break;
@@ -126,92 +136,62 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
 }
 
 /**
- * Render tiles with textures accord. to tilemap & origin at tilemap's upper-left corner
- * @param uniforms Uniforms passed to shader
+ * Render floor, ceiling, doors, & targets (positions parsed in constructor)
+ * @param uniforms Uniforms passed to shader (i.e. lights & camera pos.)
  */
 void LevelRenderer::draw(const Uniforms& u) {
-  // draw floor, ceiling, doors, & targets
   draw_floor(u);
   draw_ceiling(u);
   draw_doors(u);
   draw_targets(u);
+  draw_walls();
+  draw_trees(u);
 
-  for (size_t i_row = 0; i_row < m_tilemap.n_rows; ++i_row) {
-    for (size_t i_col = 0; i_col < m_tilemap.n_cols; ++i_col) {
-      Uniforms uniforms = u;
-      Tilemap::Tiles tile = (Tilemap::Tiles) m_tilemap.map[i_row][i_col];
-      glm::vec3 position_tile = {i_col, 0, i_row};
-      position_tile += m_position;
+  // called last for blending transparent window with objects in bg
+  draw_windows(u);
+}
 
-      // draw tree, window, wall at position
-      // TODO: no need to parse tilemap in constructor & again here (at end this loop should be empty)
-      switch (tile) {
-        case Tilemap::Tiles::TREE:
-          draw_tree(u, position_tile);
-          continue;
-        case Tilemap::Tiles::WINDOW:
-          draw_window(uniforms, position_tile);
-          continue;
-        case Tilemap::Tiles::SPACE:
-          continue;
-
-        case Tilemap::Tiles::WALL_H:
-          draw_wall(position_tile, '-');
-          break;
-        case Tilemap::Tiles::WALL_V:
-          draw_wall(position_tile, '|');
-          break;
-        case Tilemap::Tiles::WALL_L:
-          draw_wall(position_tile, 'L');
-          break;
-        case Tilemap::Tiles::WALL_L_INV:
-          draw_wall(position_tile, 'I');
-          break;
-        default:
-          continue;
-      }
-    }
+/* Draw walls at positions parsed in constructor */
+void LevelRenderer::draw_walls() {
+  for (const WallEntry& wall : walls) {
+    draw_wall(wall);
   }
 }
 
-/**
- * Draw wall rotated by `angle` (in deg) around y-axis at `position_tile`
- * @param orientation same symbols as on tilemap: '-': horizontal, '|': vertical, 'L': two perpendicular walls, 'I': Inverted L-shaped walls
- */
-void LevelRenderer::draw_wall(const glm::vec3& position_tile, char orientation) {
+/* Draw wall rotated by `angle` (in deg) around y-axis at `position_tile` */
+void LevelRenderer::draw_wall(const WallEntry& wall) {
   // TODO: should be in separate class!
   // L-shaped and inverse L-shaped wall composed of two wall tiles
   float angles[2];
-  unsigned n_walls = (orientation == 'L' || orientation == 'I') ? 2 : 1;
+  unsigned n_walls = (wall.orientation == WallOrientation::L_SHAPED || wall.orientation == WallOrientation::GAMMA_SHAPED) ? 2 : 1;
   glm::vec3 offsets[2];
 
   // unit cube geometry centered around origin
-  switch (orientation) {
-    case '-': // horizontal
+  switch (wall.orientation) {
+    case WallOrientation::HORIZONTAL:
       angles[0] = 0;
       offsets[0] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
       break;
-    case '|': // vertical
+    case WallOrientation::VERTICAL:
       angles[0] = 90;
       offsets[0] = glm::vec3(m_wall_thickness / 2, m_height / 2, -m_wall_tile_length / 2);
       break;
-    case 'L': // two perpendicular walls
+    case WallOrientation::L_SHAPED:
       angles[0] = 90;
       angles[1] = 0;
       offsets[0] = glm::vec3(m_wall_thickness / 2, m_height / 2, -m_wall_tile_length / 2);
       offsets[1] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
       break;
-    case 'I': // Inverted L-shaped walls
+    case WallOrientation::GAMMA_SHAPED:
       angles[0] = 0;
       angles[1] = 90;
       offsets[0] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
       offsets[1] = glm::vec3(m_wall_thickness / 2, m_height / 2, m_wall_tile_length / 2);
-      break;
   }
 
   for (size_t i_wall = 0; i_wall < n_walls; i_wall++) {
     glm::vec3 offset = offsets[i_wall];
-    glm::vec3 position = position_tile + offset;
+    glm::vec3 position = wall.position + offset;
 
     // calculate normal matrix only once (instead of doing it in shader for every vertex)
     float angle = angles[i_wall];
@@ -251,16 +231,24 @@ void LevelRenderer::draw_doors(const Uniforms& u) {
   }
 }
 
-/* Draw tree 3d model at given tile position */
-void LevelRenderer::draw_tree(const Uniforms& u, const glm::vec3& position_tile) {
-  // 3d model (origin: base of 3d model)
-  glm::mat4 model = glm::translate(glm::mat4(1.0f), position_tile);
-  m_tree.set_transform({ model, m_transformation.view, m_transformation.projection });
+/* Draw trees 3d model at positions parsed in constructor */
+void LevelRenderer::draw_trees(const Uniforms& u) {
+  for (const glm::vec3& position : m_positions_trees) {
+    // 3d model (origin: base of 3d model)
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+    m_tree.set_transform({ model, m_transformation.view, m_transformation.projection });
 
-  Uniforms uniforms = u;
-  glm::mat4 normal_mat = glm::inverseTranspose(model);
-  uniforms["normal_mat"] = normal_mat;
-  m_tree.draw(uniforms);
+    Uniforms uniforms = u;
+    glm::mat4 normal_mat = glm::inverseTranspose(model);
+    uniforms["normal_mat"] = normal_mat;
+    m_tree.draw(uniforms);
+  }
+}
+
+void LevelRenderer::draw_windows(const Uniforms& u) {
+  for (const glm::vec3& position: m_positions_windows) {
+    draw_window(u, position);
+  }
 }
 
 /* Draw window at mid y-coord of `position_tile` with half-walls below & above it */

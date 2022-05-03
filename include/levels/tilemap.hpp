@@ -23,7 +23,7 @@ struct Tilemap {
 
     // compounds wall composed of two perpendicular walls
     WALL_L = 'L',
-    WALL_L_INV = 'I',
+    WALL_GAMMA = 'G', // uppercase Gamma: Γ
   };
 
   /**

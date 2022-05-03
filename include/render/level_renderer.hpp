@@ -6,7 +6,10 @@
 #include "render/renderer.hpp"
 #include "levels/tilemap.hpp"
 #include "program.hpp"
+
 #include "entries/target_entry.hpp"
+#include "entries/wall_orientation.hpp"
+#include "entries/wall_entry.hpp"
 
 #include "entities/target.hpp"
 #include "entities/model.hpp"
@@ -74,15 +77,20 @@ private:
 
   /* positions of tiles elements (parsed only once in constructor) */
   std::vector<glm::vec3> m_positions_doors;
+  std::vector<glm::vec3> m_positions_trees;
+  std::vector<glm::vec3> m_positions_windows;
+  std::vector<WallEntry> walls;
 
   void draw_horizontal_surface(const Uniforms& u, bool is_floor);
   void draw_floor(const Uniforms& u);
   void draw_ceiling(const Uniforms& u);
   void draw_targets(const Uniforms& u);
+  void draw_windows(const Uniforms& u);
   void draw_window(const Uniforms& u, const glm::vec3& position_tile);
-  void draw_tree(const Uniforms& u, const glm::vec3& position_tile);
+  void draw_trees(const Uniforms& u);
   void draw_doors(const Uniforms& u);
-  void draw_wall(const glm::vec3& position_tile, char orientation);
+  void draw_walls();
+  void draw_wall(const WallEntry& wall);
 
   glm::mat4 get_model_target(const glm::vec3& position_target);
 };
