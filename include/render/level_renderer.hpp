@@ -5,6 +5,7 @@
 
 #include "render/renderer.hpp"
 #include "render/walls_renderer.hpp"
+#include "render/floors_renderer.hpp"
 
 #include "levels/tilemap.hpp"
 #include "program.hpp"
@@ -49,8 +50,8 @@ private:
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
    */
   Renderer m_renderer_door;
-  Renderer m_renderer_floor;
   WallsRenderer m_renderer_walls;
+  FloorsRenderer m_renderer_floors;
 
   /* tree props rendered multiple times */
   Model m_tree;
@@ -77,9 +78,6 @@ private:
   std::vector<glm::vec3> m_positions_windows;
   std::vector<WallEntry> m_walls;
 
-  void draw_horizontal_surface(const Uniforms& u, bool is_floor);
-  void draw_floor(const Uniforms& u);
-  void draw_ceiling(const Uniforms& u);
   void draw_targets(const Uniforms& u);
   void draw_windows(const Uniforms& u);
   void draw_window(const Uniforms& u, const glm::vec3& position_tile);

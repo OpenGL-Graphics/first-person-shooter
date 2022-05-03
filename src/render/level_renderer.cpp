@@ -27,11 +27,7 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},
   }),
-  m_renderer_floor(program_tile, VBO(Surface(glm::vec2(m_tilemap.n_cols - 1, m_tilemap.n_rows - 1))), {
-    {0, "position", 2, 7, 0},
-    {1, "normal", 3, 7, 2},
-    {2, "texture_coord", 2, 7, 5},
-  }),
+  m_renderer_floors(program_tile, { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
   m_renderer_walls(),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
@@ -58,10 +54,6 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     {"wall_normal", Texture2D(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1)},
     {"door_diffuse", Texture2D(Image("assets/images/level/door_diffuse.jpg"), GL_TEXTURE0)},
     {"door_normal", Texture2D(Image("assets/images/level/door_normal.jpg"), GL_TEXTURE1)},
-    {"floor_diffuse", Texture2D(Image("assets/images/level/floor_diffuse.jpg"), GL_TEXTURE0)},
-    {"floor_normal", Texture2D(Image("assets/images/level/floor_normal.jpg"), GL_TEXTURE1)},
-    {"ceiling_diffuse", Texture2D(Image("assets/images/level/ceiling_diffuse.jpg"), GL_TEXTURE0)},
-    {"ceiling_normal", Texture2D(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE1)},
   },
 
   m_position(position)
@@ -139,12 +131,11 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
  * @param uniforms Uniforms passed to shader (i.e. lights & camera pos.)
  */
 void LevelRenderer::draw(const Uniforms& u) {
-  draw_floor(u);
-  draw_ceiling(u);
   draw_doors(u);
   draw_targets(u);
-  m_renderer_walls.draw(m_walls);
   draw_trees(u);
+  m_renderer_walls.draw(m_walls);
+  m_renderer_floors.draw(u);
 
   // called last for blending transparent window with objects in bg
   draw_windows(u);
@@ -234,52 +225,6 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
 }
 
 /**
- * Draw horizontal surface at given height
- * @param is_floor Needed when face culling enabled & same angle for floor/ceiling => hidden floor
- */
-void LevelRenderer::draw_horizontal_surface(const Uniforms& u, bool is_floor) {
-  // floor rotated in opposite dir. (need to be shifted back to origin)
-  float angle = (is_floor) ? glm::radians(-90.0f) : glm::radians(90.0f);
-  const float y = (is_floor) ? 0 : m_height;
-  glm::vec3 position = m_position + glm::vec3(0.0f, y, 0.0f);
-
-  if (is_floor) {
-    unsigned int depth_map = m_tilemap.n_rows - 1;
-    position += glm::vec3(0, 0, depth_map);
-  }
-
-  // calculate normal matrix only once (instead of doing it in shader for every vertex)
-  glm::mat4 model = glm::rotate(
-    glm::translate(glm::mat4(1.0f), position),
-    angle,
-    glm::vec3(1.0f, 0.0f, 0.0f)
-  );
-  glm::mat4 normal_mat = glm::inverseTranspose(model);
-
-  // xy scaling then rotation around x-axis then translation
-  Uniforms uniforms = u;
-  uniforms["normal_mat"] = normal_mat;
-  m_renderer_floor.set_transform({ model, m_transformation.view, m_transformation.projection });
-  m_renderer_floor.draw(uniforms);
-}
-
-/* Draw horizontal floor covering bottom of tilemap */
-void LevelRenderer::draw_floor(const Uniforms& u) {
-  Uniforms uniforms = u;
-  uniforms["texture_diffuse"] = m_textures["floor_diffuse"];
-  uniforms["texture_normal"] = m_textures["floor_normal"];
-  draw_horizontal_surface(uniforms, true);
-}
-
-/* Draw horizontal floor covering top of tilemap */
-void LevelRenderer::draw_ceiling(const Uniforms& u) {
-  Uniforms uniforms = u;
-  uniforms["texture_diffuse"] = m_textures["ceiling_diffuse"];
-  uniforms["texture_normal"] = m_textures["ceiling_normal"];
-  draw_horizontal_surface(uniforms, false);
-}
-
-/**
  * Set model matrix (translation/rotation/scaling) used by renderers in `draw()`
  * `m_position` serves as an offset when translating surfaces tiles in `draw()`
  */
@@ -293,7 +238,8 @@ void LevelRenderer::set_transform(const Transformation& t) {
     target_entry.bounding_box.transform(model_target);
   }
 
-  // drawing walls delegated to another class
+  // drawing floors/walls delegated to another class
+  m_renderer_floors.set_transform(t);
   m_renderer_walls.set_transform(t);
 }
 
@@ -310,7 +256,7 @@ glm::mat4 LevelRenderer::get_model_target(const glm::vec3& position_target) {
 void LevelRenderer::free() {
   // renderers
   m_renderer_door.free();
-  m_renderer_floor.free();
+  m_renderer_floors.free();
   m_renderer_walls.free();
 
   // entities
