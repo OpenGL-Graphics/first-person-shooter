@@ -12,6 +12,7 @@ public:
   WallsRenderer();
   void set_transform(const Transformation& t);
   void draw(const std::vector<WallEntry>& entries);
+  void draw_walls_around_window(const glm::vec3& position_tile);
   void free();
 
 private:

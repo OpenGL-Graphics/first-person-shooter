@@ -56,9 +56,8 @@ private:
   /* tree props rendered multiple times */
   Model m_tree;
 
-  /* Window & wall below/above it */
+  /* Window */
   Sprite m_window;
-  Renderer m_renderer_wall_half;
 
   /* Target (enemy) to shoot */
   Target m_target;

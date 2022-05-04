@@ -103,6 +103,35 @@ void WallsRenderer::draw_wall(const WallEntry& entry) {
   }
 }
 
+/* Draw wall below window located at `position_tile` & another above it */
+void WallsRenderer::draw_walls_around_window(const glm::vec3& position_tile) {
+  float height_window = 1.0f;
+  float height_wall = (m_height - height_window) / 2;
+  glm::vec3 scale = glm::vec3(1, height_wall, m_wall_thickness);
+
+  // wall below window
+  Uniforms uniforms;
+  uniforms["texture3d"] = m_texture;
+  glm::vec3 position_bottom = position_tile + glm::vec3(m_wall_tile_length / 2, height_wall / 2, m_wall_thickness / 2);
+  glm::mat4 model_bottom = glm::scale(
+    glm::translate(glm::mat4(1.0f), position_bottom),
+    scale 
+  );
+  uniforms["normal_mat"] = glm::inverseTranspose(model_bottom);
+  m_renderer.set_transform({ model_bottom, m_transformation.view, m_transformation.projection });
+  m_renderer.draw(uniforms);
+
+  // wall above window
+  glm::vec3 position_top = position_bottom + glm::vec3(0, height_wall + height_window, 0);
+  glm::mat4 model_top = glm::scale(
+    glm::translate(glm::mat4(1.0f), position_top),
+    scale
+  );
+  uniforms["normal_mat"] = glm::inverseTranspose(model_top);
+  m_renderer.set_transform({ model_top, m_transformation.view, m_transformation.projection });
+  m_renderer.draw(uniforms);
+}
+
 void WallsRenderer::free() {
   m_renderer.free();
   m_texture.free();

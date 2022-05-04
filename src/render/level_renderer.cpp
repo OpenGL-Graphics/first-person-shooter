@@ -38,13 +38,8 @@ LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap
     {3, "tangent", 3, 11, 8},
   }),
 
-  // window & wall above/below it
+  // window
   m_window(Image("assets/images/surfaces/window.png")),
-  m_renderer_wall_half(program_tile, VBO(Surface(glm::vec2(1.0f, m_height/2.0f - 1.0f/2.0f))), {
-    {0, "position", 2, 7, 0},
-    {1, "normal", 3, 7, 2},
-    {2, "texture_coord", 2, 7, 5},
-  }),
 
   // target (enemy) to shoot
   m_target(importer),
@@ -190,22 +185,8 @@ void LevelRenderer::draw_window(const Uniforms& u, const glm::vec3& position_til
   });
   m_window.draw();
 
-  // wall below window
-  Uniforms uniforms = u;
-  uniforms["texture_diffuse"] = m_textures["wall_diffuse"];
-  uniforms["texture_normal"] = m_textures["wall_normal"];
-
-  glm::mat4 model_top = glm::translate(glm::mat4(1.0f), position_tile);
-  uniforms["normal_mat"] = glm::inverseTranspose(model_top);
-  m_renderer_wall_half.set_transform({ model_top, m_transformation.view, m_transformation.projection });
-  m_renderer_wall_half.draw(uniforms);
-
-  // wall above window
-  float z_window_top = z_window_bottom + height_window;
-  glm::mat4 model_bottom = glm::translate(glm::mat4(1.0f), glm::vec3(position_tile.x, z_window_top, position_tile.z));
-  uniforms["normal_mat"] = glm::inverseTranspose(model_bottom);
-  m_renderer_wall_half.set_transform({ model_bottom, m_transformation.view, m_transformation.projection });
-  m_renderer_wall_half.draw(uniforms);
+  // draw two walls below & above window
+  m_renderer_walls.draw_walls_around_window(position_tile);
 }
 
 /* Draw targets */
@@ -262,7 +243,6 @@ void LevelRenderer::free() {
   // entities
   m_tree.free();
   m_window.free();
-  m_renderer_wall_half.free();
   m_target.free();
 
   // textures
