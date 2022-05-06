@@ -16,16 +16,23 @@ public:
   void free();
 
 private:
+  /* Height of walls & elevation of ceiling */
+  const float m_wall_height = 3.5;
+  const float m_wall_length = 1.0;
+  const float m_wall_depth = 0.2;
+
+  /* Height of wall below/above window */
+  const float m_window_height = 1.0f;
+  const float m_subwall_height = (m_wall_height - m_window_height) / 2;
+
+  /* TODO: same renderer (shader, vao attributes) but with updated vbo */
+  Program m_program;
   Renderer m_renderer;
+  Renderer m_renderer_subwall;
   Transformation m_transformation;
 
-  /* Cubes used for walls as face culling hides back-face & lighting affect it similarly to front one */
-  Texture3D m_texture;
-
-  /* Height of walls & elevation of ceiling */
-  const float m_height = 3.5;
-  const float m_wall_thickness = 0.2;
-  const float m_wall_tile_length = 1.0;
+  /* Texture3D was stretching without repeat */
+  Texture2D m_texture;
 
   void draw_wall(const WallEntry& wall);
   std::array<glm::vec3, 2> calculate_offsets(const WallEntry& entry);

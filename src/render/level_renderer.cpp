@@ -18,19 +18,21 @@ std::vector<TargetEntry> LevelRenderer::targets;
  * Sets positions of object tiles only once in constructor (origin at tilemap's upper-left corner)
  * Needed for collision with camera
  */
-LevelRenderer::LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
+LevelRenderer::LevelRenderer(const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
   m_tilemap(tilemap),
 
   // renderers for doors/floors
-  m_renderer_door(program_tile, VBO(Surface(glm::vec2(1.0f, m_height))), {
+  m_program_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag"),
+  m_renderer_door(m_program_tile, VBO(Surface(glm::vec2(1, m_height))), {
     {0, "position", 2, 7, 0},
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},
   }),
-  m_renderer_floors(program_tile, { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
+  m_renderer_floors(m_program_tile, { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
   m_renderer_walls(),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
+  // TODO: factory to init shaders accessible everywhere (manages their lifecycles too)
   m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag"), {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
@@ -235,6 +237,9 @@ glm::mat4 LevelRenderer::get_model_target(const glm::vec3& position_target) {
 
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
+  // shaders
+  m_program_tile.free();
+
   // renderers
   m_renderer_door.free();
   m_renderer_floors.free();

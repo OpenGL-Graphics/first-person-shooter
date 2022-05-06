@@ -31,13 +31,11 @@ struct LevelRenderer {
    */
   static std::vector<TargetEntry> targets;
 
-  LevelRenderer(const Program& program_tile, const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer);
+  LevelRenderer(const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer);
   void draw(const Uniforms& u={});
   void set_transform(const Transformation& t);
   void free();
 
-protected:
-  std::vector<Renderer> m_renderers;
 private:
   /* Height of walls & elevation of ceiling */
   const float m_height = 3.5;
@@ -49,6 +47,7 @@ private:
    * Renderers for wall, window, & ceiling/floor tiles
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
    */
+  Program m_program_tile;
   Renderer m_renderer_door;
   WallsRenderer m_renderer_walls;
   FloorsRenderer m_renderer_floors;

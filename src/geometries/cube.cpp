@@ -13,9 +13,13 @@
  * @param is_skybox Skybox has internal triangles (i.e. indices) with CCW winding order (visible)
  *                  => only internal faces are visible with face culling enabled
  */
-Cube::Cube(bool is_skybox) {
+Cube::Cube(bool is_skybox, const glm::vec3& size):
+  m_width(size.x),
+  m_height(size.y),
+  m_depth(size.z)
+{
   // cannot be init in constructor's member initalizer list as they're members of base class
-  m_vertexes = VERTEXES;
+  m_vertexes = get_vertexes();
   m_indices = (is_skybox) ? INDICES_INTERNAL : INDICES_EXTERNAL;
   m_positions = POSITIONS;
 
@@ -23,10 +27,6 @@ Cube::Cube(bool is_skybox) {
   unsigned int n_faces = 6;
   unsigned int n_triangles = 2 * n_faces;
   m_n_elements = 3 * n_triangles;
-}
-
-std::vector<float> Cube::get_vertexes() const {
-  return m_vertexes;
 }
 
 unsigned int Cube::get_n_elements() const {
@@ -41,46 +41,51 @@ std::vector<glm::vec3> Cube::get_positions() const {
   return m_positions;
 }
 
-// duplicated xyz vertexes bcos of different normals
-// origin: center of gravity
-// coord(x,y,z)        normal(nx,ny,nz)
-const std::vector<float> Cube::VERTEXES = {
-  // negative-x (left face)
-  -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-  -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-  -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-  -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+/**
+ * Duplicated xyz vertexes bcos of different normals
+ * Cube centered around origin with baked-in xyz (no scaling needed) & uv-coords (to avoid stretching texture)
+ * 2d uv-texture coords used instead of 3d texture (cube maps), as the latter didn't repeat
+ *  coord(x,y,z)                          normal     uv
+ */
+std::vector<float> Cube::get_vertexes() const {
+  return {
+    // negative-x (left face)
+    -m_width/2,  m_height/2,  m_depth/2, -1,  0,  0, m_depth, m_height,
+    -m_width/2,  m_height/2, -m_depth/2, -1,  0,  0, 0,       m_height,
+    -m_width/2, -m_height/2, -m_depth/2, -1,  0,  0, 0,       0,
+    -m_width/2, -m_height/2,  m_depth/2, -1,  0,  0, m_depth, 0,
 
-  // positive-x (right face)
-   0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-   0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-   0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-   0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+    // positive-x (right face)
+     m_width/2,  m_height/2,  m_depth/2,  1,  0,  0, m_depth, m_height,
+     m_width/2,  m_height/2, -m_depth/2,  1,  0,  0, 0,       m_height,
+     m_width/2, -m_height/2, -m_depth/2,  1,  0,  0, 0,       0,
+     m_width/2, -m_height/2,  m_depth/2,  1,  0,  0, m_depth, 0,
 
-  // negative-y (bottom face)
-  -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-   0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-   0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-  -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    // negative-y (bottom face)
+    -m_width/2, -m_height/2, -m_depth/2,  0, -1,  0, 0,       0,
+     m_width/2, -m_height/2, -m_depth/2,  0, -1,  0, m_width, 0,
+     m_width/2, -m_height/2,  m_depth/2,  0, -1,  0, m_width, m_depth,
+    -m_width/2, -m_height/2,  m_depth/2,  0, -1,  0, 0,       m_depth,
 
-  // positive-y (top face)
-  -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-   0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-   0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-  -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    // positive-y (top face)
+    -m_width/2,  m_height/2, -m_depth/2,  0,  1,  0, 0,       0,
+     m_width/2,  m_height/2, -m_depth/2,  0,  1,  0, m_width, 0,
+     m_width/2,  m_height/2,  m_depth/2,  0,  1,  0, m_width, m_depth,
+    -m_width/2,  m_height/2,  m_depth/2,  0,  1,  0, 0,       m_depth,
 
-  // negative-z (back face)
-  -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-   0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-   0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-  -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    // negative-z (back face)
+    -m_width/2, -m_height/2, -m_depth/2,  0,  0, -1, 0,       0,
+     m_width/2, -m_height/2, -m_depth/2,  0,  0, -1, m_width, 0,
+     m_width/2,  m_height/2, -m_depth/2,  0,  0, -1, m_width, m_height,
+    -m_width/2,  m_height/2, -m_depth/2,  0,  0, -1, 0,       m_height,
 
-  // positive-z (front face)
-  -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-   0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-   0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-  -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-};
+    // positive-z (front face)
+    -m_width/2, -m_height/2,  m_depth/2,  0,  0,  1, 0,       0,
+     m_width/2, -m_height/2,  m_depth/2,  0,  0,  1, m_width, 0,
+     m_width/2,  m_height/2,  m_depth/2,  0,  0,  1, m_width, m_height,
+    -m_width/2,  m_height/2,  m_depth/2,  0,  0,  1, 0,       m_height,
+  };
+}
 
 /* For cubes with external faces visible (normal pointing outwards) */
 const std::vector<unsigned int> Cube::INDICES_EXTERNAL {

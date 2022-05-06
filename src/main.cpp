@@ -76,12 +76,11 @@ int main() {
   Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
   Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag");
   Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
-  Program pgm_texture_cube("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag");
-  Program pgm_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag");
+  Program pgm_skybox("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
   Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
   Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
   Program pgm_plane("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag");
-  if (pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_texture_cube.has_failed() || pgm_tile.has_failed() ||
+  if (pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_skybox.has_failed() ||
       pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_plane.has_failed()) {
     window.destroy();
     throw ShaderException();
@@ -131,8 +130,8 @@ int main() {
   }
 
   // renderer (encapsulates VAO & VBO) for each shape to render
-  Renderer cube(pgm_basic, VBO(Cube()), {{0, "position", 3, 6, 0}});
-  Renderer skybox(pgm_texture_cube, VBO(Cube(true)), {{0, "position", 3, 6, 0}});
+  Renderer cube(pgm_basic, VBO(Cube()), {{0, "position", 3, 8, 0}});
+  Renderer skybox(pgm_skybox, VBO(Cube(true)), {{0, "position", 3, 8, 0}});
   Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
   Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
@@ -177,7 +176,7 @@ int main() {
   // load tilemap by parsing text file
   Tilemap tilemap("assets/levels/map.txt");
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
-  LevelRenderer level(pgm_tile, tilemap, position_level, importer);
+  LevelRenderer level(tilemap, position_level, importer);
   camera.boundaries = level.positions_walls;
 
   // transformation matrices
@@ -538,8 +537,7 @@ int main() {
   pgm_basic.free();
   pgm_texture.free();
   pgm_texture_surface.free();
-  pgm_texture_cube.free();
-  pgm_tile.free();
+  pgm_skybox.free();
   pgm_light.free();
   pgm_text.free();
   pgm_plane.free();

@@ -4,8 +4,26 @@
 #include "render/walls_renderer.hpp"
 #include "geometries/cube.hpp"
 
+/* Cubes used for walls as face culling hides back-face & lighting affect it similarly to front one */
 WallsRenderer::WallsRenderer():
-  m_renderer(Program("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag"), VBO(Cube()), {{0, "position", 3, 6, 0}}),
+  m_program("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag"),
+  m_renderer(
+    m_program,
+    VBO(Cube(false, { m_wall_length, m_wall_height, m_wall_depth })),
+    {
+      {0, "position", 3, 8, 0},
+      {1, "texture_coord", 2, 8, 6}
+    }
+  ),
+  m_renderer_subwall(
+    m_program,
+    VBO(Cube(false, { m_wall_length, m_subwall_height, m_wall_depth })),
+    {
+      {0, "position", 3, 8, 0},
+      {1, "texture_coord", 2, 8, 6}
+    }
+  ),
+
   m_texture(Image("assets/images/level/wall_diffuse.jpg"))
 {
 }
@@ -27,18 +45,18 @@ std::array<glm::vec3, 2> WallsRenderer::calculate_offsets(const WallEntry& entry
 
   switch (entry.orientation) {
     case WallOrientation::HORIZONTAL:
-      offsets[0] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
+      offsets[0] = glm::vec3(m_wall_length / 2, m_wall_height / 2, m_wall_depth / 2);
       break;
     case WallOrientation::VERTICAL:
-      offsets[0] = glm::vec3(m_wall_thickness / 2, m_height / 2, -m_wall_tile_length / 2);
+      offsets[0] = glm::vec3(m_wall_depth / 2, m_wall_height / 2, -m_wall_length / 2);
       break;
     case WallOrientation::L_SHAPED:
-      offsets[0] = glm::vec3(m_wall_thickness / 2, m_height / 2, -m_wall_tile_length / 2);
-      offsets[1] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
+      offsets[0] = glm::vec3(m_wall_depth / 2, m_wall_height / 2, -m_wall_length / 2);
+      offsets[1] = glm::vec3(m_wall_length / 2, m_wall_height / 2, m_wall_depth / 2);
       break;
     case WallOrientation::GAMMA_SHAPED:
-      offsets[0] = glm::vec3(m_wall_tile_length / 2, m_height / 2, m_wall_thickness / 2);
-      offsets[1] = glm::vec3(m_wall_thickness / 2, m_height / 2, m_wall_tile_length / 2);
+      offsets[0] = glm::vec3(m_wall_length / 2, m_wall_height / 2, m_wall_depth / 2);
+      offsets[1] = glm::vec3(m_wall_depth / 2, m_wall_height / 2, m_wall_length / 2);
   }
 
   return offsets;
@@ -83,19 +101,16 @@ void WallsRenderer::draw_wall(const WallEntry& entry) {
 
     // calculate normal matrix only once (instead of doing it in shader for every vertex)
     float angle = angles[i_wall];
-    glm::mat4 model = glm::scale(
-      glm::rotate(
-        glm::translate(glm::mat4(1.0f), position),
-        glm::radians(angle),
-        glm::vec3(0.0f, 1.0f, 0.0f)
-      ),
-      glm::vec3(1.0f, m_height, m_wall_thickness)
+    glm::mat4 model = glm::rotate(
+      glm::translate(glm::mat4(1.0f), position),
+      glm::radians(angle),
+      glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
     glm::mat4 normal_mat = glm::inverseTranspose(model);
     Uniforms uniforms;
     uniforms["normal_mat"] = normal_mat;
-    uniforms["texture3d"] = m_texture;
+    uniforms["texture2d"] = m_texture;
 
     // vertical scaling then rotation around y-axis then translation
     m_renderer.set_transform({ model, m_transformation.view, m_transformation.projection });
@@ -105,34 +120,26 @@ void WallsRenderer::draw_wall(const WallEntry& entry) {
 
 /* Draw wall below window located at `position_tile` & another above it */
 void WallsRenderer::draw_walls_around_window(const glm::vec3& position_tile) {
-  float height_window = 1.0f;
-  float height_wall = (m_height - height_window) / 2;
-  glm::vec3 scale = glm::vec3(1, height_wall, m_wall_thickness);
+  Uniforms uniforms;
+  uniforms["texture2d"] = m_texture;
 
   // wall below window
-  Uniforms uniforms;
-  uniforms["texture3d"] = m_texture;
-  glm::vec3 position_bottom = position_tile + glm::vec3(m_wall_tile_length / 2, height_wall / 2, m_wall_thickness / 2);
-  glm::mat4 model_bottom = glm::scale(
-    glm::translate(glm::mat4(1.0f), position_bottom),
-    scale 
-  );
+  glm::vec3 position_bottom = position_tile + glm::vec3(m_wall_length / 2, m_subwall_height / 2, m_wall_depth / 2);
+  glm::mat4 model_bottom = glm::translate(glm::mat4(1.0f), position_bottom);
   uniforms["normal_mat"] = glm::inverseTranspose(model_bottom);
-  m_renderer.set_transform({ model_bottom, m_transformation.view, m_transformation.projection });
-  m_renderer.draw(uniforms);
+  m_renderer_subwall.set_transform({ model_bottom, m_transformation.view, m_transformation.projection });
+  m_renderer_subwall.draw(uniforms);
 
   // wall above window
-  glm::vec3 position_top = position_bottom + glm::vec3(0, height_wall + height_window, 0);
-  glm::mat4 model_top = glm::scale(
-    glm::translate(glm::mat4(1.0f), position_top),
-    scale
-  );
+  glm::vec3 position_top = position_bottom + glm::vec3(0, m_subwall_height + m_window_height, 0);
+  glm::mat4 model_top = glm::translate(glm::mat4(1.0f), position_top);
   uniforms["normal_mat"] = glm::inverseTranspose(model_top);
-  m_renderer.set_transform({ model_top, m_transformation.view, m_transformation.projection });
-  m_renderer.draw(uniforms);
+  m_renderer_subwall.set_transform({ model_top, m_transformation.view, m_transformation.projection });
+  m_renderer_subwall.draw(uniforms);
 }
 
 void WallsRenderer::free() {
+  m_program.free();
   m_renderer.free();
   m_texture.free();
 }

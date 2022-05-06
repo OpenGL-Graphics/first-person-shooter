@@ -1,11 +1,11 @@
 #version 330 core
 
-in vec3 texture_coord_vert;
+in vec2 texture_coord_vert;
 
-uniform samplerCube texture3d;
+uniform sampler2D texture2d;
 
 out vec4 color_out;
 
 void main() {
-  color_out = texture(texture3d, texture_coord_vert);
+  color_out = texture(texture2d, texture_coord_vert);
 }
