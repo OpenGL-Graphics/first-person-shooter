@@ -19,7 +19,7 @@ $ git submodule update --init --recursive --remote
 To install the needed dependencies on Ubuntu:
 
 ```console
-$ apt install libglfw3-dev libassimp-dev
+$ apt install libglm-dev libglfw3-dev libassimp-dev
 ```
 
 # Requirements
@@ -122,9 +122,7 @@ sudo apt install assimp-utils
 - Install gprof:
 
 ```console
-$ ./configure
-$ make -j
-$ sudo make install
+$ apt-get install binutils
 ```
 
 - Compile program with profiling support:

@@ -124,11 +124,6 @@ int main() {
   Framebuffer framebuffer;
   framebuffer.attach_texture(texture_framebuffer);
 
-  if (!framebuffer.is_complete()) {
-    window.destroy();
-    throw FramebufferException();
-  }
-
   // renderer (encapsulates VAO & VBO) for each shape to render
   Renderer cube(pgm_basic, VBO(Cube()), {{0, "position", 3, 8, 0}});
   Renderer skybox(pgm_skybox, VBO(Cube(true)), {{0, "position", 3, 8, 0}});
@@ -174,6 +169,7 @@ int main() {
   profiler.print("Loading 3D models");
 
   // load tilemap by parsing text file
+  // TODO: Tilemap doesn't have to be visible here (encapsulate it in LevelRenderer)
   Tilemap tilemap("assets/levels/map.txt");
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
   LevelRenderer level(tilemap, position_level, importer);
@@ -218,8 +214,13 @@ int main() {
 
       // draw red cube to texture attached to framebuffer
       cube.set_transform({
-        glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 1.0f, 0.0f)),
-        view, projection3d });
+        glm::translate(
+          glm::mat4(1.0f),
+          glm::vec3(window.width / 2, window.height  / 2, 1.0f)
+        ),
+        view,
+        projection2d
+      });
       cube.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f) } });
       framebuffer.unbind();
     }

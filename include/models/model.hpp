@@ -1,8 +1,7 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
-#include <vector>
-#include <string>
+#include <unordered_map>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 

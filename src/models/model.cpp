@@ -27,6 +27,8 @@ Model::Model(const std::string& path, Assimp::Importer& importer):
 
   for (size_t i_mesh = 0; i_mesh < n_meshes; ++i_mesh) {
     // extract vertexes & indices from each mesh
+    // TODO: very likely duplicating Mesh vertexes to vector element (need to profile size of var)
+    // => use smart pointers
     meshes[i_mesh] = Mesh(m_scene->mMeshes[i_mesh]);
     aiMaterial* material = m_scene->mMaterials[meshes[i_mesh].material];
 
