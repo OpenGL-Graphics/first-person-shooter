@@ -31,7 +31,7 @@ struct LevelRenderer {
    */
   static std::vector<TargetEntry> targets;
 
-  LevelRenderer(const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer);
+  LevelRenderer(const glm::vec3& position, Assimp::Importer& importer);
   void draw(const Uniforms& u={});
   void set_transform(const Transformation& t);
   void free();

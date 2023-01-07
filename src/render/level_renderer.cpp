@@ -18,8 +18,8 @@ std::vector<TargetEntry> LevelRenderer::targets;
  * Sets positions of object tiles only once in constructor (origin at tilemap's upper-left corner)
  * Needed for collision with camera
  */
-LevelRenderer::LevelRenderer(const Tilemap& tilemap, const glm::vec3& position, Assimp::Importer& importer):
-  m_tilemap(tilemap),
+LevelRenderer::LevelRenderer(const glm::vec3& position, Assimp::Importer& importer):
+  m_tilemap("assets/levels/map.txt"),
 
   // renderers for doors/floors
   m_program_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag"),

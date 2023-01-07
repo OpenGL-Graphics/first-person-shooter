@@ -27,7 +27,7 @@
 #include "controls/key_handler.hpp"
 #include "controls/mouse_handler.hpp"
 
-#include "profiling/profiler.hpp"
+#include "profiling/time_profiler.hpp"
 #include "levels/tilemap.hpp"
 #include "audio/audio.hpp"
 
@@ -151,8 +151,8 @@ int main() {
   TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 7, 0}, {2, "texture_coord", 2, 7, 5}}, font);
 
   // load 3d model from .obj file & its renderer
-  Profiler profiler;
-  profiler.start();
+  TimeProfiler time_profiler;
+  time_profiler.start();
   Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture, {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
@@ -165,14 +165,11 @@ int main() {
     {2, "texture_coord", 2, 11, 6},
     {3, "tangent", 3, 11, 8},
   });
-  profiler.stop();
-  profiler.print("Loading 3D models");
+  time_profiler.stop("Loading 3D models");
 
   // load tilemap by parsing text file
-  // TODO: Tilemap doesn't have to be visible here (encapsulate it in LevelRenderer)
-  Tilemap tilemap("assets/levels/map.txt");
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
-  LevelRenderer level(tilemap, position_level, importer);
+  LevelRenderer level(position_level, importer);
   camera.boundaries = level.positions_walls;
 
   // transformation matrices
