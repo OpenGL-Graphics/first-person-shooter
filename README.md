@@ -137,13 +137,59 @@ $ cc -pg script.cpp -o app
 $ gprof -p app | less
 ```
 
-# Detecting memory leaks
-- Install `valgrind` from source following its [official webpage][valgrind-build]
-- Build project with debug symbols (`-g` in gcc, `set(CMAKE_BUILD_TYPE Debug)` in cmake)
-- Run:
+# Valgrind
+- Install `valgrind` from source following its [official webpage][valgrind-build] or with package manager:
 
+```console
+$ pacman -S valgrind
+```
+
+- Build project with debug symbols (`-g` in gcc, `set(CMAKE_BUILD_TYPE Debug)` in cmake)
+
+[valgrind-build]: https://valgrind.org/docs/manual/dist.readme.html
+
+## Detecting memory leaks
 ```console
 $ valgrind --tool=memcheck ./main
 ```
 
-[valgrind-build]: https://valgrind.org/docs/manual/dist.readme.html
+## Memory usage
+### With massif
+```console
+$ valgrind --tool=massif ./main
+$ ms_print ./massif.out.12345
+```
+
+In the graph:
+- Snapshot: Vertical bar (memory usage at time = t).
+- `:`: Normal snapshot.
+- `@`: Detailed snapshot.
+- `#`: Peak snapshot.
+
+### Massif-visualizer
+For a better visualization on a gui:
+
+```console
+$ pacman -S massif-visualizer
+$ massif-visualizer ./massif.out.12345
+```
+
+### Programmatic snapshots
+To take a snapshot at a specific time, add to your source code:
+
+```c
+#include "valgrind/valgrind.h"
+
+int main() {
+    ...
+    VALGRIND_MONITOR_COMMAND("detailed_snapshot");
+    ...
+}
+```
+
+And run program with massif:
+
+```console
+$ valgrind --tool=massif ./main
+$ massif-visualizer massif.vgdb.out
+```
