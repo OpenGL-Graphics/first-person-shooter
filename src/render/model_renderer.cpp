@@ -11,8 +11,7 @@ ModelRenderer::ModelRenderer(const Program& program, const AssimpUtil::Model& mo
 {
   // one renderer by mesh (to avoid mixing up meshes indices)
   for (const AssimpUtil::Mesh& mesh : m_model.meshes) {
-    VBO vbo_mesh(Geometry(mesh.vertexes, mesh.indices, mesh.positions));
-    Renderer renderer(program, vbo_mesh, attributes);
+    Renderer renderer(program, Geometry(mesh.vertexes, mesh.indices, mesh.positions), attributes);
     renderers.push_back(renderer);
   }
 }

@@ -20,7 +20,6 @@ private:
   // program declared first (i.e. init first) as it's needed by renderer
   // https://stackoverflow.com/a/41886567/2228912
   Program m_program;
-  VBO m_vbo;
   Renderer m_renderer;
 
   // terrain textures (used by same shader) need to be attached to different texture units

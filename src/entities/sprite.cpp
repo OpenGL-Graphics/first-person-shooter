@@ -11,7 +11,7 @@
 Sprite::Sprite(const Texture2D& texture):
   m_texture(texture),
   m_program("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag"),
-  renderer(m_program, VBO(Surface()), {
+  renderer(m_program, Surface(), {
     {0, "position", 2, 7, 0},
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},

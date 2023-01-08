@@ -10,7 +10,7 @@ WallsRenderer::WallsRenderer():
   m_program("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag"),
   m_renderer(
     m_program,
-    VBO(Cube(false, { m_wall_length, m_wall_height, m_wall_depth })),
+    Cube(false, { m_wall_length, m_wall_height, m_wall_depth }),
     {
       {0, "position", 3, 8, 0},
       {1, "texture_coord", 2, 8, 6}
@@ -18,7 +18,7 @@ WallsRenderer::WallsRenderer():
   ),
   m_renderer_subwall(
     m_program,
-    VBO(Cube(false, { m_wall_length, m_subwall_height, m_wall_depth })),
+    Cube(false, { m_wall_length, m_subwall_height, m_wall_depth }),
     {
       {0, "position", 3, 8, 0},
       {1, "texture_coord", 2, 8, 6}

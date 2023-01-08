@@ -10,7 +10,7 @@
  */
 FloorsRenderer::FloorsRenderer(const Program& program, const glm::vec2& size):
   m_size(size),
-  m_renderer(program, VBO(Surface(size)), {
+  m_renderer(program, Surface(size), {
     {0, "position", 2, 7, 0},
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},

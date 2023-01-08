@@ -3,8 +3,8 @@
 #include "render/text_renderer.hpp"
 #include "geometries/surface.hpp"
 
-TextRenderer::TextRenderer(const Program& program, const VBO& vertex_buffer, const std::vector<Attribute>& attributes, const Font& font):
-  Renderer(program, vertex_buffer, attributes),
+TextRenderer::TextRenderer(const Program& program, const std::vector<Attribute>& attributes, const Font& font):
+  Renderer(program, Surface(), attributes, true),
   m_glyphs(font.extract_glyphs())
 {
 }
@@ -38,6 +38,7 @@ void TextRenderer::draw_text(const std::string& text, const Uniforms& u) {
 
     // Use dimensions & bearing to create glyph's bounding box (xy origin at character baseline's left point)
     // upper-left corner is character bitmap's origin (=> uv-coords origin at upper-left & v-axis inverted) - no flip-v with stb_image
+    // TODO: text is only updated on event, but draw_text() is called in each frame => don't recalculate geometry :/
     float x_prime = x + bearing_x;
     const std::vector<float> vertexes = {
       //coord(x,y)                            normal(nx,ny,nz)  texture(u,v)

@@ -23,7 +23,7 @@ LevelRenderer::LevelRenderer(const glm::vec3& position, Assimp::Importer& import
 
   // renderers for doors/floors
   m_program_tile("assets/shaders/tile.vert", "assets/shaders/tile.frag"),
-  m_renderer_door(m_program_tile, VBO(Surface(glm::vec2(1, m_height))), {
+  m_renderer_door(m_program_tile, Surface(glm::vec2(1, m_height)), {
     {0, "position", 2, 7, 0},
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},

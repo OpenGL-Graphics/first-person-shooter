@@ -28,6 +28,8 @@
 #include "controls/mouse_handler.hpp"
 
 #include "profiling/time_profiler.hpp"
+#include "profiling/memory_profiler.hpp"
+
 #include "levels/tilemap.hpp"
 #include "audio/audio.hpp"
 
@@ -99,11 +101,13 @@ int main() {
 
   // cubemap images have their origin at upper-left corner (=> don't flip)
   // https://stackoverflow.com/a/11690553/2228912
+  MemoryProfiler::profile("Before loading images");
   std::vector<Image> images;
   std::transform(paths_images.begin(), paths_images.end(), std::back_inserter(images), [](const std::string& path) {
     return Image(path, false);
   });
   Texture3D texture_skybox(images);
+  MemoryProfiler::profile("After loading images");
 
   // 2D textures for HUDS
   Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
@@ -124,20 +128,26 @@ int main() {
   Framebuffer framebuffer;
   framebuffer.attach_texture(texture_framebuffer);
 
+  TimeProfiler time_profiler;
+  time_profiler.start();
+
   // renderer (encapsulates VAO & VBO) for each shape to render
-  Renderer cube(pgm_basic, VBO(Cube()), {{0, "position", 3, 8, 0}});
-  Renderer skybox(pgm_skybox, VBO(Cube(true)), {{0, "position", 3, 8, 0}});
-  Renderer surface(pgm_texture_surface, VBO(Surface()), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
-  Renderer plane(pgm_plane, VBO(Plane(50, 50)), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
-  Renderer sphere(pgm_light, VBO(Sphere(32, 32)), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
-  Renderer cylinder(pgm_texture, VBO(Cylinder(32, 0.25f, 3.5f)), {
+  // 08-01-23: ~ total of 40K vertexes coords (float/uint) for geometries => peanuts (not the place to optimize)
+  Renderer cube(pgm_basic, Cube(), {{0, "position", 3, 8, 0}});
+  Renderer skybox(pgm_skybox, Cube(true), {{0, "position", 3, 8, 0}});
+  Renderer surface(pgm_texture_surface, Surface(), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
+  Renderer plane(pgm_plane, Plane(50, 50), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
+  Renderer sphere(pgm_light, Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
+  Renderer cylinder(pgm_texture, Cylinder(32, 0.25f, 3.5f), {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
     {2, "texture_coord", 2, 11, 6},
     {3, "tangent", 3, 11, 8},
   });
-  Renderer gizmo(pgm_basic, VBO(Gizmo()), { {0, "position", 3, 3, 0} });
-  Renderer grid(pgm_basic, VBO(GridLines()), { {0, "position", 3, 3, 0} });
+  Renderer gizmo(pgm_basic, Gizmo(), { {0, "position", 3, 3, 0} });
+  Renderer grid(pgm_basic, GridLines(), { {0, "position", 3, 3, 0} });
+
+  time_profiler.stop("--------------- Renderers");
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain;
@@ -146,12 +156,10 @@ int main() {
   Assimp::Importer importer;
 
   // load font & assign its bitmap glyphs to textures
-  VBO vbo_glyph(Surface(), true, GL_DYNAMIC_DRAW);
   Font font("assets/fonts/Vera.ttf");
-  TextRenderer surface_glyph(pgm_text, vbo_glyph, {{0, "position", 2, 7, 0}, {2, "texture_coord", 2, 7, 5}}, font);
+  TextRenderer surface_glyph(pgm_text, {{0, "position", 2, 7, 0}, {2, "texture_coord", 2, 7, 5}}, font);
 
   // load 3d model from .obj file & its renderer
-  TimeProfiler time_profiler;
   time_profiler.start();
   Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture, {
     {0, "position", 3, 11, 0},
@@ -492,6 +500,8 @@ int main() {
 
     // calculate fps
     window.show_fps();
+
+    // MemoryProfiler::profile("Bottom of game loop");
   }
 
   // destroy textures
