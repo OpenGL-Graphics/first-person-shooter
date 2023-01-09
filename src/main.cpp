@@ -44,6 +44,8 @@
 #include "framebuffer_exception.hpp"
 #include "shader_exception.hpp"
 
+#include "shaders/shaders_factory.hpp"
+
 using namespace irrklang;
 
 int main() {
@@ -73,17 +75,9 @@ int main() {
   Camera camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   // Camera camera(glm::vec3(13.0f, 2.0f, 5.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-  // create then install vertex & fragment shaders on GPU
-  // TODO: Factory to produce singletons `Program`s to avoid duplication in Gun & Player
-  Program pgm_basic("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-  Program pgm_texture("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag");
-  Program pgm_texture_surface("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag");
-  Program pgm_skybox("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
-  Program pgm_text("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag");
-  Program pgm_light("assets/shaders/light.vert", "assets/shaders/light.frag");
-  Program pgm_plane("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag");
-  if (pgm_texture.has_failed() || pgm_texture_surface.has_failed() || pgm_skybox.has_failed() ||
-      pgm_light.has_failed() || pgm_basic.has_failed() || pgm_text.has_failed() || pgm_plane.has_failed()) {
+  // create & install vertex & fragment shaders on GPU
+  ShadersFactory shaders_factory;
+  if (shaders_factory.has_failed()) {
     window.destroy();
     throw ShaderException();
   }
@@ -133,41 +127,41 @@ int main() {
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   // 08-01-23: ~ total of 40K vertexes coords (float/uint) for geometries => peanuts (not the place to optimize)
-  Renderer cube(pgm_basic, Cube(), {{0, "position", 3, 8, 0}});
-  Renderer skybox(pgm_skybox, Cube(true), {{0, "position", 3, 8, 0}});
-  Renderer surface(pgm_texture_surface, Surface(), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
-  Renderer plane(pgm_plane, Plane(50, 50), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
-  Renderer sphere(pgm_light, Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
-  Renderer cylinder(pgm_texture, Cylinder(32, 0.25f, 3.5f), {
+  Renderer cube(shaders_factory["basic"], Cube(), {{0, "position", 3, 8, 0}});
+  Renderer skybox(shaders_factory["skybox"], Cube(true), {{0, "position", 3, 8, 0}});
+  Renderer surface(shaders_factory["texture_surface"], Surface(), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
+  Renderer plane(shaders_factory["plane"], Plane(50, 50), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
+  Renderer sphere(shaders_factory["light"], Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
+  Renderer cylinder(shaders_factory["texture"], Cylinder(32, 0.25f, 3.5f), {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
     {2, "texture_coord", 2, 11, 6},
     {3, "tangent", 3, 11, 8},
   });
-  Renderer gizmo(pgm_basic, Gizmo(), { {0, "position", 3, 3, 0} });
-  Renderer grid(pgm_basic, GridLines(), { {0, "position", 3, 3, 0} });
+  Renderer gizmo(shaders_factory["basic"], Gizmo(), { {0, "position", 3, 3, 0} });
+  Renderer grid(shaders_factory["basic"], GridLines(), { {0, "position", 3, 3, 0} });
 
   time_profiler.stop("--------------- Renderers");
 
   // terrain from triangle strips & textured with image splatmap
-  Splatmap terrain;
+  Splatmap terrain(shaders_factory["light_terrain"]);
 
   // accord. to doc: better to reuse importer, & destroys scene (3d model) once out of scope
   Assimp::Importer importer;
 
   // load font & assign its bitmap glyphs to textures
   Font font("assets/fonts/Vera.ttf");
-  TextRenderer surface_glyph(pgm_text, {{0, "position", 2, 7, 0}, {2, "texture_coord", 2, 7, 5}}, font);
+  TextRenderer surface_glyph(shaders_factory["text"], {{0, "position", 2, 7, 0}, {2, "texture_coord", 2, 7, 5}}, font);
 
   // load 3d model from .obj file & its renderer
   time_profiler.start();
-  Model gun(importer, "assets/models/sniper/sniper.obj", pgm_texture, {
+  Model gun(importer, "assets/models/sniper/sniper.obj", shaders_factory["texture"], {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
     {2, "texture_coord", 2, 11, 6},
     {3, "tangent", 3, 11, 8},
   });
-  Model suzanne(importer, "assets/models/suzanne/suzanne.obj", pgm_texture, {
+  Model suzanne(importer, "assets/models/suzanne/suzanne.obj", shaders_factory["texture"], {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
     {2, "texture_coord", 2, 11, 6},
@@ -177,7 +171,7 @@ int main() {
 
   // load tilemap by parsing text file
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
-  LevelRenderer level(position_level, importer);
+  LevelRenderer level(position_level, importer, shaders_factory);
   camera.boundaries = level.positions_walls;
 
   // transformation matrices
@@ -542,13 +536,7 @@ int main() {
   suzanne.free();
 
   // destroy shaders programs
-  pgm_basic.free();
-  pgm_texture.free();
-  pgm_texture_surface.free();
-  pgm_skybox.free();
-  pgm_light.free();
-  pgm_text.free();
-  pgm_plane.free();
+  shaders_factory.free();
 
   // destroy sound engine & window & terminate glfw
   audio.free();

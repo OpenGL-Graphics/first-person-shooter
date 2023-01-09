@@ -1,24 +1,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "entities/splatmap.hpp"
-#include "shader_exception.hpp"
 #include "geometries/terrain.hpp"
 
-Splatmap::Splatmap():
+Splatmap::Splatmap(const Program& program):
   // terrain textures (used by same shader) need to be attached to different texture units
   m_texture_terrain_water(Image("assets/images/terrain/water.jpg"), GL_TEXTURE0),
   m_texture_terrain_grass(Image("assets/images/terrain/grass.jpg"), GL_TEXTURE1),
   m_texture_terrain_rock(Image("assets/images/terrain/rock.jpg"), GL_TEXTURE2),
   m_texture_terrain_splatmap(Image("assets/images/terrain/splatmap.png"), GL_TEXTURE3),
 
-  m_program("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag"),
   m_image("assets/images/terrain/heightmap.png"),
-  m_renderer(m_program, Terrain(m_image), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}})
+  m_renderer(program, Terrain(m_image), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}})
 {
-  // vertex or fragment shaders failed to compile
-  if (m_program.has_failed()) {
-    throw ShaderException();
-  }
 }
 
 /* delegate drawing with OpenGL (buffers & shaders) to renderer */
@@ -54,6 +48,5 @@ void Splatmap::free() {
   m_texture_terrain_rock.free();
   m_texture_terrain_splatmap.free();
 
-  m_program.free();
   m_renderer.free();
 }

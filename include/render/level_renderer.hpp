@@ -17,6 +17,7 @@
 #include "entities/target.hpp"
 #include "entities/model.hpp"
 #include "entities/sprite.hpp"
+#include "shaders/shaders_factory.hpp"
 
 /**
  * Renderer for level items (e.g. walls, doors...)
@@ -31,7 +32,7 @@ struct LevelRenderer {
    */
   static std::vector<TargetEntry> targets;
 
-  LevelRenderer(const glm::vec3& position, Assimp::Importer& importer);
+  LevelRenderer(const glm::vec3& position, Assimp::Importer& importer, const ShadersFactory& shaders_factory);
   void draw(const Uniforms& u={});
   void set_transform(const Transformation& t);
   void free();
@@ -47,7 +48,6 @@ private:
    * Renderers for wall, window, & ceiling/floor tiles
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
    */
-  Program m_program_tile;
   Renderer m_renderer_door;
   WallsRenderer m_renderer_walls;
   FloorsRenderer m_renderer_floors;

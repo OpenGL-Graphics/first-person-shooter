@@ -15,15 +15,12 @@ struct Target {
   /* Bounding box in local space (needed by LevelRenderer) */
   BoundingBox bounding_box;
 
-  Target(Assimp::Importer& importer);
+  Target(Assimp::Importer& importer, const Program& program);
   void draw(const Uniforms& uniforms={});
   void set_transform(const Transformation& t);
   void free();
 
 private:
-  // program declared first (i.e. init first) as it's needed by renderer
-  // https://stackoverflow.com/a/41886567/2228912
-  Program m_program;
   Transformation m_transformation;
 
   /* delegate drawing to model renderer */

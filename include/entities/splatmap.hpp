@@ -8,7 +8,7 @@
  */
 class Splatmap {
 public:
-  Splatmap();
+  Splatmap(const Program& program);
   void draw(const Uniforms& uniforms={});
   void set_transform(const Transformation& t);
   void free();
@@ -17,9 +17,6 @@ private:
   /* heightmap image (needs to be declared/init before vbo) */
   Image m_image;
 
-  // program declared first (i.e. init first) as it's needed by renderer
-  // https://stackoverflow.com/a/41886567/2228912
-  Program m_program;
   Renderer m_renderer;
 
   // terrain textures (used by same shader) need to be attached to different texture units

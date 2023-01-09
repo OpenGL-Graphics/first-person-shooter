@@ -2,16 +2,14 @@
 
 #include "entities/target.hpp"
 #include "geometries/cube.hpp"
-#include "shader_exception.hpp"
 
 /**
  * Targets are generated inside level accord. to tilemap
  * @param position Position extracted from tilemap
  */
-Target::Target(Assimp::Importer& importer):
-  m_program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag"),
+Target::Target(Assimp::Importer& importer, const Program& program):
   m_model("assets/models/samurai/samurai.obj", importer),
-  m_renderer(m_program, m_model, {
+  m_renderer(program, m_model, {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
     {2, "texture_coord", 2, 11, 6},
@@ -20,11 +18,6 @@ Target::Target(Assimp::Importer& importer):
 
   is_dead(false)
 {
-  // vertex or fragment shaders failed to compile
-  if (m_program.has_failed()) {
-    throw ShaderException();
-  }
-
   calculate_bounding_box();
 }
 
@@ -69,8 +62,7 @@ void Target::calculate_bounding_box() {
   bounding_box = BoundingBox(positions);
 }
 
-/* Free renderer (vao/vbo buffers) & shader program */
+/* Free renderer (vao/vbo buffers) */
 void Target::free() {
   m_renderer.free();
-  m_program.free();
 }

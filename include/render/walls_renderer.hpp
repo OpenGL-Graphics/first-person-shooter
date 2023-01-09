@@ -9,7 +9,7 @@
 /* Called from LevelRenderer to render walls */
 class WallsRenderer {
 public:
-  WallsRenderer();
+  WallsRenderer(const Program& program);
   void set_transform(const Transformation& t);
   void draw(const std::vector<WallEntry>& entries);
   void draw_walls_around_window(const glm::vec3& position_tile);
@@ -26,7 +26,6 @@ private:
   const float m_subwall_height = (m_wall_height - m_window_height) / 2;
 
   /* TODO: same renderer (shader, vao attributes) but with updated vbo */
-  Program m_program;
   Renderer m_renderer;
   Renderer m_renderer_subwall;
   Transformation m_transformation;
