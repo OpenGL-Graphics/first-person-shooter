@@ -27,10 +27,11 @@ Model::Model(const std::string& path, Assimp::Importer& importer):
 
   for (size_t i_mesh = 0; i_mesh < n_meshes; ++i_mesh) {
     // extract vertexes & indices from each mesh
-    // TODO: very likely duplicating Mesh vertexes to vector element (need to profile size of var)
-    // => use smart pointers
-    meshes[i_mesh] = Mesh(m_scene->mMeshes[i_mesh]);
-    aiMaterial* material = m_scene->mMaterials[meshes[i_mesh].material];
+    // Move/copy ctor/assignment op. implicitely declared in Mesh: https://stackoverflow.com/q/18290523
+    // explicitly declaring move assignment op. deletes implicit ctors (needed by resize): https://stackoverflow.com/q/75089715
+    Mesh mesh(m_scene->mMeshes[i_mesh]);
+    aiMaterial* material = m_scene->mMaterials[mesh.material];
+    meshes[i_mesh] = std::move(mesh);
 
     // assign material's diffuse color & textures to mesh (if any)
     set_mesh_color(material, i_mesh);

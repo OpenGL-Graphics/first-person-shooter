@@ -11,5 +11,5 @@ void TimeProfiler::stop(const std::string& label) {
   duration<double> interval = time_stop - time_start;
 
   // show duration time in seconds
-  std::cout << "Duration " << label << ": " << interval.count() << "s" << std::endl;
+  std::cout << label << " duration: " << interval.count() << "s" << std::endl;
 }

@@ -141,7 +141,7 @@ int main() {
   Renderer gizmo(shaders_factory["basic"], Gizmo(), { {0, "position", 3, 3, 0} });
   Renderer grid(shaders_factory["basic"], GridLines(), { {0, "position", 3, 3, 0} });
 
-  time_profiler.stop("--------------- Renderers");
+  time_profiler.stop("* Shaders & buffers");
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain(shaders_factory["light_terrain"]);
@@ -167,11 +167,13 @@ int main() {
     {2, "texture_coord", 2, 11, 6},
     {3, "tangent", 3, 11, 8},
   });
-  time_profiler.stop("Loading 3D models");
+  time_profiler.stop("* Loading gun & suzanne 3D models");
 
   // load tilemap by parsing text file
   glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
+  time_profiler.start();
   LevelRenderer level(position_level, importer, shaders_factory);
+  time_profiler.stop("* Loading tilemap, tree & enemy 3D models");
   camera.boundaries = level.positions_walls;
 
   // transformation matrices

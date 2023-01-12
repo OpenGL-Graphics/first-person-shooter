@@ -6,6 +6,7 @@
 #include <assimp/mesh.h>
 
 #include "texture_2d.hpp"
+#include "shader/uniforms.hpp"
 
 /**
  * Wrapper around Assimp::aiMesh used to get vertexes & faces for given mesh
@@ -30,8 +31,10 @@ namespace AssimpUtil {
     bool has_texture_diffuse;
     bool has_texture_normal;
 
-    Mesh();
+    /* Default constructor needed by std::vector::resize() (`= default` => ctor defined by compiler) */
+    Mesh() = default;
     Mesh(aiMesh* mesh);
+    void set_uniforms(Uniforms& uniforms);
 
   private:
     aiMesh* m_mesh;

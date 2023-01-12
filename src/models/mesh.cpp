@@ -2,10 +2,6 @@
 
 using namespace AssimpUtil;
 
-/* Needed to instantiate vector `models::Model::m_meshes` */
-Mesh::Mesh() {
-}
-
 Mesh::Mesh(aiMesh* mesh):
   m_mesh(mesh)
 {
@@ -65,4 +61,22 @@ void Mesh::set_indices() {
       indices[i_face*n_indices + i_indice] = face.mIndices[i_indice];
     }
   }
+}
+
+/**
+ * Used in ModelRenderer::draw() to pass uniforms to shaders
+ * Class members below set in Model class
+ */
+void Mesh::set_uniforms(Uniforms& uniforms) {
+    // retrieve material color from mesh
+    uniforms["has_texture_diffuse"] = has_texture_diffuse;
+    uniforms["has_texture_normal"] = has_texture_normal;
+    uniforms["color"] = color;
+
+    // no need to pass empty texture created (in `Mesh`) by default constructor
+    if (has_texture_diffuse)
+      uniforms["texture_diffuse"] = texture_diffuse;
+
+    if (has_texture_normal)
+      uniforms["texture_normal"] = texture_normal;
 }
