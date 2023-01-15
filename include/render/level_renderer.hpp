@@ -17,7 +17,7 @@
 #include "entities/target.hpp"
 #include "entities/model.hpp"
 #include "entities/sprite.hpp"
-#include "shaders/shaders_factory.hpp"
+#include "factories/shaders_factory.hpp"
 
 /**
  * Renderer for level items (e.g. walls, doors...)

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <vector>
 #include <algorithm>
 
@@ -7,6 +8,8 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+#include "texture_2d.hpp"
+#include "texture_3d.hpp"
 #include "window.hpp"
 #include "navigation/camera.hpp"
 
@@ -44,7 +47,8 @@
 #include "framebuffer_exception.hpp"
 #include "shader_exception.hpp"
 
-#include "shaders/shaders_factory.hpp"
+#include "factories/shaders_factory.hpp"
+#include "factories/textures_factory.hpp"
 
 using namespace irrklang;
 
@@ -82,37 +86,8 @@ int main() {
     throw ShaderException();
   }
 
-  // 3D cube texture for skybox (left-handed coords system for cubemaps)
-  // See faces order: https://www.khronos.org/opengl/wiki/Cubemap_Texture
-  std::vector<std::string> paths_images {
-    "assets/images/skybox/posx.jpg", // pos-x (right face)
-    "assets/images/skybox/negx.jpg", // neg-x (left face)
-    "assets/images/skybox/posy.jpg", // pos-y (top face)
-    "assets/images/skybox/negy.jpg", // neg-y (bottom face)
-    "assets/images/skybox/posz.jpg", // pos-z (front face)
-    "assets/images/skybox/negz.jpg", // neg-z (back face)
-  };
-
-  // cubemap images have their origin at upper-left corner (=> don't flip)
-  // https://stackoverflow.com/a/11690553/2228912
-  MemoryProfiler::profile("Before loading images");
-  std::vector<Image> images;
-  std::transform(paths_images.begin(), paths_images.end(), std::back_inserter(images), [](const std::string& path) {
-    return Image(path, false);
-  });
-  Texture3D texture_skybox(images);
-  MemoryProfiler::profile("After loading images");
-
-  // 2D textures for HUDS
-  Texture2D texture_surface_hud(Image("assets/images/surfaces/health.png"));
-  Texture2D texture_surface_crosshair(Image("assets/images/surfaces/crosshair.png"));
-
-  // 2D texture for flat grid plane (shape made as a sin wave in vertex shader)
-  Texture2D texture_plane(Image("assets/images/plane/wave.png"));
-
-  // texture for cylinder pillar
-  Texture2D texture_cylinder_diffuse(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0);
-  Texture2D texture_cylinder_normal(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1);
+  // load textures
+  TexturesFactory textures_factory;
 
   // empty texture to fill when drawing to framebuffer
   Image image_framebuffer(window.width, window.height, GL_RGB, NULL);
@@ -240,7 +215,7 @@ int main() {
     glm::mat4 view_without_translation = glm::mat4(glm::mat3(view));
     skybox.set_transform({ glm::scale(glm::mat4(1.0f), glm::vec3(2)),
       view_without_translation, projection3d });
-    skybox.draw({ {"texture3d", texture_skybox} });
+    skybox.draw({ {"texture3d", textures_factory.get<Texture3D>("skybox") } });
     glDepthMask(GL_TRUE);
 
     // cube with outline using two-passes rendering & stencil buffer
@@ -307,7 +282,7 @@ int main() {
     plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
 
     plane.draw({
-      {"texture2d", texture_plane},
+      {"texture2d", textures_factory.get<Texture2D>("wave")},
       {"light.position", lights[0].position},
       {"light.ambiant", 0.2f * lights[0].color},
       {"light.diffuse", 0.5f * lights[0].color},
@@ -383,9 +358,8 @@ int main() {
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
       {"normal_mat", glm::inverseTranspose(model_cylinder1)},
-
-      {"texture_diffuse", texture_cylinder_diffuse},
-      {"texture_normal", texture_cylinder_normal},
+      {"texture_diffuse", textures_factory.get<Texture2D>("cylinder_diffuse")},
+      {"texture_normal", textures_factory.get<Texture2D>("cylinder_normal")},
       {"has_texture_diffuse", true},
       {"has_texture_normal", true},
     });
@@ -398,8 +372,8 @@ int main() {
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
       {"normal_mat", glm::inverseTranspose(model_cylinder2)},
-      {"texture_diffuse", texture_cylinder_diffuse},
-      {"texture_normal", texture_cylinder_normal},
+      {"texture_diffuse", textures_factory.get<Texture2D>("cylinder_diffuse")},
+      {"texture_normal", textures_factory.get<Texture2D>("cylinder_normal")},
     });
 
     // draw xyz gizmo at origin using GL_LINES
@@ -458,6 +432,7 @@ int main() {
     });
 
     // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
+    Texture2D texture_surface_hud = textures_factory.get<Texture2D>("health");
     glm::mat4 model_hud_health(glm::scale(
       glm::translate(
         glm::mat4(1.0f),
@@ -469,6 +444,7 @@ int main() {
     surface.draw({ {"texture2d", texture_surface_hud} });
 
     // draw crosshair gun target surface at center of screen
+    Texture2D texture_surface_crosshair = textures_factory.get<Texture2D>("crosshair");
     glm::mat4 model_crosshair(glm::scale(
       glm::translate(glm::mat4(1.0f), glm::vec3(
         window.width / 2.0f - texture_surface_crosshair.width / 2.0f,
@@ -501,15 +477,7 @@ int main() {
   }
 
   // destroy textures
-  texture_skybox.free();
-
-  texture_surface_hud.free();
-  texture_surface_crosshair.free();
-  texture_plane.free();
   texture_framebuffer.free();
-
-  texture_cylinder_diffuse.free();
-  texture_cylinder_normal.free();
 
   Glyphs glyphs(surface_glyph.get_glyphs());
   for (unsigned char c = CHAR_START; c <= CHAR_END; c++) {
@@ -537,8 +505,9 @@ int main() {
   gun.free();
   suzanne.free();
 
-  // destroy shaders programs
+  // free shaders programs & textures
   shaders_factory.free();
+  textures_factory.free();
 
   // destroy sound engine & window & terminate glfw
   audio.free();

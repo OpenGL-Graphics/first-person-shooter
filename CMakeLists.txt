@@ -52,7 +52,7 @@ file(GLOB SRC
   "src/math/*.cpp"
   "src/audio/*.cpp"
   "src/globals/*.cpp"
-  "src/shaders/*.cpp"
+  "src/factories/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})

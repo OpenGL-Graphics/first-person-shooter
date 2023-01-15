@@ -1,4 +1,4 @@
-#include "shaders/shaders_factory.hpp"
+#include "factories/shaders_factory.hpp"
 
 /* Similar to how programs are managed in <imgui-paint>/Canvas */
 ShadersFactory::ShadersFactory():
