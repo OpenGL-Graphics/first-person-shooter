@@ -17,7 +17,9 @@
 #include "entities/target.hpp"
 #include "entities/model.hpp"
 #include "entities/sprite.hpp"
+
 #include "factories/shaders_factory.hpp"
+#include "factories/textures_factory.hpp"
 
 /**
  * Renderer for level items (e.g. walls, doors...)
@@ -32,7 +34,7 @@ struct LevelRenderer {
    */
   static std::vector<TargetEntry> targets;
 
-  LevelRenderer(const glm::vec3& position, Assimp::Importer& importer, const ShadersFactory& shaders_factory);
+  LevelRenderer(Assimp::Importer& importer, const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory);
   void draw(const Uniforms& u={});
   void set_transform(const Transformation& t);
   void free();
@@ -43,6 +45,11 @@ private:
 
   /* declared before `m_renderer_floor` as nrows/ncols needed to avoid stretching texture */
   Tilemap m_tilemap;
+
+  /* textures (lifecycle managed in TexturesFactory) */
+  Texture2D m_tex_door_diffuse;
+  Texture2D m_tex_door_normal;
+  Texture2D m_tex_window;
 
   /**
    * Renderers for wall, window, & ceiling/floor tiles
@@ -66,9 +73,6 @@ private:
 
   /* position of level */
   glm::vec3 m_position;
-
-  /* textures */
-  std::unordered_map<std::string, Texture2D> m_textures;
 
   /* positions of tiles elements (parsed only once in constructor) */
   std::vector<glm::vec3> m_positions_doors;

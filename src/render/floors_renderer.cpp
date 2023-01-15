@@ -8,19 +8,17 @@
  * @param n_cols Number of tiles on x-axis (floor width)
  * @param n_rows Number of tiles on z-axis (floor depth)
  */
-FloorsRenderer::FloorsRenderer(const Program& program, const glm::vec2& size):
+FloorsRenderer::FloorsRenderer(const TexturesFactory& textures_factory, const Program& program, const glm::vec2& size):
   m_size(size),
   m_renderer(program, Surface(size), {
     {0, "position", 2, 7, 0},
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},
   }),
-  m_textures {
-    {"floor_diffuse", Texture2D(Image("assets/images/level/floor_diffuse.jpg"), GL_TEXTURE0)},
-    {"floor_normal", Texture2D(Image("assets/images/level/floor_normal.jpg"), GL_TEXTURE1)},
-    {"ceiling_diffuse", Texture2D(Image("assets/images/level/ceiling_diffuse.jpg"), GL_TEXTURE0)},
-    {"ceiling_normal", Texture2D(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE1)},
-  }
+  m_tex_floor_diffuse(textures_factory.get<Texture2D>("floor_diffuse")),
+  m_tex_floor_normal(textures_factory.get<Texture2D>("floor_normal")),
+  m_tex_ceiling_diffuse(textures_factory.get<Texture2D>("ceiling_diffuse")),
+  m_tex_ceiling_normal(textures_factory.get<Texture2D>("ceiling_normal"))
 {
 }
 
@@ -60,16 +58,16 @@ void FloorsRenderer::draw_horizontal_surface(const Uniforms& u, bool is_floor) {
 /* Draw horizontal floor covering bottom of tilemap */
 void FloorsRenderer::draw_floor(const Uniforms& u) {
   Uniforms uniforms = u;
-  uniforms["texture_diffuse"] = m_textures["floor_diffuse"];
-  uniforms["texture_normal"] = m_textures["floor_normal"];
+  uniforms["texture_diffuse"] = m_tex_floor_diffuse;
+  uniforms["texture_normal"] = m_tex_floor_normal;
   draw_horizontal_surface(uniforms, true);
 }
 
 /* Draw horizontal floor covering top of tilemap */
 void FloorsRenderer::draw_ceiling(const Uniforms& u) {
   Uniforms uniforms = u;
-  uniforms["texture_diffuse"] = m_textures["ceiling_diffuse"];
-  uniforms["texture_normal"] = m_textures["ceiling_normal"];
+  uniforms["texture_diffuse"] = m_tex_ceiling_diffuse;
+  uniforms["texture_normal"] = m_tex_ceiling_normal;
   draw_horizontal_surface(uniforms, false);
 }
 
@@ -80,9 +78,4 @@ void FloorsRenderer::draw(const Uniforms& uniforms) {
 
 void FloorsRenderer::free() {
   m_renderer.free();
-
-  // textures
-  for (auto& item : m_textures) {
-    item.second.free();
-  }
 }

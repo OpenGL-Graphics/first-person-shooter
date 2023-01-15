@@ -17,28 +17,41 @@ TexturesFactory::TexturesFactory():
     Image("assets/images/skybox/negz.jpg", false)  // neg-z (back face)
   }),
 
-  // smart pointer freed when out of scopt (doesn't work if inserted directly into m_textures)
+  // smart pointer freed when out of scopt (doesn't work if inserted directly into m_textures bcos it copies a unique_ptr)
   m_skybox(std::make_unique<Texture3D>(m_skybox_images)),
+  m_crosshair(std::make_unique<Texture2D>(Image("assets/images/surfaces/crosshair.png"))),
   m_health(std::make_unique<Texture2D>(Image("assets/images/surfaces/health.png"))),
   m_wave(std::make_unique<Texture2D>(Image("assets/images/plane/wave.png"))),
-  m_cylinder_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0)),
-  m_cylinder_normal(std::make_unique<Texture2D>(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1)),
-  m_crosshair(std::make_unique<Texture2D>(Image("assets/images/surfaces/crosshair.png"))),
+  m_wall_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0)),
+  m_wall_normal(std::make_unique<Texture2D>(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1)),
+  m_door_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/door_diffuse.jpg"), GL_TEXTURE0)),
+  m_door_normal(std::make_unique<Texture2D>(Image("assets/images/level/door_normal.jpg"), GL_TEXTURE1)),
+  m_floor_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/floor_diffuse.jpg"), GL_TEXTURE0)),
+  m_floor_normal(std::make_unique<Texture2D>(Image("assets/images/level/floor_normal.jpg"), GL_TEXTURE1)),
+  m_ceiling_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/ceiling_diffuse.jpg"), GL_TEXTURE0)),
+  m_ceiling_normal(std::make_unique<Texture2D>(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE1)),
+  m_window(std::make_unique<Texture2D>(Image("assets/images/surfaces/window.png"))),
 
   m_textures {
     { "skybox", m_skybox.get() },
 
     // 2D textures for HUDS
+    { "crosshair", m_crosshair.get() },
     { "health", m_health.get() },
 
     // 2D texture for flat grid plane (shape made as a sin wave in vertex shader)
     { "wave", m_wave.get() },
 
-    // texture for cylinder pillar
-    { "cylinder_diffuse", m_cylinder_diffuse.get() },
-    { "cylinder_normal", m_cylinder_normal.get() },
-
-    { "crosshair", m_crosshair.get() },
+    // textures used in LevelRenderer (incl. FloorsRenderer, WallsRenderer)
+    { "window", m_window.get() },
+    { "door_diffuse", m_door_diffuse.get() },
+    { "door_normal", m_door_normal.get() },
+    { "floor_diffuse", m_floor_diffuse.get() },
+    { "floor_normal", m_floor_normal.get() },
+    { "ceiling_diffuse", m_ceiling_diffuse.get() },
+    { "ceiling_normal", m_ceiling_normal.get() },
+    { "wall_diffuse", m_wall_diffuse.get() },
+    { "wall_normal", m_wall_normal.get() },
   }
 {
 }
@@ -48,9 +61,9 @@ TexturesFactory::TexturesFactory():
  * ::operator[] too tricky to set-up with templates
  */
 template <typename T>
-T TexturesFactory::get(const std::string& key) {
+T TexturesFactory::get(const std::string& key) const {
   // cast Texture (base class) pointer as a Texture2D/3D (derived class) pointer: downcasting
-  Texture* texture_base = m_textures[key];
+  Texture* texture_base = m_textures.at(key);
   T* texture_derived = static_cast<T*>(texture_base); // downcast possible else use below
 
   return *texture_derived;
@@ -63,5 +76,5 @@ void TexturesFactory::free() {
 }
 
 // explicit template instantition to avoid linking error
-template Texture2D TexturesFactory::get<Texture2D>(const std::string& key);
-template Texture3D TexturesFactory::get<Texture3D>(const std::string& key);
+template Texture2D TexturesFactory::get<Texture2D>(const std::string& key) const;
+template Texture3D TexturesFactory::get<Texture3D>(const std::string& key) const;

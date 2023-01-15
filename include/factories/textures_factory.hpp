@@ -16,7 +16,7 @@ public:
   TexturesFactory();
 
   template <typename T>
-  T get(const std::string& key);
+  T get(const std::string& key) const;
 
   void free();
 
@@ -27,8 +27,15 @@ private:
   std::unique_ptr<Texture2D> m_health;
   std::unique_ptr<Texture2D> m_wave;
   std::unique_ptr<Texture2D> m_crosshair;
-  std::unique_ptr<Texture2D> m_cylinder_diffuse;
-  std::unique_ptr<Texture2D> m_cylinder_normal;
+  std::unique_ptr<Texture2D> m_wall_diffuse;
+  std::unique_ptr<Texture2D> m_wall_normal;
+  std::unique_ptr<Texture2D> m_door_diffuse;
+  std::unique_ptr<Texture2D> m_door_normal;
+  std::unique_ptr<Texture2D> m_floor_diffuse;
+  std::unique_ptr<Texture2D> m_floor_normal;
+  std::unique_ptr<Texture2D> m_ceiling_diffuse;
+  std::unique_ptr<Texture2D> m_ceiling_normal;
+  std::unique_ptr<Texture2D> m_window;
 
   /**
    * using pointers bcos base class Texture is abstract (non-constructible)

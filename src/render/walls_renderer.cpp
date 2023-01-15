@@ -6,7 +6,7 @@
 #include "geometries/cube.hpp"
 
 /* Cubes used for walls as face culling hides back-face & lighting affect it similarly to front one */
-WallsRenderer::WallsRenderer(const Program& program):
+WallsRenderer::WallsRenderer(const TexturesFactory& textures_factory, const Program& program):
   m_renderer(
     program,
     Cube(false, { m_wall_length, m_wall_height, m_wall_depth }),
@@ -24,7 +24,7 @@ WallsRenderer::WallsRenderer(const Program& program):
     }
   ),
 
-  m_texture(Image("assets/images/level/wall_diffuse.jpg"))
+  m_texture(textures_factory.get<Texture2D>("wall_diffuse"))
 {
 }
 
@@ -140,5 +140,4 @@ void WallsRenderer::draw_walls_around_window(const glm::vec3& position_tile) {
 
 void WallsRenderer::free() {
   m_renderer.free();
-  m_texture.free();
 }

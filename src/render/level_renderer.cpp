@@ -18,8 +18,13 @@ std::vector<TargetEntry> LevelRenderer::targets;
  * Sets positions of object tiles only once in constructor (origin at tilemap's upper-left corner)
  * Needed for collision with camera
  */
-LevelRenderer::LevelRenderer(const glm::vec3& position, Assimp::Importer& importer, const ShadersFactory& shaders_factory):
+LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory):
   m_tilemap("assets/levels/map.txt"),
+
+  // textures
+  m_tex_door_diffuse(textures_factory.get<Texture2D>("door_diffuse")),
+  m_tex_door_normal(textures_factory.get<Texture2D>("door_normal")),
+  m_tex_window(textures_factory.get<Texture2D>("window")),
 
   // renderers for doors/floors
   m_renderer_door(shaders_factory["tile"], Surface(glm::vec2(1, m_height)), {
@@ -27,8 +32,8 @@ LevelRenderer::LevelRenderer(const glm::vec3& position, Assimp::Importer& import
     {1, "normal", 3, 7, 2},
     {2, "texture_coord", 2, 7, 5},
   }),
-  m_renderer_floors(shaders_factory["tile"], { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
-  m_renderer_walls(shaders_factory["texture_cube"]),
+  m_renderer_floors(textures_factory, shaders_factory["tile"], { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
+  m_renderer_walls(textures_factory, shaders_factory["texture_cube"]),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
   // TODO: factory to init shaders accessible everywhere (manages their lifecycles too)
@@ -40,19 +45,12 @@ LevelRenderer::LevelRenderer(const glm::vec3& position, Assimp::Importer& import
   }),
 
   // window
-  m_window(Image("assets/images/surfaces/window.png"), shaders_factory["texture_surface"]),
+  m_window(m_tex_window, shaders_factory["texture_surface"]),
 
   // target (enemy) to shoot
   m_target(importer, shaders_factory["texture"]),
 
-  m_textures {
-    {"wall_diffuse", Texture2D(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0)},
-    {"wall_normal", Texture2D(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1)},
-    {"door_diffuse", Texture2D(Image("assets/images/level/door_diffuse.jpg"), GL_TEXTURE0)},
-    {"door_normal", Texture2D(Image("assets/images/level/door_normal.jpg"), GL_TEXTURE1)},
-  },
-
-  m_position(position)
+  m_position(0, 0, 0)
 {
   // TODO: only calculate world positions & angles in constructor (not in `draw()`)
   std::cout << "Tilemap: " << m_tilemap.n_rows << " rows x " << m_tilemap.n_cols << " cols" << '\n';
@@ -140,8 +138,8 @@ void LevelRenderer::draw(const Uniforms& u) {
 /* Draw doors at locations parsed in constructor */
 void LevelRenderer::draw_doors(const Uniforms& u) {
   Uniforms uniforms = u;
-  uniforms["texture_diffuse"] = m_textures["door_diffuse"];
-  uniforms["texture_normal"] = m_textures["door_normal"];
+  uniforms["texture_diffuse"] = m_tex_door_diffuse;
+  uniforms["texture_normal"] = m_tex_door_normal;
 
   for (const glm::vec3& position_door : m_positions_doors) {
     glm::mat4 model = glm::translate(glm::mat4(1.0f), position_door);
@@ -245,9 +243,4 @@ void LevelRenderer::free() {
   m_tree.free();
   m_window.free();
   m_target.free();
-
-  // textures
-  for (auto& item : m_textures) {
-    item.second.free();
-  }
 }

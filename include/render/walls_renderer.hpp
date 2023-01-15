@@ -5,11 +5,12 @@
 
 #include "entries/wall_entry.hpp"
 #include "render/renderer.hpp"
+#include "factories/textures_factory.hpp"
 
 /* Called from LevelRenderer to render walls */
 class WallsRenderer {
 public:
-  WallsRenderer(const Program& program);
+  WallsRenderer(const TexturesFactory& textures_factory, const Program& program);
   void set_transform(const Transformation& t);
   void draw(const std::vector<WallEntry>& entries);
   void draw_walls_around_window(const glm::vec3& position_tile);

@@ -145,9 +145,8 @@ int main() {
   time_profiler.stop("* Loading gun & suzanne 3D models");
 
   // load tilemap by parsing text file
-  glm::vec3 position_level = {0.0f, 0.0f, 0.0f};
   time_profiler.start();
-  LevelRenderer level(position_level, importer, shaders_factory);
+  LevelRenderer level(importer, shaders_factory, textures_factory);
   time_profiler.stop("* Loading tilemap, tree & enemy 3D models");
   camera.boundaries = level.positions_walls;
 
@@ -358,8 +357,8 @@ int main() {
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
       {"normal_mat", glm::inverseTranspose(model_cylinder1)},
-      {"texture_diffuse", textures_factory.get<Texture2D>("cylinder_diffuse")},
-      {"texture_normal", textures_factory.get<Texture2D>("cylinder_normal")},
+      {"texture_diffuse", textures_factory.get<Texture2D>("wall_diffuse")},
+      {"texture_normal", textures_factory.get<Texture2D>("wall_normal")},
       {"has_texture_diffuse", true},
       {"has_texture_normal", true},
     });
@@ -372,8 +371,8 @@ int main() {
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
       {"normal_mat", glm::inverseTranspose(model_cylinder2)},
-      {"texture_diffuse", textures_factory.get<Texture2D>("cylinder_diffuse")},
-      {"texture_normal", textures_factory.get<Texture2D>("cylinder_normal")},
+      {"texture_diffuse", textures_factory.get<Texture2D>("wall_diffuse")},
+      {"texture_normal", textures_factory.get<Texture2D>("wall_normal")},
     });
 
     // draw xyz gizmo at origin using GL_LINES
