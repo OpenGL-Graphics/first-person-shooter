@@ -8,11 +8,13 @@ ShadersFactory::ShadersFactory():
     { "texture_surface", Program("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag") },
     { "skybox", Program("assets/shaders/skybox.vert", "assets/shaders/skybox.frag") },
     { "text", Program("assets/shaders/texture_surface.vert", "assets/shaders/texture_text.frag") },
-    { "light", Program("assets/shaders/light.vert", "assets/shaders/light.frag") },
     { "plane", Program("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag") },
     { "tile", Program("assets/shaders/tile.vert", "assets/shaders/tile.frag") },
     { "texture_cube", Program("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag") },
     { "light_terrain", Program("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag") },
+
+    // instancing (draw same geometry multiple times at once)
+    { "phong", Program("assets/shaders/instancing/phong.vert", "assets/shaders/instancing/phong.frag") },
   }
 {
 }

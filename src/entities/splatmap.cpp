@@ -21,18 +21,16 @@ void Splatmap::draw(const Uniforms& uniforms) {
   glm::vec3 color_light(1.0f, 1.0f, 1.0f);
   glm::vec3 position_light(10.0f, 6.0f, 6.0f);
 
-  m_renderer.draw(
-    {
-      {"texture2d_water", m_texture_terrain_water},
-      {"texture2d_grass", m_texture_terrain_grass},
-      {"texture2d_rock", m_texture_terrain_rock},
-      {"texture2d_splatmap", m_texture_terrain_splatmap},
-      {"light.position", position_light},
-      {"light.ambiant", 0.2f * color_light},
-      {"light.diffuse", 0.5f * color_light},
-      {"light.specular", color_light},
-    }, GL_TRIANGLE_STRIP
-  );
+  m_renderer.draw_plane({
+    {"texture2d_water", m_texture_terrain_water},
+    {"texture2d_grass", m_texture_terrain_grass},
+    {"texture2d_rock", m_texture_terrain_rock},
+    {"texture2d_splatmap", m_texture_terrain_splatmap},
+    {"light.position", position_light},
+    {"light.ambiant", 0.2f * color_light},
+    {"light.diffuse", 0.5f * color_light},
+    {"light.specular", color_light},
+  });
 }
 
 /* delegate transform to renderer */

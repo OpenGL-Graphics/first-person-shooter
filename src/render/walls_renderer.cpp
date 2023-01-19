@@ -107,6 +107,7 @@ void WallsRenderer::draw_wall(const WallEntry& entry) {
       glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
+    // TODO: inverse transpose calculated in every iteration :/
     glm::mat4 normal_mat = glm::inverseTranspose(model);
     Uniforms uniforms;
     uniforms["normal_mat"] = normal_mat;

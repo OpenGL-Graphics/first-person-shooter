@@ -19,6 +19,14 @@ std::vector<TargetEntry> LevelRenderer::targets;
  * Needed for collision with camera
  */
 LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory):
+  /**
+   * TODO: Instancing for:
+   * - Targets
+   * - Windows
+   * - Trees
+   * - Doors
+   * - Walls
+   */
   m_tilemap("assets/levels/map.txt"),
 
   // textures
@@ -37,7 +45,7 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
   // TODO: factory to init shaders accessible everywhere (manages their lifecycles too)
-  m_tree(importer, "assets/models/tree/tree.obj", Program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag"), {
+  m_tree(importer, "assets/models/tree/tree.obj", shaders_factory["texture"], {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
     {2, "texture_coord", 2, 11, 6},
@@ -196,6 +204,7 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
     if (target_entry.is_dead)
       continue;
 
+    // TODO: inverting normal in every iteration :/
     glm::mat4 model_target = get_model_target(target_entry.position);
     glm::mat4 normal_mat = glm::inverseTranspose(model_target);
     uniforms["normal_mat"] = normal_mat;

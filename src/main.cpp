@@ -106,7 +106,7 @@ int main() {
   Renderer skybox(shaders_factory["skybox"], Cube(true), {{0, "position", 3, 8, 0}});
   Renderer surface(shaders_factory["texture_surface"], Surface(), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
   Renderer plane(shaders_factory["plane"], Plane(50, 50), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
-  Renderer sphere(shaders_factory["light"], Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
+  Renderer sphere(shaders_factory["phong"], Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
   Renderer cylinder(shaders_factory["texture"], Cylinder(32, 0.25f, 3.5f), {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
@@ -280,15 +280,16 @@ int main() {
     // draw animated & textured wave from plane using triangle strips
     plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
 
-    plane.draw({
+    plane.draw_plane({
       {"texture2d", textures_factory.get<Texture2D>("wave")},
       {"light.position", lights[0].position},
       {"light.ambiant", 0.2f * lights[0].color},
       {"light.diffuse", 0.5f * lights[0].color},
       {"light.specular", lights[0].color},
       {"time", static_cast<float>(glfwGetTime())},
-    }, GL_TRIANGLE_STRIP);
+    });
 
+    // TODO: use instancing to draw only once!
     // shaded sphere rotating around light
     // https://stackoverflow.com/a/53765106/2228912
     glm::vec3 positions_sphere[3] = {
@@ -348,9 +349,12 @@ int main() {
       cube.draw({ {"color", lights[i_light].color} });
     }
 
+    // TODO: Uniforms as a field in Renderer
     // draw a 2 textured cylinders (pillars
+    // TODO: use instancing (use phong shader & modify it!)
+    // TODO: model inverted in every iteration
     glm::mat4 model_cylinder1 = glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8));
-    cylinder.set_transform({ model_cylinder1, view, projection3d });
+    cylinder.set_transform({ model_cylinder1, view, projection3d }); // TODO: add these to Renderer:uniforms
     cylinder.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},
@@ -361,7 +365,7 @@ int main() {
       {"texture_normal", textures_factory.get<Texture2D>("wall_normal")},
       {"has_texture_diffuse", true},
       {"has_texture_normal", true},
-    });
+    }); // most of these uniforms could be initialized outside game loop (except camera)
 
     glm::mat4 model_cylinder2 = glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8));
     cylinder.set_transform({ model_cylinder2, view, projection3d });
@@ -378,14 +382,14 @@ int main() {
     // draw xyz gizmo at origin using GL_LINES
     glm::mat4 model_gizmo(1.0f);
     gizmo.set_transform({ model_gizmo, view, projection3d });
-    gizmo.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f)} }, GL_LINES, 2, 0);
-    gizmo.draw({ {"color", glm::vec3(0.0f, 1.0f, 0.0f)} }, GL_LINES, 2, 2);
-    gizmo.draw({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} }, GL_LINES, 2, 4);
+    gizmo.draw_lines({ {"color", glm::vec3(1.0f, 0.0f, 0.0f)} }, 2, 0);
+    gizmo.draw_lines({ {"color", glm::vec3(0.0f, 1.0f, 0.0f)} }, 2, 2);
+    gizmo.draw_lines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} }, 2, 4);
 
     // draw horizontal 2d grid using GL_LINES
     glm::mat4 model_grid(1.0f);
     grid.set_transform({ model_grid, view, projection3d });
-    grid.draw({ {"color", glm::vec3(1.0f, 1.0f, 1.0f)} }, GL_LINES);
+    grid.draw_lines({ {"color", glm::vec3(1.0f, 1.0f, 1.0f)} });
 
     // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin
