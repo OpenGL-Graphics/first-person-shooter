@@ -107,7 +107,7 @@ int main() {
   Renderer surface(shaders_factory["texture_surface"], Surface(), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
   Renderer plane(shaders_factory["plane"], Plane(50, 50), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
   Renderer sphere(shaders_factory["phong"], Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
-  Renderer cylinder(shaders_factory["texture"], Cylinder(32, 0.25f, 3.5f), {
+  Renderer cylinder(shaders_factory["phong"], Cylinder(32, 0.25f, 3.5f), {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
     {2, "texture_coord", 2, 11, 6},
@@ -189,10 +189,12 @@ int main() {
 
       // draw red cube to texture attached to framebuffer
       cube.set_transform({
-        glm::translate(
-          glm::mat4(1.0f),
-          glm::vec3(window.width / 2, window.height  / 2, 1.0f)
-        ),
+        {
+          glm::translate(
+            glm::mat4(1.0f),
+            glm::vec3(window.width / 2, window.height  / 2, 1.0f)
+          )
+        },
         view,
         projection2d
       });
@@ -212,22 +214,27 @@ int main() {
     // no translation of skybox when camera moves
     // camera initially at origin always inside skybox unit cube => skybox looks larger
     glm::mat4 view_without_translation = glm::mat4(glm::mat3(view));
-    skybox.set_transform({ glm::scale(glm::mat4(1.0f), glm::vec3(2)),
-      view_without_translation, projection3d });
+    skybox.set_transform({
+      { glm::scale(glm::mat4(1.0f), glm::vec3(2)) },
+      view_without_translation, projection3d
+    });
     skybox.draw({ {"texture3d", textures_factory.get<Texture3D>("skybox") } });
     glDepthMask(GL_TRUE);
 
     // cube with outline using two-passes rendering & stencil buffer
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
-    cube.set_transform({ model_cube_outline, view, projection3d });
-    cube.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} });
+    cube.set_transform({ {model_cube_outline}, view, projection3d });
+    cube.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} }); ///
 
     // draw textured terrain using triangle strips
-    terrain.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.5f, -14)), view, projection3d });
+    terrain.set_transform({
+      { glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.5f, -14)) },
+      view, projection3d
+    });
     terrain.draw();
 
     // draw level tiles surfaces on right view
-    level.set_transform({ glm::mat4(1.0f), view, projection3d });
+    level.set_transform({ {glm::mat4(1.0f)}, view, projection3d });
     level.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},
@@ -268,17 +275,22 @@ int main() {
     // same aspect ratio for surface as texture (to avoid stretching its content)
     float aspect_ratio = (float) window.height / window.width;
     surface.set_transform({
-      glm::scale(
-        glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 4.0f)),
-        glm::vec3(2.0f, 2.0f * aspect_ratio, 1.0f)
-      ),
+      {
+        glm::scale(
+          glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 4.0f)),
+          glm::vec3(2.0f, 2.0f * aspect_ratio, 1.0f)
+        ),
+      },
       view, projection3d
     });
     surface.draw({ {"texture2d", texture_framebuffer } });
     ///
 
     // draw animated & textured wave from plane using triangle strips
-    plane.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)), view, projection3d });
+    plane.set_transform({
+      { glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)) },
+      view, projection3d
+    });
 
     plane.draw_plane({
       {"texture2d", textures_factory.get<Texture2D>("wave")},
@@ -319,7 +331,7 @@ int main() {
       // normal vec to world space (when non-uniform scaling): https://learnopengl.com/Lighting/Basic-Lighting
       glm::mat4 normal_mat = glm::inverseTranspose(model_sphere);
 
-      sphere.set_transform({ model_sphere, view, projection3d });
+      sphere.set_transform({ {model_sphere}, view, projection3d });
       sphere.draw({
         {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
         {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
@@ -345,16 +357,39 @@ int main() {
         glm::translate(glm::mat4(1.0f), lights[i_light].position),
         glm::vec3(0.2f)
       ));
-      cube.set_transform({ model_light, view, projection3d });
+      cube.set_transform({ {model_light}, view, projection3d });
       cube.draw({ {"color", lights[i_light].color} });
     }
 
-    // TODO: Uniforms as a field in Renderer
-    // draw a 2 textured cylinders (pillars
-    // TODO: use instancing (use phong shader & modify it!)
+    // use instancing to draw 2 cylinders (pillars)
     // TODO: model inverted in every iteration
+    std::array<glm::mat4, 2> models_cylinder = {
+      glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8)),
+      glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8))
+    };
+
+    glm::mat4 normal_mat = glm::inverseTranspose(models_cylinder[0]);
+    Transformation<2> transform_cylinder(models_cylinder, view, projection3d);
+    cylinder.set_transform(transform_cylinder); // TODO: add these to Renderer:uniforms
+    cylinder.draw({
+      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
+      {"material.shininess", 4.0f}, // bigger specular reflection
+
+      {"light.position", lights[0].position},
+      {"light.ambiant", 0.2f * lights[0].color},
+      {"light.diffuse", 0.5f * lights[0].color},
+      {"light.specular", lights[0].color},
+
+      {"position_camera", camera.position},
+
+      {"normal_mat", normal_mat},
+    });
+
+    /*
     glm::mat4 model_cylinder1 = glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8));
-    cylinder.set_transform({ model_cylinder1, view, projection3d }); // TODO: add these to Renderer:uniforms
+    cylinder.set_transform({ {model_cylinder1}, view, projection3d });
     cylinder.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},
@@ -363,12 +398,10 @@ int main() {
       {"normal_mat", glm::inverseTranspose(model_cylinder1)},
       {"texture_diffuse", textures_factory.get<Texture2D>("wall_diffuse")},
       {"texture_normal", textures_factory.get<Texture2D>("wall_normal")},
-      {"has_texture_diffuse", true},
-      {"has_texture_normal", true},
     }); // most of these uniforms could be initialized outside game loop (except camera)
 
     glm::mat4 model_cylinder2 = glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8));
-    cylinder.set_transform({ model_cylinder2, view, projection3d });
+    cylinder.set_transform({ {model_cylinder2}, view, projection3d });
     cylinder.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},
@@ -378,17 +411,18 @@ int main() {
       {"texture_diffuse", textures_factory.get<Texture2D>("wall_diffuse")},
       {"texture_normal", textures_factory.get<Texture2D>("wall_normal")},
     });
+    */
 
     // draw xyz gizmo at origin using GL_LINES
     glm::mat4 model_gizmo(1.0f);
-    gizmo.set_transform({ model_gizmo, view, projection3d });
+    gizmo.set_transform({ {model_gizmo}, view, projection3d });
     gizmo.draw_lines({ {"color", glm::vec3(1.0f, 0.0f, 0.0f)} }, 2, 0);
     gizmo.draw_lines({ {"color", glm::vec3(0.0f, 1.0f, 0.0f)} }, 2, 2);
     gizmo.draw_lines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} }, 2, 4);
 
     // draw horizontal 2d grid using GL_LINES
     glm::mat4 model_grid(1.0f);
-    grid.set_transform({ model_grid, view, projection3d });
+    grid.set_transform({ {model_grid}, view, projection3d });
     grid.draw_lines({ {"color", glm::vec3(1.0f, 1.0f, 1.0f)} });
 
     // draw textured gun model with position fixed rel. to camera
@@ -411,7 +445,7 @@ int main() {
     // normal vec to world space (when non-uniform scaling): https://learnopengl.com/Lighting/Basic-Lighting
     glm::mat4 normal_mat_gun = glm::inverseTranspose(model_gun);
 
-    gun.set_transform({ model_gun, glm::mat4(1.0f), projection3d });
+    gun.set_transform({ {model_gun}, glm::mat4(1.0f), projection3d });
     gun.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},
@@ -424,7 +458,7 @@ int main() {
     // render 3d model for suzanne with normal mapping
     glm::mat4 model_suzanne = glm::translate(glm::mat4(1.0f), glm::vec3(8.0f, 2.0f, 2.0f));
     glm::mat4 normal_mat_suzanne = glm::inverseTranspose(model_suzanne);
-    suzanne.set_transform({ model_suzanne, view, projection3d });
+    suzanne.set_transform({ {model_suzanne}, view, projection3d });
     suzanne.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},
@@ -443,7 +477,7 @@ int main() {
       ),
       glm::vec3(texture_surface_hud.width, texture_surface_hud.height, 1.0f)
     ));
-    surface.set_transform({ model_hud_health, glm::mat4(1.0f), projection2d });
+    surface.set_transform({ {model_hud_health}, glm::mat4(1.0f), projection2d });
     surface.draw({ {"texture2d", texture_surface_hud} });
 
     // draw crosshair gun target surface at center of screen
@@ -456,11 +490,14 @@ int main() {
       )),
       glm::vec3(texture_surface_crosshair.width, texture_surface_crosshair.height, 1.0f)
     ));
-    surface.set_transform({ model_crosshair, glm::mat4(1.0f), projection2d });
+    surface.set_transform({ {model_crosshair}, glm::mat4(1.0f), projection2d });
     surface.draw({ {"texture2d", texture_surface_crosshair} });
 
     // draw 2d text surface (origin: left baseline)
-    surface_glyph.set_transform({ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)), glm::mat4(1.0f), projection2d });
+    surface_glyph.set_transform({
+      { glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)) },
+      glm::mat4(1.0f), projection2d
+    });
     surface_glyph.draw_text("Score: " + std::to_string(score));
 
     // process events & show rendered buffer

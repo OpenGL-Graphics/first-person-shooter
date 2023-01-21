@@ -14,7 +14,7 @@ struct ModelRenderer {
 
   ModelRenderer(const Program& program, const AssimpUtil::Model& model, const std::vector<Attribute>& attributes);
   void draw(const Uniforms& u={}, bool with_outlines=false);
-  void set_transform(const Transformation& transformation);
+  void set_transform(const Transformation<1>& transformation);
   void free();
 
 private:

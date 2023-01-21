@@ -24,8 +24,12 @@ void Sprite::draw(const Uniforms& u) {
   renderer.draw(uniforms);
 }
 
-/* delegate transform to renderer */
-void Sprite::set_transform(const Transformation& t) {
+/**
+ * Delegate transform to renderer
+ * Supports instancing (multiple transparent windows)
+ */
+template <size_t N_INSTANCES>
+void Sprite::set_transform(const Transformation<N_INSTANCES>& t) {
   renderer.set_transform(t);
 }
 
@@ -34,3 +38,7 @@ void Sprite::free() {
   m_texture.free();
   renderer.free();
 }
+
+// template instantiation to avoid linking error
+template void Sprite::set_transform<1>(const Transformation<1>& transform);
+template void Sprite::set_transform<2>(const Transformation<2>& transform);

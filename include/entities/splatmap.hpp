@@ -10,7 +10,7 @@ class Splatmap {
 public:
   Splatmap(const Program& program);
   void draw(const Uniforms& uniforms={});
-  void set_transform(const Transformation& t);
+  void set_transform(const Transformation<1>& t);
   void free();
 
 private:

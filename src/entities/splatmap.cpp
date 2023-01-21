@@ -33,8 +33,11 @@ void Splatmap::draw(const Uniforms& uniforms) {
   });
 }
 
-/* delegate transform to renderer */
-void Splatmap::set_transform(const Transformation& t) {
+/**
+ * delegate transform to renderer
+ * n_instances = 1 in Transformation as there's only one terrain anyway
+ */
+void Splatmap::set_transform(const Transformation<1>& t) {
   m_renderer.set_transform(t);
 }
 

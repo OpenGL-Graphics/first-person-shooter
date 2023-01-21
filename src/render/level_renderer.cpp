@@ -154,7 +154,7 @@ void LevelRenderer::draw_doors(const Uniforms& u) {
     glm::mat4 normal_mat = glm::inverseTranspose(model);
     uniforms["normal_mat"] = normal_mat;
 
-    m_renderer_door.set_transform({ model, m_transformation.view, m_transformation.projection });
+    m_renderer_door.set_transform({ {model}, m_transformation.view, m_transformation.projection });
     m_renderer_door.draw(uniforms);
   }
 }
@@ -164,7 +164,7 @@ void LevelRenderer::draw_trees(const Uniforms& u) {
   for (const glm::vec3& position : m_positions_trees) {
     // 3d model (origin: base of 3d model)
     glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-    m_tree.set_transform({ model, m_transformation.view, m_transformation.projection });
+    m_tree.set_transform({ {model}, m_transformation.view, m_transformation.projection });
 
     Uniforms uniforms = u;
     glm::mat4 normal_mat = glm::inverseTranspose(model);
@@ -187,7 +187,7 @@ void LevelRenderer::draw_window(const Uniforms& u, const glm::vec3& position_til
 
   // transparent surfaces last to render to ensure blending with background
   m_window.set_transform({
-    glm::translate(glm::mat4(1.0f), position_window),
+    { glm::translate(glm::mat4(1.0f), position_window) },
     m_transformation.view, m_transformation.projection
   });
   m_window.draw();
@@ -208,7 +208,7 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
     glm::mat4 model_target = get_model_target(target_entry.position);
     glm::mat4 normal_mat = glm::inverseTranspose(model_target);
     uniforms["normal_mat"] = normal_mat;
-    m_target.set_transform({ model_target, m_transformation.view, m_transformation.projection });
+    m_target.set_transform({ {model_target}, m_transformation.view, m_transformation.projection });
     m_target.draw(uniforms);
   }
 }
@@ -216,8 +216,9 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
 /**
  * Set model matrix (translation/rotation/scaling) used by renderers in `draw()`
  * `m_position` serves as an offset when translating surfaces tiles in `draw()`
+ * n_instances = 1 in Transformation as there's only one terrain anyway
  */
-void LevelRenderer::set_transform(const Transformation& t) {
+void LevelRenderer::set_transform(const Transformation<1>& t) {
   m_transformation = t;
 
   // update bbox to world coords using model matrix
@@ -234,7 +235,7 @@ void LevelRenderer::set_transform(const Transformation& t) {
 
 /* add-up level & target translation offsets */
 glm::mat4 LevelRenderer::get_model_target(const glm::vec3& position_target) {
-  glm::vec3 position_level = m_transformation.model[3];
+  glm::vec3 position_level = m_transformation.models[0][3];
   glm::vec3 position = position_level + position_target;
   glm::mat4 model_target = glm::translate(glm::mat4(1.0f), position);
 

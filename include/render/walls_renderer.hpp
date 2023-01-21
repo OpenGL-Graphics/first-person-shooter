@@ -11,7 +11,7 @@
 class WallsRenderer {
 public:
   WallsRenderer(const TexturesFactory& textures_factory, const Program& program);
-  void set_transform(const Transformation& t);
+  void set_transform(const Transformation<1>& t);
   void draw(const std::vector<WallEntry>& entries);
   void draw_walls_around_window(const glm::vec3& position_tile);
   void free();
@@ -29,7 +29,7 @@ private:
   /* TODO: same renderer (shader, vao attributes) but with updated vbo */
   Renderer m_renderer;
   Renderer m_renderer_subwall;
-  Transformation m_transformation;
+  Transformation<1> m_transformation;
 
   /* Texture3D was stretching without repeat */
   Texture2D m_texture;

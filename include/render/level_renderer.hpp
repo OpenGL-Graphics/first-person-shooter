@@ -36,7 +36,7 @@ struct LevelRenderer {
 
   LevelRenderer(Assimp::Importer& importer, const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory);
   void draw(const Uniforms& u={});
-  void set_transform(const Transformation& t);
+  void set_transform(const Transformation<1>& t);
   void free();
 
 private:
@@ -69,7 +69,7 @@ private:
   Target m_target;
 
   /* transformation matrixes (view, projection) passed to tiles renderers before `draw()` */
-  Transformation m_transformation;
+  Transformation<1> m_transformation;
 
   /* position of level */
   glm::vec3 m_position;

@@ -26,7 +26,7 @@ void Model::draw(const Uniforms& uniforms) {
 }
 
 /* delegate transform to renderer */
-void Model::set_transform(const Transformation& t) {
+void Model::set_transform(const Transformation<1>& t) {
   m_renderer.set_transform(t);
 }
 

@@ -22,7 +22,7 @@ FloorsRenderer::FloorsRenderer(const TexturesFactory& textures_factory, const Pr
 {
 }
 
-void FloorsRenderer::set_transform(const Transformation& t) {
+void FloorsRenderer::set_transform(const Transformation<1>& t) {
   m_transformation = t;
 }
 
@@ -51,7 +51,7 @@ void FloorsRenderer::draw_horizontal_surface(const Uniforms& u, bool is_floor) {
   // xy scaling then rotation around x-axis then translation
   Uniforms uniforms = u;
   uniforms["normal_mat"] = normal_mat;
-  m_renderer.set_transform({ model, m_transformation.view, m_transformation.projection });
+  m_renderer.set_transform({ {model}, m_transformation.view, m_transformation.projection });
   m_renderer.draw(uniforms);
 }
 

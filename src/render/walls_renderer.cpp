@@ -28,7 +28,7 @@ WallsRenderer::WallsRenderer(const TexturesFactory& textures_factory, const Prog
 {
 }
 
-void WallsRenderer::set_transform(const Transformation& t) {
+void WallsRenderer::set_transform(const Transformation<1>& t) {
   m_transformation = t;
 }
 
@@ -114,7 +114,7 @@ void WallsRenderer::draw_wall(const WallEntry& entry) {
     uniforms["texture2d"] = m_texture;
 
     // vertical scaling then rotation around y-axis then translation
-    m_renderer.set_transform({ model, m_transformation.view, m_transformation.projection });
+    m_renderer.set_transform({ {model}, m_transformation.view, m_transformation.projection });
     m_renderer.draw(uniforms);
   }
 }
@@ -128,14 +128,14 @@ void WallsRenderer::draw_walls_around_window(const glm::vec3& position_tile) {
   glm::vec3 position_bottom = position_tile + glm::vec3(m_wall_length / 2, m_subwall_height / 2, m_wall_depth / 2);
   glm::mat4 model_bottom = glm::translate(glm::mat4(1.0f), position_bottom);
   uniforms["normal_mat"] = glm::inverseTranspose(model_bottom);
-  m_renderer_subwall.set_transform({ model_bottom, m_transformation.view, m_transformation.projection });
+  m_renderer_subwall.set_transform({ {model_bottom}, m_transformation.view, m_transformation.projection });
   m_renderer_subwall.draw(uniforms);
 
   // wall above window
   glm::vec3 position_top = position_bottom + glm::vec3(0, m_subwall_height + m_window_height, 0);
   glm::mat4 model_top = glm::translate(glm::mat4(1.0f), position_top);
   uniforms["normal_mat"] = glm::inverseTranspose(model_top);
-  m_renderer_subwall.set_transform({ model_top, m_transformation.view, m_transformation.projection });
+  m_renderer_subwall.set_transform({ {model_top}, m_transformation.view, m_transformation.projection });
   m_renderer_subwall.draw(uniforms);
 }
 
