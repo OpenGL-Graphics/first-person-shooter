@@ -3,7 +3,6 @@
 /* Similar to how programs are managed in <imgui-paint>/Canvas */
 ShadersFactory::ShadersFactory():
   m_programs {
-    { "basic", Program("assets/shaders/basic.vert", "assets/shaders/basic.frag") },
     { "texture", Program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag") },
     { "texture_surface", Program("assets/shaders/texture_surface.vert", "assets/shaders/texture_surface.frag") },
     { "skybox", Program("assets/shaders/skybox.vert", "assets/shaders/skybox.frag") },
@@ -15,6 +14,7 @@ ShadersFactory::ShadersFactory():
 
     // instancing (draw same geometry multiple times at once)
     { "phong", Program("assets/shaders/instancing/phong.vert", "assets/shaders/instancing/phong.frag") },
+    { "basic", Program("assets/shaders/instancing/basic.vert", "assets/shaders/instancing/basic.frag") },
   }
 {
 }

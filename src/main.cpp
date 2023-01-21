@@ -224,7 +224,7 @@ int main() {
     // cube with outline using two-passes rendering & stencil buffer
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
     cube.set_transform({ {model_cube_outline}, view, projection3d });
-    cube.draw_with_outlines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} }); ///
+    cube.draw_with_outlines({ {"colors[0]", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
     // draw textured terrain using triangle strips
     terrain.set_transform({
@@ -350,18 +350,27 @@ int main() {
       });
     }
 
+    // uses instancing to draw light cubes
     // draw 3 light cubes (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
+    std::array<glm::mat4, 3> models_lights;
+    std::array<glm::vec3, 3> colors_lights;
+
     for (size_t i_light = 0; i_light < 3; ++i_light) {
-      glm::mat4 model_light(glm::scale(
-        glm::translate(glm::mat4(1.0f), lights[i_light].position),
+      Light light = lights[i_light];
+      models_lights[i_light] = glm::mat4(glm::scale(
+        glm::translate(glm::mat4(1.0f), light.position),
         glm::vec3(0.2f)
       ));
-      cube.set_transform({ {model_light}, view, projection3d });
-      cube.draw({ {"color", lights[i_light].color} });
+      colors_lights[i_light] = light.color;
     }
 
-    // use instancing to draw 2 cylinders (pillars)
+    Transformation<3> transform_cube(models_lights, view, projection3d);
+    cube.set_transform(transform_cube);
+    cube.set_uniform_arr("colors", colors_lights);
+    cube.draw({});
+
+    // uses instancing to draw 2 cylinders (pillars)
     // TODO: model inverted in every iteration
     std::array<glm::mat4, 2> models_cylinder = {
       glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8)),

@@ -10,7 +10,7 @@ struct Light {
   Light(const glm::vec3& p, const glm::vec3& c);
 };
 
-// score declared as a global variable (i.e. accessible everywhere)
+// lights declared as a global variable (i.e. same instance accessible everywhere)
 // https://stackoverflow.com/a/3627979/2228912 
 extern Light lights[3];
 
