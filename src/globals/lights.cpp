@@ -2,7 +2,10 @@
 
 Light::Light(const glm::vec3& p, const glm::vec3& c):
   position(p),
-  color(c)
+  color(c),
+  ambiant(0.2f * c),
+  diffuse(0.5f * c),
+  specular(c)
 {
 }
 
@@ -25,4 +28,5 @@ Light light3(
 );
 
 // global variable
-Light lights[3] = { light1, light2, light3 };
+// use an std::array to get its length inside for loop in main.cpp
+std::array<Light, 3> lights = { light1, light2, light3 };

@@ -102,12 +102,12 @@ int main() {
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   // 08-01-23: ~ total of 40K vertexes coords (float/uint) for geometries => peanuts (not the place to optimize)
-  Renderer cube(shaders_factory["basic"], Cube(), {{0, "position", 3, 8, 0}});
+  Renderer cubes(shaders_factory["basic"], Cube(), {{0, "position", 3, 8, 0}});
   Renderer skybox(shaders_factory["skybox"], Cube(true), {{0, "position", 3, 8, 0}});
   Renderer surface(shaders_factory["texture_surface"], Surface(), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
   Renderer plane(shaders_factory["plane"], Plane(50, 50), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
-  Renderer sphere(shaders_factory["phong"], Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
-  Renderer cylinder(shaders_factory["phong"], Cylinder(32, 0.25f, 3.5f), {
+  Renderer spheres(shaders_factory["phong"], Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
+  Renderer cylinders(shaders_factory["phong"], Cylinder(32, 0.25f, 3.5f), {
     {0, "position", 3, 11, 0},
     {1, "normal", 3, 11, 3},
     {2, "texture_coord", 2, 11, 6},
@@ -117,6 +117,11 @@ int main() {
   Renderer grid(shaders_factory["basic"], GridLines(), { {0, "position", 3, 3, 0} });
 
   time_profiler.stop("* Shaders & buffers");
+
+  // renderers names in plural use instancing to render multiple times
+  const unsigned int N_LIGHTS = lights.size(),
+                     N_CYLINDERS = 2,
+                     N_SPHERES = 3;
 
   // terrain from triangle strips & textured with image splatmap
   Splatmap terrain(shaders_factory["light_terrain"]);
@@ -188,7 +193,7 @@ int main() {
       framebuffer.clear({ 1.0f, 1.0f, 1.0f, 1.0f });
 
       // draw red cube to texture attached to framebuffer
-      cube.set_transform({
+      cubes.set_transform({
         {
           glm::translate(
             glm::mat4(1.0f),
@@ -198,7 +203,7 @@ int main() {
         view,
         projection2d
       });
-      cube.draw({ {"color", glm::vec3(1.0f, 0.0f, 0.0f) } });
+      cubes.draw({ {"colors[0]", glm::vec3(1.0f, 0.0f, 0.0f) } });
       framebuffer.unbind();
     }
 
@@ -223,8 +228,8 @@ int main() {
 
     // cube with outline using two-passes rendering & stencil buffer
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
-    cube.set_transform({ {model_cube_outline}, view, projection3d });
-    cube.draw_with_outlines({ {"colors[0]", glm::vec3(0.0f, 0.0f, 1.0f)} });
+    cubes.set_transform({ {model_cube_outline}, view, projection3d });
+    cubes.draw_with_outlines({ {"colors[0]", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
     // draw textured terrain using triangle strips
     terrain.set_transform({
@@ -301,17 +306,20 @@ int main() {
       {"time", static_cast<float>(glfwGetTime())},
     });
 
-    // TODO: use instancing to draw only once!
+    // uses instancing to draw only once!
     // shaded sphere rotating around light
     // https://stackoverflow.com/a/53765106/2228912
-    glm::vec3 positions_sphere[3] = {
+    glm::vec3 positions_sphere[N_SPHERES] = {
       glm::vec3( 7.0f, 1.5f, 6.0f),
       glm::vec3(16.0f, 1.5f, 6.0f),
       glm::vec3(26.5f, 1.5f, 6.0f),
     };
 
-    for (size_t i_light = 0; i_light < 3; ++i_light) {
-      glm::vec3 pivot = lights[i_light].position;
+    std::array<glm::mat4, N_SPHERES> models_spheres, normals_mats_spheres;
+    std::array<glm::vec3, N_SPHERES> lights_positions, lights_ambiant, lights_diffuse, lights_specular;
+
+    for (size_t i_sphere = 0; i_sphere < N_SPHERES; ++i_sphere) {
+      glm::vec3 pivot = lights[i_sphere].position;
       glm::mat4 model_sphere(glm::scale(
         glm::translate(
           glm::translate(
@@ -322,41 +330,48 @@ int main() {
             ),
             -pivot // bringing pivot to origin first
           ),
-          positions_sphere[i_light] // initial position (also makes radius smaller)
+          positions_sphere[i_sphere] // initial position (also makes radius smaller)
         ),
         glm::vec3(0.5f)
       ));
+      models_spheres[i_sphere] = model_sphere;
 
-      // calculate normal matrix only once (instead of doing it in shader for every vertex)
       // normal vec to world space (when non-uniform scaling): https://learnopengl.com/Lighting/Basic-Lighting
       glm::mat4 normal_mat = glm::inverseTranspose(model_sphere);
+      normals_mats_spheres[i_sphere] = normal_mat;
 
-      sphere.set_transform({ {model_sphere}, view, projection3d });
-      sphere.draw({
-        {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
-        {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
-        {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
-        // {"material.shininess", 32.0f},
-        {"material.shininess", 4.0f}, // bigger specular reflection
+      lights_positions[i_sphere] = lights[i_sphere].position;
+      lights_ambiant[i_sphere] = lights[i_sphere].ambiant;
+      lights_diffuse[i_sphere] = lights[i_sphere].diffuse;
+      lights_specular[i_sphere] = lights[i_sphere].specular;
 
-        {"light.position", lights[i_light].position},
-        {"light.ambiant", 0.2f * lights[i_light].color},
-        {"light.diffuse", 0.5f * lights[i_light].color},
-        {"light.specular", lights[i_light].color},
+    } // SPHERES UNIFORMS ARRAYS
 
-        {"position_camera", camera.position},
+    Transformation<N_SPHERES> transform_sphere({ models_spheres, view, projection3d });
+    spheres.set_transform(transform_sphere);
+    spheres.set_uniform_arr("normals_mats", normals_mats_spheres);
+    spheres.set_uniform_arr("lights.position", lights_positions);
+    spheres.set_uniform_arr("lights.ambiant", lights_ambiant);
+    spheres.set_uniform_arr("lights.diffuse", lights_diffuse);
+    spheres.set_uniform_arr("lights.specular", lights_specular);
 
-        {"normal_mat", normal_mat},
-      });
-    }
+    spheres.draw({
+      {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
+      {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
+      // {"material.shininess", 32.0f},
+      {"material.shininess", 4.0f}, // bigger specular reflection
+
+      {"position_camera", camera.position},
+    });
 
     // uses instancing to draw light cubes
     // draw 3 light cubes (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
-    std::array<glm::mat4, 3> models_lights;
-    std::array<glm::vec3, 3> colors_lights;
+    std::array<glm::mat4, N_LIGHTS> models_lights;
+    std::array<glm::vec3, N_LIGHTS> colors_lights;
 
-    for (size_t i_light = 0; i_light < 3; ++i_light) {
+    for (size_t i_light = 0; i_light < N_LIGHTS; ++i_light) {
       Light light = lights[i_light];
       models_lights[i_light] = glm::mat4(glm::scale(
         glm::translate(glm::mat4(1.0f), light.position),
@@ -365,62 +380,35 @@ int main() {
       colors_lights[i_light] = light.color;
     }
 
-    Transformation<3> transform_cube(models_lights, view, projection3d);
-    cube.set_transform(transform_cube);
-    cube.set_uniform_arr("colors", colors_lights);
-    cube.draw({});
+    Transformation<N_LIGHTS> transform_cube(models_lights, view, projection3d);
+    cubes.set_transform(transform_cube);
+    cubes.set_uniform_arr("colors", colors_lights);
+    cubes.draw({});
 
-    // uses instancing to draw 2 cylinders (pillars)
-    // TODO: model inverted in every iteration
-    std::array<glm::mat4, 2> models_cylinder = {
+    // uses instancing to draw 2 cylinders pillars (affected by same light source)
+    // TODO: model inverted in every iteration (immobile object!)
+    std::array<glm::mat4, N_CYLINDERS> models_cylinder = {
       glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8)),
       glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8))
     };
 
     glm::mat4 normal_mat = glm::inverseTranspose(models_cylinder[0]);
-    Transformation<2> transform_cylinder(models_cylinder, view, projection3d);
-    cylinder.set_transform(transform_cylinder); // TODO: add these to Renderer:uniforms
-    cylinder.draw({
+    Transformation<N_CYLINDERS> transform_cylinder(models_cylinder, view, projection3d);
+    cylinders.set_transform(transform_cylinder);
+    cylinders.set_uniform_arr<N_CYLINDERS, glm::mat4>("normals_mats", { normal_mat, normal_mat });
+    cylinders.set_uniform_arr<N_CYLINDERS, glm::vec3>("lights.position", { lights[1].position, lights[1].position });
+    cylinders.set_uniform_arr<N_CYLINDERS, glm::vec3>("lights.ambiant", { lights[1].ambiant, lights[1].ambiant });
+    cylinders.set_uniform_arr<N_CYLINDERS, glm::vec3>("lights.diffuse", { lights[1].diffuse, lights[1].diffuse });
+    cylinders.set_uniform_arr<N_CYLINDERS, glm::vec3>("lights.specular", { lights[1].specular, lights[1].specular });
+
+    cylinders.draw({
       {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},
       {"material.diffuse", glm::vec3(1.0f, 0.5f, 0.31f)},
       {"material.specular", glm::vec3(0.5f, 0.5f, 0.5f)},
       {"material.shininess", 4.0f}, // bigger specular reflection
 
-      {"light.position", lights[0].position},
-      {"light.ambiant", 0.2f * lights[0].color},
-      {"light.diffuse", 0.5f * lights[0].color},
-      {"light.specular", lights[0].color},
-
       {"position_camera", camera.position},
-
-      {"normal_mat", normal_mat},
     });
-
-    /*
-    glm::mat4 model_cylinder1 = glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8));
-    cylinder.set_transform({ {model_cylinder1}, view, projection3d });
-    cylinder.draw({
-      {"position_camera", camera.position},
-      {"positions_lights[0]", lights[0].position},
-      {"positions_lights[1]", lights[1].position},
-      {"positions_lights[2]", lights[2].position},
-      {"normal_mat", glm::inverseTranspose(model_cylinder1)},
-      {"texture_diffuse", textures_factory.get<Texture2D>("wall_diffuse")},
-      {"texture_normal", textures_factory.get<Texture2D>("wall_normal")},
-    }); // most of these uniforms could be initialized outside game loop (except camera)
-
-    glm::mat4 model_cylinder2 = glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8));
-    cylinder.set_transform({ {model_cylinder2}, view, projection3d });
-    cylinder.draw({
-      {"position_camera", camera.position},
-      {"positions_lights[0]", lights[0].position},
-      {"positions_lights[1]", lights[1].position},
-      {"positions_lights[2]", lights[2].position},
-      {"normal_mat", glm::inverseTranspose(model_cylinder2)},
-      {"texture_diffuse", textures_factory.get<Texture2D>("wall_diffuse")},
-      {"texture_normal", textures_factory.get<Texture2D>("wall_normal")},
-    });
-    */
 
     // draw xyz gizmo at origin using GL_LINES
     glm::mat4 model_gizmo(1.0f);
@@ -540,15 +528,16 @@ int main() {
   // destroy renderers of each shape (frees vao & vbo)
   level.free();
   terrain.free();
-  cube.free();
   skybox.free();
   surface.free();
   surface_glyph.free();
   plane.free();
-  sphere.free();
-  cylinder.free();
   gizmo.free();
   grid.free();
+
+  cubes.free();
+  cylinders.free();
+  spheres.free();
 
   // free 3d entities
   gun.free();

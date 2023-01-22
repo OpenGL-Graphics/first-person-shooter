@@ -1,5 +1,7 @@
 #version 330 core
 
+#define MAX_N_INSTANCES 10
+
 // different colors for each material & light components
 struct Material {
   vec3 ambiant;
@@ -17,20 +19,21 @@ struct Light {
 
 in vec3 normal_vert;
 in vec3 position_vert;
+in Light light_vert;
+in mat4 normal_mat_vert;
 
 uniform Material material;
-uniform Light light;
 uniform vec3 position_camera;
-uniform mat4 normal_mat;
 
 out vec4 color_out;
 
 void main() {
   // can't transform normal vec to world-coord using model matrix
   // https://learnopengl.com/Lighting/Basic-Lighting
-  vec3 normal = normalize(mat3(normal_mat) * normal_vert);
+  vec3 normal = normalize(mat3(normal_mat_vert) * normal_vert);
 
   // ambiant light constant
+  Light light = light_vert;
   vec3 ambiant = material.ambiant * light.ambiant;
 
   // diffuse light depends on light beam & fragment normal
