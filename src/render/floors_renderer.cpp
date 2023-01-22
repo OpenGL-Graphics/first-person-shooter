@@ -10,11 +10,7 @@
  */
 FloorsRenderer::FloorsRenderer(const TexturesFactory& textures_factory, const Program& program, const glm::vec2& size):
   m_size(size),
-  m_renderer(program, Surface(size), {
-    {0, "position", 2, 7, 0},
-    {1, "normal", 3, 7, 2},
-    {2, "texture_coord", 2, 7, 5},
-  }),
+  m_renderer(program, Surface(size), Attributes::get({"position", "normal", "texture_coord"}, 7, true)),
   m_tex_floor_diffuse(textures_factory.get<Texture2D>("floor_diffuse")),
   m_tex_floor_normal(textures_factory.get<Texture2D>("floor_normal")),
   m_tex_ceiling_diffuse(textures_factory.get<Texture2D>("ceiling_diffuse")),

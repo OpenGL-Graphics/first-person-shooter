@@ -102,19 +102,14 @@ int main() {
 
   // renderer (encapsulates VAO & VBO) for each shape to render
   // 08-01-23: ~ total of 40K vertexes coords (float/uint) for geometries => peanuts (not the place to optimize)
-  Renderer cubes(shaders_factory["basic"], Cube(), {{0, "position", 3, 8, 0}});
-  Renderer skybox(shaders_factory["skybox"], Cube(true), {{0, "position", 3, 8, 0}});
-  Renderer surface(shaders_factory["texture_surface"], Surface(), {{0, "position", 2, 7, 0}, {1, "normal", 3, 7, 2}, {2, "texture_coord", 2, 7, 5}});
-  Renderer plane(shaders_factory["plane"], Plane(50, 50), {{0, "position", 3, 8, 0}, {1, "normal", 3, 8, 3}, {2, "texture_coord", 2, 8, 6}});
-  Renderer spheres(shaders_factory["phong"], Sphere(32, 32), {{0, "position", 3, 6, 0}, {1, "normal", 3, 6, 3}});
-  Renderer cylinders(shaders_factory["phong"], Cylinder(32, 0.25f, 3.5f), {
-    {0, "position", 3, 11, 0},
-    {1, "normal", 3, 11, 3},
-    {2, "texture_coord", 2, 11, 6},
-    {3, "tangent", 3, 11, 8},
-  });
-  Renderer gizmo(shaders_factory["basic"], Gizmo(), { {0, "position", 3, 3, 0} });
-  Renderer grid(shaders_factory["basic"], GridLines(), { {0, "position", 3, 3, 0} });
+  Renderer cubes(shaders_factory["basic"], Cube(), Attributes::get({"position"}, 8));
+  Renderer skybox(shaders_factory["skybox"], Cube(true), Attributes::get({"position"}, 8));
+  Renderer surface(shaders_factory["texture_surface"], Surface(), Attributes::get({"position", "normal", "texture_coord"}, 7, true));
+  Renderer plane(shaders_factory["plane"], Plane(50, 50), Attributes::get({"position", "normal", "texture_coord"}));
+  Renderer spheres(shaders_factory["phong"], Sphere(32, 32), Attributes::get({"position", "normal"}));
+  Renderer cylinders(shaders_factory["phong"], Cylinder(32, 0.25f, 3.5f), Attributes::get({"position", "normal", "texture_coord", "tangent"}));
+  Renderer gizmo(shaders_factory["basic"], Gizmo(), Attributes::get({"position"}));
+  Renderer grid(shaders_factory["basic"], GridLines(), Attributes::get({"position"}));
 
   time_profiler.stop("* Shaders & buffers");
 
@@ -413,14 +408,14 @@ int main() {
     // draw xyz gizmo at origin using GL_LINES
     glm::mat4 model_gizmo(1.0f);
     gizmo.set_transform({ {model_gizmo}, view, projection3d });
-    gizmo.draw_lines({ {"color", glm::vec3(1.0f, 0.0f, 0.0f)} }, 2, 0);
-    gizmo.draw_lines({ {"color", glm::vec3(0.0f, 1.0f, 0.0f)} }, 2, 2);
-    gizmo.draw_lines({ {"color", glm::vec3(0.0f, 0.0f, 1.0f)} }, 2, 4);
+    gizmo.draw_lines({ {"colors[0]", glm::vec3(1.0f, 0.0f, 0.0f)} }, 2, 0);
+    gizmo.draw_lines({ {"colors[0]", glm::vec3(0.0f, 1.0f, 0.0f)} }, 2, 2);
+    gizmo.draw_lines({ {"colors[0]", glm::vec3(0.0f, 0.0f, 1.0f)} }, 2, 4);
 
     // draw horizontal 2d grid using GL_LINES
     glm::mat4 model_grid(1.0f);
     grid.set_transform({ {model_grid}, view, projection3d });
-    grid.draw_lines({ {"color", glm::vec3(1.0f, 1.0f, 1.0f)} });
+    grid.draw_lines({ {"colors[0]", glm::vec3(1.0f, 1.0f, 1.0f)} });
 
     // draw textured gun model with position fixed rel. to camera
     // view = I => fixed translation with camera as origin

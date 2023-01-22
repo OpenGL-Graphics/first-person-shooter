@@ -10,18 +10,12 @@ WallsRenderer::WallsRenderer(const TexturesFactory& textures_factory, const Prog
   m_renderer(
     program,
     Cube(false, { m_wall_length, m_wall_height, m_wall_depth }),
-    {
-      {0, "position", 3, 8, 0},
-      {1, "texture_coord", 2, 8, 6}
-    }
+    Attributes::get({"position", "normal", "texture_coord"})
   ),
   m_renderer_subwall(
     program,
     Cube(false, { m_wall_length, m_subwall_height, m_wall_depth }),
-    {
-      {0, "position", 3, 8, 0},
-      {1, "texture_coord", 2, 8, 6}
-    }
+    Attributes::get({"position", "normal", "texture_coord"})
   ),
 
   m_texture(textures_factory.get<Texture2D>("wall_diffuse"))

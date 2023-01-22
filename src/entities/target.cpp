@@ -9,13 +9,7 @@
  */
 Target::Target(Assimp::Importer& importer, const Program& program):
   m_model("assets/models/samurai/samurai.obj", importer),
-  m_renderer(program, m_model, {
-    {0, "position", 3, 11, 0},
-    {1, "normal", 3, 11, 3},
-    {2, "texture_coord", 2, 11, 6},
-    {3, "tangent", 3, 11, 8},
-  }),
-
+  m_renderer(program, m_model, Attributes::get({"position", "normal", "texture_coord", "tangent"})),
   is_dead(false)
 {
   calculate_bounding_box();

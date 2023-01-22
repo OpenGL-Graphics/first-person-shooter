@@ -9,11 +9,7 @@
  */
 Sprite::Sprite(const Texture2D& texture, const Program& program):
   m_texture(texture),
-  renderer(program, Surface(), {
-    {0, "position", 2, 7, 0},
-    {1, "normal", 3, 7, 2},
-    {2, "texture_coord", 2, 7, 5},
-  })
+  renderer(program, Surface(), Attributes::get({"position", "normal", "texture_coord"}, 7, true))
 {
 }
 

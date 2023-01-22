@@ -35,22 +35,12 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
   m_tex_window(textures_factory.get<Texture2D>("window")),
 
   // renderers for doors/floors
-  m_renderer_door(shaders_factory["tile"], Surface(glm::vec2(1, m_height)), {
-    {0, "position", 2, 7, 0},
-    {1, "normal", 3, 7, 2},
-    {2, "texture_coord", 2, 7, 5},
-  }),
+  m_renderer_door(shaders_factory["tile"], Surface(glm::vec2(1, m_height)), Attributes::get({"position", "normal", "texture_coord"}, 7, true)),
   m_renderer_floors(textures_factory, shaders_factory["tile"], { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
   m_renderer_walls(textures_factory, shaders_factory["texture_cube"]),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
-  // TODO: factory to init shaders accessible everywhere (manages their lifecycles too)
-  m_tree(importer, "assets/models/tree/tree.obj", shaders_factory["texture"], {
-    {0, "position", 3, 11, 0},
-    {1, "normal", 3, 11, 3},
-    {2, "texture_coord", 2, 11, 6},
-    {3, "tangent", 3, 11, 8},
-  }),
+  m_tree(importer, "assets/models/tree/tree.obj", shaders_factory["texture"], Attributes::get({"position", "normal", "texture_coord", "tangent"})),
 
   // window
   m_window(m_tex_window, shaders_factory["texture_surface"]),
