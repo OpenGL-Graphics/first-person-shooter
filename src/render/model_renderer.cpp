@@ -26,6 +26,12 @@ void ModelRenderer::set_transform(const Transformation& transformation) {
   }
 }
 
+/* Needed to pass normal_mat to tree's shaders in LevelRenderer */
+void ModelRenderer::set_uniform_arr(const std::string& name, const std::vector<glm::mat4>& u) {
+  for (Renderer& renderer : renderers)
+    renderer.set_uniform_arr(name, u);
+}
+
 /* Rendering of model relies on `Renderer::draw() applied to each mesh */
 void ModelRenderer::draw(const Uniforms& u, bool with_outlines) {
   Uniforms uniforms = u;

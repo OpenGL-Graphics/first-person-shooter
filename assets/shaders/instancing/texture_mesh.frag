@@ -1,5 +1,7 @@
 #version 330 core
 
+#define N_LIGHTS 3
+
 // interface block (name matches in vertex shader)
 in VS_OUT {
   vec2 texture_coord_vert;
@@ -10,8 +12,7 @@ in VS_OUT {
 
 uniform sampler2D texture_diffuse;
 uniform sampler2D texture_normal;
-uniform mat4 normal_mat;
-uniform vec3 positions_lights[3];
+uniform vec3 positions_lights[N_LIGHTS];
 uniform vec3 position_camera;
 
 // tree meshes have diffuse colors but no textures (get normals from vertexes)
@@ -42,7 +43,7 @@ void main() {
 
   // sum-up color contributions from all walls
   vec3 sum_contributions = vec3(0.0, 0.0, 0.0);
-  for (int i_light = 0; i_light < 3; i_light++) {
+  for (int i_light = 0; i_light < N_LIGHTS; i_light++) {
     sum_contributions += calculateLightContribution(color_texture, positions_lights[i_light], normal);
   }
 

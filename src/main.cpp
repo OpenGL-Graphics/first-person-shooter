@@ -24,6 +24,7 @@
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
 #include "render/level_renderer.hpp"
+#include "render/model_renderer.hpp"
 
 #include "text/glyphs.hpp"
 #include "text/font.hpp"
@@ -40,7 +41,6 @@
 #include "globals/lights.hpp"
 
 #include "entities/splatmap.hpp"
-#include "entities/model.hpp"
 #include "entities/sprite.hpp"
 
 #include "framebuffer.hpp"
@@ -130,18 +130,11 @@ int main() {
 
   // load 3d model from .obj file & its renderer
   time_profiler.start();
-  Model gun(importer, "assets/models/sniper/sniper.obj", shaders_factory["texture"], {
-    {0, "position", 3, 11, 0},
-    {1, "normal", 3, 11, 3},
-    {2, "texture_coord", 2, 11, 6},
-    {3, "tangent", 3, 11, 8},
-  });
-  Model suzanne(importer, "assets/models/suzanne/suzanne.obj", shaders_factory["texture"], {
-    {0, "position", 3, 11, 0},
-    {1, "normal", 3, 11, 3},
-    {2, "texture_coord", 2, 11, 6},
-    {3, "tangent", 3, 11, 8},
-  });
+  AssimpUtil::Model model_gun("assets/models/sniper/sniper.obj", importer),
+                    model_suzanne("assets/models/suzanne/suzanne.obj", importer);
+
+  ModelRenderer gun(shaders_factory["texture"], model_gun, Attributes::get({"position", "normal", "texture_coord", "tangent"}));
+  ModelRenderer suzanne(shaders_factory["texture"], model_suzanne, Attributes::get({"position", "normal", "texture_coord", "tangent"}));
   time_profiler.stop("* Loading gun & suzanne 3D models");
 
   // load tilemap by parsing text file

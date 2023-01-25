@@ -15,7 +15,6 @@
 #include "entries/wall_entry.hpp"
 
 #include "entities/target.hpp"
-#include "entities/model.hpp"
 #include "entities/sprite.hpp"
 
 #include "factories/shaders_factory.hpp"
@@ -59,10 +58,10 @@ private:
   WallsRenderer m_renderer_walls;
   FloorsRenderer m_renderer_floors;
 
-  /* tree props rendered multiple times */
-  Model m_tree;
+  /* tree props rendered multiple times (with instancing) */
+  ModelRenderer m_trees;
 
-  /* Windows */
+  /* Windows (with instancing) */
   Sprite m_windows;
 
   /* Target (enemy) to shoot */

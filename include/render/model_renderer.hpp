@@ -15,6 +15,7 @@ struct ModelRenderer {
   ModelRenderer(const Program& program, const AssimpUtil::Model& model, const std::vector<Attribute>& attributes);
   void draw(const Uniforms& u={}, bool with_outlines=false);
   void set_transform(const Transformation& transformation);
+  void set_uniform_arr(const std::string& name, const std::vector<glm::mat4>& u);
   void free();
 
 private:

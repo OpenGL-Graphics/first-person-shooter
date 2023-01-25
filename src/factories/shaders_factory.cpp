@@ -3,7 +3,6 @@
 /* Similar to how programs are managed in <imgui-paint>/Canvas */
 ShadersFactory::ShadersFactory():
   m_programs {
-    { "texture", Program("assets/shaders/texture_mesh.vert", "assets/shaders/texture_mesh.frag") },
     { "skybox", Program("assets/shaders/skybox.vert", "assets/shaders/skybox.frag") },
     { "text", Program("assets/shaders/instancing/texture_surface.vert", "assets/shaders/texture_text.frag") },
     { "plane", Program("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag") },
@@ -15,6 +14,7 @@ ShadersFactory::ShadersFactory():
     { "phong", Program("assets/shaders/instancing/phong.vert", "assets/shaders/instancing/phong.frag") },
     { "basic", Program("assets/shaders/instancing/basic.vert", "assets/shaders/instancing/basic.frag") },
     { "texture_surface", Program("assets/shaders/instancing/texture_surface.vert", "assets/shaders/instancing/texture_surface.frag") },
+    { "texture", Program("assets/shaders/instancing/texture_mesh.vert", "assets/shaders/instancing/texture_mesh.frag") },
   }
 {
 }

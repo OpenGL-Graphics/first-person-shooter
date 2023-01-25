@@ -40,7 +40,7 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
   m_renderer_walls(textures_factory, shaders_factory["texture_cube"]),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
-  m_tree(importer, "assets/models/tree/tree.obj", shaders_factory["texture"], Attributes::get({"position", "normal", "texture_coord", "tangent"})),
+  m_trees(shaders_factory["texture"], AssimpUtil::Model("assets/models/tree/tree.obj", importer), Attributes::get({"position", "normal", "texture_coord", "tangent"})),
 
   // window
   m_windows(m_tex_window, shaders_factory["texture_surface"]),
@@ -149,18 +149,24 @@ void LevelRenderer::draw_doors(const Uniforms& u) {
   }
 }
 
-/* Draw trees 3d model at positions parsed in constructor */
+/**
+ * Draw trees 3d model at positions parsed in constructor
+ * Supports instancing
+ */
 void LevelRenderer::draw_trees(const Uniforms& u) {
-  for (const glm::vec3& position : m_positions_trees) {
-    // 3d model (origin: base of 3d model)
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-    m_tree.set_transform({ {model}, m_transformation.view, m_transformation.projection });
+  const unsigned int N_TREES = m_positions_trees.size();
+  std::vector<glm::mat4> models_trees(N_TREES), normals_mats_trees(N_TREES);
 
-    Uniforms uniforms = u;
-    glm::mat4 normal_mat = glm::inverseTranspose(model);
-    uniforms["normal_mat"] = normal_mat;
-    m_tree.draw(uniforms);
+  for (size_t i_tree = 0; i_tree < N_TREES; ++i_tree) {
+    glm::vec3 position = m_positions_trees[i_tree];
+    glm::mat4 model_tree = glm::translate(glm::mat4(1.0f), position);
+    models_trees[i_tree] = model_tree;
+    normals_mats_trees[i_tree] = glm::inverseTranspose(model_tree);
   }
+
+  m_trees.set_transform({ models_trees, m_transformation.view, m_transformation.projection });
+  m_trees.set_uniform_arr("normals_mats", normals_mats_trees);
+  m_trees.draw(u);
 }
 
 /**
@@ -241,7 +247,7 @@ void LevelRenderer::free() {
   m_renderer_walls.free();
 
   // entities
-  m_tree.free();
+  m_trees.free();
   m_windows.free();
   m_target.free();
 }
