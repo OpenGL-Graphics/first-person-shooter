@@ -16,8 +16,7 @@ public:
   Sprite(const Texture2D& texture, const Program& program);
   void draw(const Uniforms& uniforms={});
 
-  template <size_t N_INSTANCES = 1>
-  void set_transform(const Transformation<N_INSTANCES>& t);
+  void set_transform(const Transformation& t);
 
   void free();
 };

@@ -12,7 +12,7 @@
 class FloorsRenderer {
 public:
   FloorsRenderer(const TexturesFactory& textures_factory, const Program& program, const glm::vec2& size);
-  void set_transform(const Transformation<1>& t);
+  void set_transform(const Transformation& t);
   void draw(const Uniforms& uniforms);
   void free();
 
@@ -22,7 +22,7 @@ private:
   glm::vec2 m_size;
 
   Renderer m_renderer;
-  Transformation<1> m_transformation;
+  Transformation m_transformation;
 
   /* textures (lifecycle managed by TexturesFactory) */
   Texture2D m_tex_floor_diffuse;

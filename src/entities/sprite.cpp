@@ -24,17 +24,11 @@ void Sprite::draw(const Uniforms& u) {
  * Delegate transform to renderer
  * Supports instancing (multiple transparent windows)
  */
-template <size_t N_INSTANCES>
-void Sprite::set_transform(const Transformation<N_INSTANCES>& t) {
+void Sprite::set_transform(const Transformation& t) {
   renderer.set_transform(t);
 }
 
 /* Free texture, renderer (vao/vbo buffers) */
 void Sprite::free() {
-  m_texture.free();
   renderer.free();
 }
-
-// template instantiation to avoid linking error
-template void Sprite::set_transform<1>(const Transformation<1>& transform);
-template void Sprite::set_transform<2>(const Transformation<2>& transform);

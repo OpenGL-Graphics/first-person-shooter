@@ -20,9 +20,9 @@ ModelRenderer::ModelRenderer(const Program& program, const AssimpUtil::Model& mo
  * Initial transformation (position) of 3D Object accord. to model matrix
  * as well view & projection matrixes
  */
-void ModelRenderer::set_transform(const Transformation<1>& transformation) {
+void ModelRenderer::set_transform(const Transformation& transformation) {
   for (Renderer& renderer : renderers) {
-    renderer.set_transform<1>(transformation);
+    renderer.set_transform(transformation);
   }
 }
 

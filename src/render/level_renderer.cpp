@@ -208,7 +208,7 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
  * `m_position` serves as an offset when translating surfaces tiles in `draw()`
  * n_instances = 1 in Transformation as there's only one terrain anyway
  */
-void LevelRenderer::set_transform(const Transformation<1>& t) {
+void LevelRenderer::set_transform(const Transformation& t) {
   m_transformation = t;
 
   // update bbox to world coords using model matrix

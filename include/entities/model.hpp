@@ -17,7 +17,7 @@ private:
 public:
   Model(Assimp::Importer& importer, const std::string& path, const Program& program, const std::vector<Attribute>& attributes);
   void draw(const Uniforms& uniforms={});
-  void set_transform(const Transformation<1>& t);
+  void set_transform(const Transformation& t);
   void free();
 };
 

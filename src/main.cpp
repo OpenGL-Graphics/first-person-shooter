@@ -310,8 +310,8 @@ int main() {
       glm::vec3(26.5f, 1.5f, 6.0f),
     };
 
-    std::array<glm::mat4, N_SPHERES> models_spheres, normals_mats_spheres;
-    std::array<glm::vec3, N_SPHERES> lights_positions, lights_ambiant, lights_diffuse, lights_specular;
+    std::vector<glm::mat4> models_spheres(N_SPHERES), normals_mats_spheres(N_SPHERES);
+    std::vector<glm::vec3> lights_positions(N_SPHERES), lights_ambiant(N_SPHERES), lights_diffuse(N_SPHERES), lights_specular(N_SPHERES);
 
     for (size_t i_sphere = 0; i_sphere < N_SPHERES; ++i_sphere) {
       glm::vec3 pivot = lights[i_sphere].position;
@@ -342,7 +342,7 @@ int main() {
 
     } // SPHERES UNIFORMS ARRAYS
 
-    Transformation<N_SPHERES> transform_sphere({ models_spheres, view, projection3d });
+    Transformation transform_sphere({ models_spheres, view, projection3d });
     spheres.set_transform(transform_sphere);
     spheres.set_uniform_arr("normals_mats", normals_mats_spheres);
     spheres.set_uniform_arr("lights.position", lights_positions);
@@ -363,8 +363,8 @@ int main() {
     // uses instancing to draw light cubes
     // draw 3 light cubes (scaling then translation: transf. matrix = (I * T) * S)
     // https://stackoverflow.com/a/38425832/2228912
-    std::array<glm::mat4, N_LIGHTS> models_lights;
-    std::array<glm::vec3, N_LIGHTS> colors_lights;
+    std::vector<glm::mat4> models_lights(N_LIGHTS);
+    std::vector<glm::vec3> colors_lights(N_LIGHTS);
 
     for (size_t i_light = 0; i_light < N_LIGHTS; ++i_light) {
       Light light = lights[i_light];
@@ -375,26 +375,26 @@ int main() {
       colors_lights[i_light] = light.color;
     }
 
-    Transformation<N_LIGHTS> transform_cube(models_lights, view, projection3d);
+    Transformation transform_cube(models_lights, view, projection3d);
     cubes.set_transform(transform_cube);
     cubes.set_uniform_arr("colors", colors_lights);
     cubes.draw({});
 
     // uses instancing to draw 2 cylinders pillars (affected by same light source)
     // TODO: model inverted in every iteration (immobile object!)
-    std::array<glm::mat4, N_CYLINDERS> models_cylinder = {
+    std::vector<glm::mat4> models_cylinder = {
       glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8)),
       glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8))
     };
 
     glm::mat4 normal_mat = glm::inverseTranspose(models_cylinder[0]);
-    Transformation<N_CYLINDERS> transform_cylinder(models_cylinder, view, projection3d);
+    Transformation transform_cylinder(models_cylinder, view, projection3d);
     cylinders.set_transform(transform_cylinder);
-    cylinders.set_uniform_arr<N_CYLINDERS, glm::mat4>("normals_mats", { normal_mat, normal_mat });
-    cylinders.set_uniform_arr<N_CYLINDERS, glm::vec3>("lights.position", { lights[1].position, lights[1].position });
-    cylinders.set_uniform_arr<N_CYLINDERS, glm::vec3>("lights.ambiant", { lights[1].ambiant, lights[1].ambiant });
-    cylinders.set_uniform_arr<N_CYLINDERS, glm::vec3>("lights.diffuse", { lights[1].diffuse, lights[1].diffuse });
-    cylinders.set_uniform_arr<N_CYLINDERS, glm::vec3>("lights.specular", { lights[1].specular, lights[1].specular });
+    cylinders.set_uniform_arr<glm::mat4>("normals_mats", { normal_mat, normal_mat });
+    cylinders.set_uniform_arr<glm::vec3>("lights.position", { lights[1].position, lights[1].position });
+    cylinders.set_uniform_arr<glm::vec3>("lights.ambiant", { lights[1].ambiant, lights[1].ambiant });
+    cylinders.set_uniform_arr<glm::vec3>("lights.diffuse", { lights[1].diffuse, lights[1].diffuse });
+    cylinders.set_uniform_arr<glm::vec3>("lights.specular", { lights[1].specular, lights[1].specular });
 
     cylinders.draw({
       {"material.ambiant", glm::vec3(1.0f, 0.5f, 0.31f)},

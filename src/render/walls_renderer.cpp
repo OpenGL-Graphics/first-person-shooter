@@ -22,7 +22,7 @@ WallsRenderer::WallsRenderer(const TexturesFactory& textures_factory, const Prog
 {
 }
 
-void WallsRenderer::set_transform(const Transformation<1>& t) {
+void WallsRenderer::set_transform(const Transformation& t) {
   m_transformation = t;
 }
 

@@ -28,7 +28,7 @@ void Target::draw(const Uniforms& uniforms) {
  * Delegate transform to renderer
  * Translate target to position from tilemap
  */
-void Target::set_transform(const Transformation<1>& t) {
+void Target::set_transform(const Transformation& t) {
   // scale-down samurai 3d model
   glm::mat4 model = glm::scale(
     t.models[0],

@@ -18,7 +18,7 @@ FloorsRenderer::FloorsRenderer(const TexturesFactory& textures_factory, const Pr
 {
 }
 
-void FloorsRenderer::set_transform(const Transformation<1>& t) {
+void FloorsRenderer::set_transform(const Transformation& t) {
   m_transformation = t;
 }
 

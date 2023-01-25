@@ -17,11 +17,11 @@ struct Target {
 
   Target(Assimp::Importer& importer, const Program& program);
   void draw(const Uniforms& uniforms={});
-  void set_transform(const Transformation<1>& t);
+  void set_transform(const Transformation& t);
   void free();
 
 private:
-  Transformation<1> m_transformation;
+  Transformation m_transformation;
 
   /* delegate drawing to model renderer */
   AssimpUtil::Model m_model;
