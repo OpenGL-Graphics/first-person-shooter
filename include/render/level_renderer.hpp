@@ -62,8 +62,8 @@ private:
   /* tree props rendered multiple times */
   Model m_tree;
 
-  /* Window */
-  Sprite m_window;
+  /* Windows */
+  Sprite m_windows;
 
   /* Target (enemy) to shoot */
   Target m_target;
@@ -82,7 +82,6 @@ private:
 
   void draw_targets(const Uniforms& u);
   void draw_windows(const Uniforms& u);
-  void draw_window(const Uniforms& u, const glm::vec3& position_tile);
   void draw_trees(const Uniforms& u);
   void draw_doors(const Uniforms& u);
 

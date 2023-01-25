@@ -43,7 +43,7 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
   m_tree(importer, "assets/models/tree/tree.obj", shaders_factory["texture"], Attributes::get({"position", "normal", "texture_coord", "tangent"})),
 
   // window
-  m_window(m_tex_window, shaders_factory["texture_surface"]),
+  m_windows(m_tex_window, shaders_factory["texture_surface"]),
 
   // target (enemy) to shoot
   m_target(importer, shaders_factory["texture"]),
@@ -163,27 +163,28 @@ void LevelRenderer::draw_trees(const Uniforms& u) {
   }
 }
 
+/**
+ * Draw window at mid y-coord of `position_tile` with half-walls below & above it
+ * Supports instancing
+ */
 void LevelRenderer::draw_windows(const Uniforms& u) {
-  for (const glm::vec3& position: m_positions_windows) {
-    draw_window(u, position);
+  const unsigned int N_WINDOWS = m_positions_windows.size();
+  std::vector<glm::mat4> models_windows(N_WINDOWS);
+
+  for (size_t i_window = 0; i_window < N_WINDOWS; ++i_window) {
+    glm::vec3 position_tile = m_positions_windows[i_window];
+    float height_window = 1.0f;
+    float y_window_bottom = m_height/2.0f - height_window/2.0f;
+    glm::vec3 position_window(position_tile.x, y_window_bottom, position_tile.z);
+    models_windows[i_window] = glm::translate(glm::mat4(1.0f), position_window);
+
+    // draw two walls below & above window
+    m_renderer_walls.draw_walls_around_window(position_tile);
   }
-}
 
-/* Draw window at mid y-coord of `position_tile` with half-walls below & above it */
-void LevelRenderer::draw_window(const Uniforms& u, const glm::vec3& position_tile) {
-  float height_window = 1.0f;
-  float z_window_bottom = m_height/2.0f - height_window/2.0f;
-  glm::vec3 position_window(position_tile.x, z_window_bottom, position_tile.z);
-
-  // transparent surfaces last to render to ensure blending with background
-  m_window.set_transform({
-    { glm::translate(glm::mat4(1.0f), position_window) },
-    m_transformation.view, m_transformation.projection
-  });
-  m_window.draw();
-
-  // draw two walls below & above window
-  m_renderer_walls.draw_walls_around_window(position_tile);
+  // draw all windows at once (supports instancing)
+  m_windows.set_transform({ models_windows, m_transformation.view, m_transformation.projection });
+  m_windows.draw();
 }
 
 /* Draw targets */
@@ -241,6 +242,6 @@ void LevelRenderer::free() {
 
   // entities
   m_tree.free();
-  m_window.free();
+  m_windows.free();
   m_target.free();
 }
