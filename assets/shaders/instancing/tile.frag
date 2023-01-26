@@ -1,16 +1,18 @@
 #version 330 core
 
+#define N_LIGHTS 3
+
 // interface block (name matches in vertex shader)
 in VS_OUT {
   vec2 texture_coord_vert;
   vec3 position_vert;
   vec3 normal_vert; // not used! (normal retrieved from `texture_normal`)
+  mat4 normal_mat_vert;
 } fs_in;
 
 uniform sampler2D texture_diffuse;
 uniform sampler2D texture_normal;
-uniform mat4 normal_mat;
-uniform vec3 positions_lights[3];
+uniform vec3 positions_lights[N_LIGHTS];
 uniform vec3 position_camera;
 
 out vec4 color_out;
@@ -28,11 +30,11 @@ void main() {
   normal_vec = normalize(normal_vec * 2.0 - 1.0);
 
   // special case of simple surface (with known transf. mat): TBN matrix = normal_mat = model
-  vec3 normal = normalize(mat3(normal_mat) * normal_vec);
+  vec3 normal = normalize(mat3(fs_in.normal_mat_vert) * normal_vec);
 
   // sum-up color contributions from all walls
   vec3 sum_contributions = vec3(0.0, 0.0, 0.0);
-  for (int i_light = 0; i_light < 3; i_light++) {
+  for (int i_light = 0; i_light < N_LIGHTS; i_light++) {
     sum_contributions += calculateLightContribution(color, positions_lights[i_light], normal);
   }
 

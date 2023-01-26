@@ -133,20 +133,29 @@ void LevelRenderer::draw(const Uniforms& u) {
   draw_windows(u);
 }
 
-/* Draw doors at locations parsed in constructor */
+/**
+ * Draw doors at locations parsed in constructor
+ * Supports instancing
+ */
 void LevelRenderer::draw_doors(const Uniforms& u) {
+  const unsigned int N_DOORS = m_positions_doors.size();
+  std::vector<glm::mat4> models_doors(N_DOORS), normals_mats_doors(N_DOORS);
+
+  for (size_t i_door = 0; i_door < N_DOORS; ++i_door) {
+    glm::vec3 position_door = m_positions_doors[i_door];
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), position_door);
+    glm::mat4 normal_mat = glm::inverseTranspose(model);
+    models_doors[i_door] = model;
+    normals_mats_doors[i_door] = normal_mat;
+  }
+
+  m_renderer_door.set_transform({ models_doors, m_transformation.view, m_transformation.projection });
+  m_renderer_door.set_uniform_arr("normals_mats", normals_mats_doors);
+
   Uniforms uniforms = u;
   uniforms["texture_diffuse"] = m_tex_door_diffuse;
   uniforms["texture_normal"] = m_tex_door_normal;
-
-  for (const glm::vec3& position_door : m_positions_doors) {
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), position_door);
-    glm::mat4 normal_mat = glm::inverseTranspose(model);
-    uniforms["normal_mat"] = normal_mat;
-
-    m_renderer_door.set_transform({ {model}, m_transformation.view, m_transformation.projection });
-    m_renderer_door.draw(uniforms);
-  }
+  m_renderer_door.draw(uniforms);
 }
 
 /**
