@@ -24,18 +24,26 @@ void Target::draw(const Uniforms& uniforms) {
   m_renderer.draw(uniforms);
 }
 
+/* Needed to pass normals_mats (while supporting instancing) */
+void Target::set_uniform_arr(const std::string& name, const std::vector<glm::mat4>& u) {
+  m_renderer.set_uniform_arr(name, u);
+}
+
 /**
  * Delegate transform to renderer
  * Translate target to position from tilemap
  */
 void Target::set_transform(const Transformation& t) {
   // scale-down samurai 3d model
-  glm::mat4 model = glm::scale(
-    t.models[0],
-    glm::vec3(1 / 2.0f)
-  );
+  std::vector<glm::mat4> models = t.models;
+  for (size_t i_model = 0; i_model < models.size(); ++i_model) {
+    models[i_model] = glm::scale(
+      models[i_model],
+      glm::vec3(1 / 2.0f)
+    );
+  }
 
-  m_transformation = { {model}, t.view, t.projection };
+  m_transformation = { models, t.view, t.projection };
   m_renderer.set_transform(m_transformation);
 }
 

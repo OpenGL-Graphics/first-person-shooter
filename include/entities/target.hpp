@@ -18,6 +18,7 @@ struct Target {
   Target(Assimp::Importer& importer, const Program& program);
   void draw(const Uniforms& uniforms={});
   void set_transform(const Transformation& t);
+  void set_uniform_arr(const std::string& name, const std::vector<glm::mat4>& u);
   void free();
 
 private:

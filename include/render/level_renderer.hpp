@@ -54,7 +54,7 @@ private:
    * Renderers for wall, window, & ceiling/floor tiles
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
    */
-  Renderer m_renderer_door; // use instancing
+  Renderer m_doors; // (with instancing)
   WallsRenderer m_renderer_walls;
   FloorsRenderer m_renderer_floors;
 
@@ -64,8 +64,8 @@ private:
   /* Windows (with instancing) */
   Sprite m_windows;
 
-  /* Target (enemy) to shoot */
-  Target m_target;
+  /* Targets enemies to shoot (with instancing) */
+  Target m_targets;
 
   /* transformation matrixes (view, projection) passed to tiles renderers before `draw()` */
   Transformation m_transformation;

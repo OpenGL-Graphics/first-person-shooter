@@ -35,7 +35,7 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
   m_tex_window(textures_factory.get<Texture2D>("window")),
 
   // renderers for doors/floors
-  m_renderer_door(shaders_factory["tile"], Surface(glm::vec2(1, m_height)), Attributes::get({"position", "normal", "texture_coord"}, 7, true)),
+  m_doors(shaders_factory["tile"], Surface(glm::vec2(1, m_height)), Attributes::get({"position", "normal", "texture_coord"}, 7, true)),
   m_renderer_floors(textures_factory, shaders_factory["tile"], { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
   m_renderer_walls(textures_factory, shaders_factory["texture_cube"]),
 
@@ -46,7 +46,7 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
   m_windows(m_tex_window, shaders_factory["texture_surface"]),
 
   // target (enemy) to shoot
-  m_target(importer, shaders_factory["texture"]),
+  m_targets(importer, shaders_factory["texture"]),
 
   m_position(0, 0, 0)
 {
@@ -149,13 +149,13 @@ void LevelRenderer::draw_doors(const Uniforms& u) {
     normals_mats_doors[i_door] = normal_mat;
   }
 
-  m_renderer_door.set_transform({ models_doors, m_transformation.view, m_transformation.projection });
-  m_renderer_door.set_uniform_arr("normals_mats", normals_mats_doors);
+  m_doors.set_transform({ models_doors, m_transformation.view, m_transformation.projection });
+  m_doors.set_uniform_arr("normals_mats", normals_mats_doors);
 
   Uniforms uniforms = u;
   uniforms["texture_diffuse"] = m_tex_door_diffuse;
   uniforms["texture_normal"] = m_tex_door_normal;
-  m_renderer_door.draw(uniforms);
+  m_doors.draw(uniforms);
 }
 
 /**
@@ -202,21 +202,29 @@ void LevelRenderer::draw_windows(const Uniforms& u) {
   m_windows.draw();
 }
 
-/* Draw targets */
+/**
+ * Draw targets
+ * Supports instancing
+ */
 void LevelRenderer::draw_targets(const Uniforms& u) {
-  Uniforms uniforms = u;
+  const unsigned int N_TARGETS = LevelRenderer::targets.size();
+  std::vector<glm::mat4> models_targets(N_TARGETS), normals_mats_targets(N_TARGETS);
 
-  for (TargetEntry& target_entry : LevelRenderer::targets) {
+  for (size_t i_target = 0; i_target < N_TARGETS; ++i_target) {
+    TargetEntry target_entry = LevelRenderer::targets[i_target];
     if (target_entry.is_dead)
       continue;
 
     // TODO: inverting normal in every iteration :/
     glm::mat4 model_target = get_model_target(target_entry.position);
     glm::mat4 normal_mat = glm::inverseTranspose(model_target);
-    uniforms["normal_mat"] = normal_mat;
-    m_target.set_transform({ {model_target}, m_transformation.view, m_transformation.projection });
-    m_target.draw(uniforms);
+    models_targets[i_target] = model_target;
+    normals_mats_targets[i_target] = normal_mat;
   }
+
+  m_targets.set_transform({ models_targets, m_transformation.view, m_transformation.projection });
+  m_targets.set_uniform_arr("normals_mats", normals_mats_targets);
+  m_targets.draw(u);
 }
 
 /**
@@ -230,7 +238,7 @@ void LevelRenderer::set_transform(const Transformation& t) {
   // update bbox to world coords using model matrix
   for (TargetEntry& target_entry : LevelRenderer::targets) {
     glm::mat4 model_target = get_model_target(target_entry.position);
-    target_entry.bounding_box = m_target.bounding_box;
+    target_entry.bounding_box = m_targets.bounding_box;
     target_entry.bounding_box.transform(model_target);
   }
 
@@ -251,12 +259,12 @@ glm::mat4 LevelRenderer::get_model_target(const glm::vec3& position_target) {
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
   // renderers
-  m_renderer_door.free();
+  m_doors.free();
   m_renderer_floors.free();
   m_renderer_walls.free();
 
   // entities
   m_trees.free();
   m_windows.free();
-  m_target.free();
+  m_targets.free();
 }
