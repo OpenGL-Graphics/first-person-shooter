@@ -55,7 +55,7 @@ private:
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
    */
   Renderer m_doors; // (with instancing)
-  WallsRenderer m_renderer_walls;
+  WallsRenderer m_renderer_walls; // (with instancing)
   FloorsRenderer m_renderer_floors;
 
   /* tree props rendered multiple times (with instancing) */
@@ -83,8 +83,6 @@ private:
   void draw_windows(const Uniforms& u);
   void draw_trees(const Uniforms& u);
   void draw_doors(const Uniforms& u);
-
-  glm::mat4 get_model_target(const glm::vec3& position_target);
 };
 
 #endif // LEVEL_RENDERER_HPP

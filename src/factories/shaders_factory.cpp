@@ -6,7 +6,6 @@ ShadersFactory::ShadersFactory():
     { "skybox", Program("assets/shaders/skybox.vert", "assets/shaders/skybox.frag") },
     { "text", Program("assets/shaders/instancing/texture_surface.vert", "assets/shaders/texture_text.frag") },
     { "plane", Program("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag") },
-    { "texture_cube", Program("assets/shaders/texture_cube.vert", "assets/shaders/texture_cube.frag") },
     { "light_terrain", Program("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag") },
 
     // instancing (draw same geometry multiple times at once)
@@ -15,6 +14,7 @@ ShadersFactory::ShadersFactory():
     { "texture_surface", Program("assets/shaders/instancing/texture_surface.vert", "assets/shaders/instancing/texture_surface.frag") },
     { "texture", Program("assets/shaders/instancing/texture_mesh.vert", "assets/shaders/instancing/texture_mesh.frag") },
     { "tile", Program("assets/shaders/instancing/tile.vert", "assets/shaders/instancing/tile.frag") },
+    { "texture_cube", Program("assets/shaders/instancing/texture_cube.vert", "assets/shaders/instancing/texture_cube.frag") },
   }
 {
 }

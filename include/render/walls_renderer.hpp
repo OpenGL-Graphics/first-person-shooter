@@ -34,7 +34,6 @@ private:
   /* Texture3D was stretching without repeat */
   Texture2D m_texture;
 
-  void draw_wall(const WallEntry& wall);
   std::array<glm::vec3, 2> calculate_offsets(const WallEntry& entry);
   std::array<float, 2> calculate_angles(const WallEntry& entry);
 };

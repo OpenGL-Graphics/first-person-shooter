@@ -19,14 +19,6 @@ std::vector<TargetEntry> LevelRenderer::targets;
  * Needed for collision with camera
  */
 LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory):
-  /**
-   * TODO: Instancing for:
-   * - Targets
-   * - Windows
-   * - Trees
-   * - Doors
-   * - Walls
-   */
   m_tilemap("assets/levels/map.txt"),
 
   // textures
@@ -98,7 +90,7 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
           break;
         default:
           break;
-      }
+      } // END CASE
 
       // save world position for walls (for collision with camera)
       if (std::find(tiles_walls.begin(), tiles_walls.end(), tile) != tiles_walls.end()) {
@@ -114,8 +106,8 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
         glm::vec3 center_world = glm::vec3(model * glm::vec4(center_local, 1.0f));
         positions_walls.push_back(center_world);
       }
-    }
-  }
+    } // END TILEMAP COL
+  } // END TILEMAP ROW
 }
 
 /**
@@ -193,7 +185,7 @@ void LevelRenderer::draw_windows(const Uniforms& u) {
     glm::vec3 position_window(position_tile.x, y_window_bottom, position_tile.z);
     models_windows[i_window] = glm::translate(glm::mat4(1.0f), position_window);
 
-    // draw two walls below & above window
+    // draw two walls below & above window (supports instancing)
     m_renderer_walls.draw_walls_around_window(position_tile);
   }
 
@@ -216,7 +208,7 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
       continue;
 
     // TODO: inverting normal in every iteration :/
-    glm::mat4 model_target = get_model_target(target_entry.position);
+    glm::mat4 model_target = glm::translate(glm::mat4(1.0f), target_entry.position);
     glm::mat4 normal_mat = glm::inverseTranspose(model_target);
     models_targets[i_target] = model_target;
     normals_mats_targets[i_target] = normal_mat;
@@ -237,7 +229,7 @@ void LevelRenderer::set_transform(const Transformation& t) {
 
   // update bbox to world coords using model matrix
   for (TargetEntry& target_entry : LevelRenderer::targets) {
-    glm::mat4 model_target = get_model_target(target_entry.position);
+    glm::mat4 model_target = glm::translate(glm::mat4(1.0f), target_entry.position);
     target_entry.bounding_box = m_targets.bounding_box;
     target_entry.bounding_box.transform(model_target);
   }
@@ -245,15 +237,6 @@ void LevelRenderer::set_transform(const Transformation& t) {
   // drawing floors/walls delegated to another class
   m_renderer_floors.set_transform(t);
   m_renderer_walls.set_transform(t);
-}
-
-/* add-up level & target translation offsets */
-glm::mat4 LevelRenderer::get_model_target(const glm::vec3& position_target) {
-  glm::vec3 position_level = m_transformation.models[0][3];
-  glm::vec3 position = position_level + position_target;
-  glm::mat4 model_target = glm::translate(glm::mat4(1.0f), position);
-
-  return model_target;
 }
 
 /* Renderer lifecycle managed internally */
