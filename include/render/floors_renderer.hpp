@@ -29,10 +29,6 @@ private:
   Texture2D m_tex_floor_normal;
   Texture2D m_tex_ceiling_diffuse;
   Texture2D m_tex_ceiling_normal;
-
-  void draw_floor(const Uniforms& u);
-  void draw_ceiling(const Uniforms& u);
-  void draw_horizontal_surface(const Uniforms& u, bool is_floor);
 };
 
 #endif // FLOORS_RENDERER_HPP

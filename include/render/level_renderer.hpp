@@ -53,9 +53,10 @@ private:
   /**
    * Renderers for wall, window, & ceiling/floor tiles
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
+   * with instancing
    */
-  Renderer m_doors; // (with instancing)
-  WallsRenderer m_renderer_walls; // (with instancing)
+  Renderer m_doors;
+  WallsRenderer m_renderer_walls;
   FloorsRenderer m_renderer_floors;
 
   /* tree props rendered multiple times (with instancing) */

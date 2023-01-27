@@ -132,6 +132,7 @@ void LevelRenderer::draw(const Uniforms& u) {
 void LevelRenderer::draw_doors(const Uniforms& u) {
   const unsigned int N_DOORS = m_positions_doors.size();
   std::vector<glm::mat4> models_doors(N_DOORS), normals_mats_doors(N_DOORS);
+  std::vector<Texture2D> textures_diffuse(N_DOORS), textures_normal(N_DOORS);
 
   for (size_t i_door = 0; i_door < N_DOORS; ++i_door) {
     glm::vec3 position_door = m_positions_doors[i_door];
@@ -139,15 +140,16 @@ void LevelRenderer::draw_doors(const Uniforms& u) {
     glm::mat4 normal_mat = glm::inverseTranspose(model);
     models_doors[i_door] = model;
     normals_mats_doors[i_door] = normal_mat;
+
+    textures_diffuse[i_door] = m_tex_door_diffuse;
+    textures_normal[i_door] = m_tex_door_normal;
   }
 
   m_doors.set_transform({ models_doors, m_transformation.view, m_transformation.projection });
   m_doors.set_uniform_arr("normals_mats", normals_mats_doors);
-
-  Uniforms uniforms = u;
-  uniforms["texture_diffuse"] = m_tex_door_diffuse;
-  uniforms["texture_normal"] = m_tex_door_normal;
-  m_doors.draw(uniforms);
+  m_doors.set_uniform_arr("textures_diffuse", textures_diffuse);
+  m_doors.set_uniform_arr("textures_normal", textures_normal);
+  m_doors.draw(u);
 }
 
 /**

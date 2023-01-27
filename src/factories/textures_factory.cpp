@@ -26,11 +26,13 @@ TexturesFactory::TexturesFactory():
   m_wall_normal(std::make_unique<Texture2D>(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1)),
   m_door_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/door_diffuse.jpg"), GL_TEXTURE0)),
   m_door_normal(std::make_unique<Texture2D>(Image("assets/images/level/door_normal.jpg"), GL_TEXTURE1)),
+  m_window(std::make_unique<Texture2D>(Image("assets/images/surfaces/window.png"))),
+
+  // different texture units as floor/ceiling rendered in same shader by instancing
   m_floor_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/floor_diffuse.jpg"), GL_TEXTURE0)),
   m_floor_normal(std::make_unique<Texture2D>(Image("assets/images/level/floor_normal.jpg"), GL_TEXTURE1)),
-  m_ceiling_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/ceiling_diffuse.jpg"), GL_TEXTURE0)),
-  m_ceiling_normal(std::make_unique<Texture2D>(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE1)),
-  m_window(std::make_unique<Texture2D>(Image("assets/images/surfaces/window.png"))),
+  m_ceiling_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/ceiling_diffuse.jpg"), GL_TEXTURE2)),
+  m_ceiling_normal(std::make_unique<Texture2D>(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE3)),
 
   m_textures {
     { "skybox", m_skybox.get() },

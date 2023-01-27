@@ -21,6 +21,10 @@ out VS_OUT {
   mat4 normal_mat_vert;
 } vs_out;
 
+// needed for indexing Sampler2D textures array for floor/ceiling
+// cannot pass Sampler2D to fragment shader (via out/in)
+out int i_instance;
+
 /* modified from `assets/texture_surface.vert` */
 void main() {
   mat4 model = models[gl_InstanceID];
@@ -30,4 +34,6 @@ void main() {
   vs_out.position_vert = (model * vec4(position, 0.0, 1.0)).xyz;
   vs_out.normal_vert = normal;
   vs_out.normal_mat_vert = normals_mats[gl_InstanceID];
+
+  i_instance = gl_InstanceID;
 }

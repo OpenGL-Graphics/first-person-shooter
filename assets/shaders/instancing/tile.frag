@@ -1,5 +1,7 @@
-#version 330 core
+// indexing sampler array with non-const expression only supported in GLSL460+
+#version 460 core
 
+#define MAX_N_INSTANCES 10
 #define N_LIGHTS 3
 
 // interface block (name matches in vertex shader)
@@ -10,8 +12,10 @@ in VS_OUT {
   mat4 normal_mat_vert;
 } fs_in;
 
-uniform sampler2D texture_diffuse;
-uniform sampler2D texture_normal;
+flat in int i_instance; // flat to disable interpolation for ints
+uniform sampler2D textures_diffuse[MAX_N_INSTANCES];
+uniform sampler2D textures_normal[MAX_N_INSTANCES];
+
 uniform vec3 positions_lights[N_LIGHTS];
 uniform vec3 position_camera;
 
@@ -22,11 +26,11 @@ vec3 calculateLightContribution(vec4 color, vec3 position_light, vec3 normal);
 
 /* modified from `assets/texture_surface.frag` */
 void main() {
-  vec4 color = texture(texture_diffuse, fs_in.texture_coord_vert);
+  vec4 color = texture(textures_diffuse[i_instance], fs_in.texture_coord_vert);
 
   // normal-mapping based shading: convert image from [0, 1] to [-1, 1]
   // normal vector from texture image: https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-  vec3 normal_vec = texture(texture_normal, fs_in.texture_coord_vert).rgb;
+  vec3 normal_vec = texture(textures_normal[i_instance], fs_in.texture_coord_vert).rgb;
   normal_vec = normalize(normal_vec * 2.0 - 1.0);
 
   // special case of simple surface (with known transf. mat): TBN matrix = normal_mat = model

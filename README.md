@@ -23,8 +23,7 @@ $ apt install libglm-dev libglfw3-dev libassimp-dev
 ```
 
 # Requirements
-- Opengl 3.3+
-- GLSL 3.3+
+- ~~OpenGL/GLSL 3.3+~~ GLSL 4.6 to support array indexing using non-consts (i.e. id-instance)
 
 # Resources
 - [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
