@@ -1,5 +1,5 @@
 # Screenshot
-![Screenshot](/screenshots/screenshot-2022-03-27.png)
+![Screenshot](/screenshots/screenshot-2023-01-28.png)
 
 # How to run
 ```console

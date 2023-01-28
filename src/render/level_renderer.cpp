@@ -145,11 +145,14 @@ void LevelRenderer::draw_doors(const Uniforms& u) {
     textures_normal[i_door] = m_tex_door_normal;
   }
 
+  // with face culling enabled, one face (back) of doors surfaces not rendered
   m_doors.set_transform({ models_doors, m_transformation.view, m_transformation.projection });
   m_doors.set_uniform_arr("normals_mats", normals_mats_doors);
   m_doors.set_uniform_arr("textures_diffuse", textures_diffuse);
   m_doors.set_uniform_arr("textures_normal", textures_normal);
+  glDisable(GL_CULL_FACE);
   m_doors.draw(u);
+  glEnable(GL_CULL_FACE);
 }
 
 /**
@@ -191,9 +194,11 @@ void LevelRenderer::draw_windows(const Uniforms& u) {
     m_renderer_walls.draw_walls_around_window(position_tile);
   }
 
-  // draw all windows at once (supports instancing)
+  // with face culling enabled, one face (back) of windows surfaces not rendered
   m_windows.set_transform({ models_windows, m_transformation.view, m_transformation.projection });
+  glDisable(GL_CULL_FACE);
   m_windows.draw();
+  glEnable(GL_CULL_FACE);
 }
 
 /**
