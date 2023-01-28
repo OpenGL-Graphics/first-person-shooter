@@ -16,6 +16,7 @@ Surface::Surface(const glm::vec2& size):
 /* Init its vertexes with glyph dimensions */
 Surface::Surface(const std::vector<float>& vertexes) {
   m_vertexes = vertexes;
+  m_indices = INDICES;
   set_n_elements();
 }
 
