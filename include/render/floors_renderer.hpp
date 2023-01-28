@@ -29,6 +29,15 @@ private:
   Texture2D m_tex_floor_normal;
   Texture2D m_tex_ceiling_diffuse;
   Texture2D m_tex_ceiling_normal;
+
+  /* uniforms set in ctor to avoid calling inverseTranspose in each frame */
+  const unsigned int m_n_floors = 2;
+  std::vector<glm::mat4> m_models_floors;
+  std::vector<glm::mat4> m_normals_mats_floors;
+  std::vector<Texture2D> m_textures_diffuse;
+  std::vector<Texture2D> m_textures_normal;
+
+  void calculate_uniforms();
 };
 
 #endif // FLOORS_RENDERER_HPP
