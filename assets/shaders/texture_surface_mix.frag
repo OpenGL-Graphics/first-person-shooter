@@ -1,4 +1,4 @@
-#version 130
+#version 460 core
 
 in vec2 texture_coord_vert;
 

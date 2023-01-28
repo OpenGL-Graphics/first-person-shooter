@@ -1,4 +1,4 @@
-// indexing sampler array with non-const expression only supported in GLSL460+
+// indexing sampler array using non-const expression only supported in GLSL460+
 #version 460 core
 
 #define MAX_N_INSTANCES 10

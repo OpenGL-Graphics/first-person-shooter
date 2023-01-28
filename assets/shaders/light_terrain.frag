@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 // light components
 struct Light {

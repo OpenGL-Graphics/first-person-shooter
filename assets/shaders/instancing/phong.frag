@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 #define MAX_N_INSTANCES 10
 

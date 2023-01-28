@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 in vec3 texture_coord_vert;
 
