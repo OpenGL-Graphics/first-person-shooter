@@ -22,12 +22,10 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
   m_tilemap("assets/levels/map.txt"),
 
   // textures
-  m_tex_door_diffuse(textures_factory.get<Texture2D>("door_diffuse")),
-  m_tex_door_normal(textures_factory.get<Texture2D>("door_normal")),
   m_tex_window(textures_factory.get<Texture2D>("window")),
 
   // renderers for doors/floors
-  m_doors(shaders_factory["tile"], Surface(glm::vec2(1, m_height)), Attributes::get({"position", "normal", "texture_coord"}, 7, true)),
+  m_renderer_doors(shaders_factory, textures_factory),
   m_renderer_floors(textures_factory, shaders_factory["tile"], { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
   m_renderer_walls(textures_factory, shaders_factory["texture_cube"]),
 
@@ -42,7 +40,12 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
 
   m_position(0, 0, 0)
 {
-  // TODO: only calculate world positions & angles in constructor (not in `draw()`)
+  parse_tilemap();
+  calculate_uniforms();
+}
+
+/* Only calculate world positions & angles in constructor (not in `draw()`) */
+void LevelRenderer::parse_tilemap() {
   std::cout << "Tilemap: " << m_tilemap.n_rows << " rows x " << m_tilemap.n_cols << " cols" << '\n';
 
   std::vector<Tilemap::Tiles> tiles_walls = {
@@ -111,48 +114,26 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
 }
 
 /**
+ * Pass positions parsed from tilemap to renderers classes
+ * Called from ctor to avoid inverting matrices in each frame
+ */
+void LevelRenderer::calculate_uniforms() {
+  m_renderer_doors.calculate_uniforms(m_positions_doors);
+}
+
+/**
  * Render floor, ceiling, doors, & targets (positions parsed in constructor)
  * @param uniforms Uniforms passed to shader (i.e. lights & camera pos.)
  */
 void LevelRenderer::draw(const Uniforms& u) {
-  draw_doors(u);
   draw_targets(u);
   draw_trees(u);
+  m_renderer_doors.draw(u);
   m_renderer_walls.draw(m_walls);
   m_renderer_floors.draw(u);
 
   // called last for blending transparent window with objects in bg
   draw_windows(u);
-}
-
-/**
- * Draw doors at locations parsed in constructor
- * Supports instancing
- */
-void LevelRenderer::draw_doors(const Uniforms& u) {
-  const unsigned int N_DOORS = m_positions_doors.size();
-  std::vector<glm::mat4> models_doors(N_DOORS), normals_mats_doors(N_DOORS);
-  std::vector<Texture2D> textures_diffuse(N_DOORS), textures_normal(N_DOORS);
-
-  for (size_t i_door = 0; i_door < N_DOORS; ++i_door) {
-    glm::vec3 position_door = m_positions_doors[i_door];
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), position_door);
-    glm::mat4 normal_mat = glm::inverseTranspose(model);
-    models_doors[i_door] = model;
-    normals_mats_doors[i_door] = normal_mat;
-
-    textures_diffuse[i_door] = m_tex_door_diffuse;
-    textures_normal[i_door] = m_tex_door_normal;
-  }
-
-  // with face culling enabled, one face (back) of doors surfaces not rendered
-  m_doors.set_transform({ models_doors, m_transformation.view, m_transformation.projection });
-  m_doors.set_uniform_arr("normals_mats", normals_mats_doors);
-  m_doors.set_uniform_arr("textures_diffuse", textures_diffuse);
-  m_doors.set_uniform_arr("textures_normal", textures_normal);
-  glDisable(GL_CULL_FACE);
-  m_doors.draw(u);
-  glEnable(GL_CULL_FACE);
 }
 
 /**
@@ -244,12 +225,13 @@ void LevelRenderer::set_transform(const Transformation& t) {
   // drawing floors/walls delegated to another class
   m_renderer_floors.set_transform(t);
   m_renderer_walls.set_transform(t);
+  m_renderer_doors.set_transform(t);
 }
 
 /* Renderer lifecycle managed internally */
 void LevelRenderer::free() {
   // renderers
-  m_doors.free();
+  m_renderer_doors.free();
   m_renderer_floors.free();
   m_renderer_walls.free();
 

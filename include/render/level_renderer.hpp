@@ -6,6 +6,7 @@
 #include "render/renderer.hpp"
 #include "render/walls_renderer.hpp"
 #include "render/floors_renderer.hpp"
+#include "render/doors_renderer.hpp"
 
 #include "levels/tilemap.hpp"
 #include "program.hpp"
@@ -46,8 +47,6 @@ private:
   Tilemap m_tilemap;
 
   /* textures (lifecycle managed in TexturesFactory) */
-  Texture2D m_tex_door_diffuse;
-  Texture2D m_tex_door_normal;
   Texture2D m_tex_window;
 
   /**
@@ -55,7 +54,7 @@ private:
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
    * with instancing
    */
-  Renderer m_doors;
+  DoorsRenderer m_renderer_doors;
   WallsRenderer m_renderer_walls;
   FloorsRenderer m_renderer_floors;
 
@@ -80,10 +79,11 @@ private:
   std::vector<glm::vec3> m_positions_windows;
   std::vector<WallEntry> m_walls;
 
+  void parse_tilemap();
+  void calculate_uniforms();
   void draw_targets(const Uniforms& u);
   void draw_windows(const Uniforms& u);
   void draw_trees(const Uniforms& u);
-  void draw_doors(const Uniforms& u);
 };
 
 #endif // LEVEL_RENDERER_HPP
