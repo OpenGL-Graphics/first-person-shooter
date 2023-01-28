@@ -130,11 +130,11 @@ int main() {
 
   // load 3d model from .obj file & its renderer
   time_profiler.start();
-  AssimpUtil::Model model_gun("assets/models/sniper/sniper.obj", importer),
-                    model_suzanne("assets/models/suzanne/suzanne.obj", importer);
+  AssimpUtil::Model model3d_gun("assets/models/sniper/sniper.obj", importer),
+                    model3d_suzanne("assets/models/suzanne/suzanne.obj", importer);
 
-  ModelRenderer gun(shaders_factory["texture"], model_gun, Attributes::get({"position", "normal", "texture_coord", "tangent"}));
-  ModelRenderer suzanne(shaders_factory["texture"], model_suzanne, Attributes::get({"position", "normal", "texture_coord", "tangent"}));
+  ModelRenderer gun(shaders_factory["texture"], model3d_gun, Attributes::get({"position", "normal", "texture_coord", "tangent"}));
+  ModelRenderer suzanne(shaders_factory["texture"], model3d_suzanne, Attributes::get({"position", "normal", "texture_coord", "tangent"}));
   time_profiler.stop("* Loading gun & suzanne 3D models");
 
   // load tilemap by parsing text file
@@ -147,6 +147,97 @@ int main() {
   glm::mat4 view;
   glm::mat4 projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0e-3f, 50.f);
   glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
+
+  ////////////////////////////////////////////////
+  // Uniforms for cylinders
+  ////////////////////////////////////////////////
+
+  std::vector<glm::mat4> models_cylinder = {
+    glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8)),
+    glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8))
+  };
+  std::vector<glm::mat4> normals_mats_cylinders = {
+    glm::inverseTranspose(models_cylinder[0]),
+    glm::inverseTranspose(models_cylinder[1]),
+  };
+
+  ////////////////////////////////////////////////
+  // Uniforms for gun
+  ////////////////////////////////////////////////
+
+  // draw textured gun model with position fixed rel. to camera
+  // view = I => fixed translation with camera as origin
+  // stick gun at bottom of screen
+  glm::mat4 model_gun = glm::scale(
+    glm::rotate(
+      glm::rotate(
+        glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, -0.7f, -2.0f)),
+        glm::radians(25.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+      ),
+      glm::radians(15.0f),
+      glm::vec3(1.0f, 0.0f, 0.0f)
+    ),
+    glm::vec3(0.15f)
+  );
+
+  // normal vec to world space (when non-uniform scaling): https://learnopengl.com/Lighting/Basic-Lighting
+  glm::mat4 normal_mat_gun = glm::inverseTranspose(model_gun);
+
+  ////////////////////////////////////////////////
+  // Uniforms for suzanne
+  ////////////////////////////////////////////////
+
+  glm::mat4 model_suzanne = glm::translate(glm::mat4(1.0f), glm::vec3(8.0f, 2.0f, 2.0f));
+  glm::mat4 normal_mat_suzanne = glm::inverseTranspose(model_suzanne);
+
+  ////////////////////////////////////////////////
+  // Uniforms for health bar
+  ////////////////////////////////////////////////
+
+  // scaling then translation with origin at lower left corner
+  Texture2D texture_surface_hud = textures_factory.get<Texture2D>("health");
+  glm::mat4 model_hud_health(glm::scale(
+    glm::translate(
+      glm::mat4(1.0f),
+      glm::vec3(window.width - texture_surface_hud.width, window.height - texture_surface_hud.height, 0.0f)
+    ),
+    glm::vec3(texture_surface_hud.width, texture_surface_hud.height, 1.0f)
+  ));
+
+  ////////////////////////////////////////////////
+  // Uniforms for crosshair
+  ////////////////////////////////////////////////
+
+  // crosshair sticked at center of screen
+  Texture2D texture_surface_crosshair = textures_factory.get<Texture2D>("crosshair");
+  glm::mat4 model_crosshair(glm::scale(
+    glm::translate(glm::mat4(1.0f), glm::vec3(
+      window.width / 2.0f - texture_surface_crosshair.width / 2.0f,
+      window.height / 2.0f - texture_surface_crosshair.height / 2.0f,
+      0.0f
+    )),
+    glm::vec3(texture_surface_crosshair.width, texture_surface_crosshair.height, 1.0f)
+  ));
+
+  ////////////////////////////////////////////////
+  // Uniforms for light cubes
+  ////////////////////////////////////////////////
+
+  // uses instancing to draw light cubes
+  // draw 3 light cubes (scaling then translation: transf. matrix = (I * T) * S)
+  // https://stackoverflow.com/a/38425832/2228912
+  std::vector<glm::mat4> models_lights(N_LIGHTS);
+  std::vector<glm::vec3> colors_lights(N_LIGHTS);
+
+  for (size_t i_light = 0; i_light < N_LIGHTS; ++i_light) {
+    Light light = lights[i_light];
+    models_lights[i_light] = glm::mat4(glm::scale(
+      glm::translate(glm::mat4(1.0f), light.position),
+      glm::vec3(0.2f)
+    ));
+    colors_lights[i_light] = light.color;
+  }
 
   // callback for processing mouse click (after init static members)
   MouseHandler::init(&window, &camera, &audio);
@@ -169,7 +260,10 @@ int main() {
   // take this line as a ref. to calculate initial fps (not `glfwInit()`)
   window.init_timer();
 
-  // main loop
+  ////////////////////////////////////////////////
+  // Game loop
+  ////////////////////////////////////////////////
+
   while (!window.is_closed()) {
     // update transformation matrices (camera fov changes on zoom)
     view = camera.get_view();
@@ -294,7 +388,7 @@ int main() {
       {"time", static_cast<float>(glfwGetTime())},
     });
 
-    // uses instancing to draw only once!
+    // TODO: rotate in vertex shader & move inverseTranspose outside game loop
     // shaded sphere rotating around light
     // https://stackoverflow.com/a/53765106/2228912
     glm::vec3 positions_sphere[N_SPHERES] = {
@@ -353,37 +447,16 @@ int main() {
       {"position_camera", camera.position},
     });
 
-    // uses instancing to draw light cubes
-    // draw 3 light cubes (scaling then translation: transf. matrix = (I * T) * S)
-    // https://stackoverflow.com/a/38425832/2228912
-    std::vector<glm::mat4> models_lights(N_LIGHTS);
-    std::vector<glm::vec3> colors_lights(N_LIGHTS);
-
-    for (size_t i_light = 0; i_light < N_LIGHTS; ++i_light) {
-      Light light = lights[i_light];
-      models_lights[i_light] = glm::mat4(glm::scale(
-        glm::translate(glm::mat4(1.0f), light.position),
-        glm::vec3(0.2f)
-      ));
-      colors_lights[i_light] = light.color;
-    }
-
+    // light cubes
     Transformation transform_cube(models_lights, view, projection3d);
     cubes.set_transform(transform_cube);
     cubes.set_uniform_arr("colors", colors_lights);
     cubes.draw({});
 
     // uses instancing to draw 2 cylinders pillars (affected by same light source)
-    // TODO: model inverted in every iteration (immobile object!)
-    std::vector<glm::mat4> models_cylinder = {
-      glm::translate(glm::mat4(1.0f), glm::vec3(12, 0, 8)),
-      glm::translate(glm::mat4(1.0f), glm::vec3(20, 0, 8))
-    };
-
-    glm::mat4 normal_mat = glm::inverseTranspose(models_cylinder[0]);
     Transformation transform_cylinder(models_cylinder, view, projection3d);
     cylinders.set_transform(transform_cylinder);
-    cylinders.set_uniform_arr<glm::mat4>("normals_mats", { normal_mat, normal_mat });
+    cylinders.set_uniform_arr<glm::mat4>("normals_mats", normals_mats_cylinders);
     cylinders.set_uniform_arr<glm::vec3>("lights.position", { lights[1].position, lights[1].position });
     cylinders.set_uniform_arr<glm::vec3>("lights.ambiant", { lights[1].ambiant, lights[1].ambiant });
     cylinders.set_uniform_arr<glm::vec3>("lights.diffuse", { lights[1].diffuse, lights[1].diffuse });
@@ -399,82 +472,40 @@ int main() {
     });
 
     // draw xyz gizmo at origin using GL_LINES
-    glm::mat4 model_gizmo(1.0f);
-    gizmo.set_transform({ {model_gizmo}, view, projection3d });
+    gizmo.set_transform({ { glm::mat4(1.0) }, view, projection3d });
     gizmo.draw_lines({ {"colors[0]", glm::vec3(1.0f, 0.0f, 0.0f)} }, 2, 0);
     gizmo.draw_lines({ {"colors[0]", glm::vec3(0.0f, 1.0f, 0.0f)} }, 2, 2);
     gizmo.draw_lines({ {"colors[0]", glm::vec3(0.0f, 0.0f, 1.0f)} }, 2, 4);
 
     // draw horizontal 2d grid using GL_LINES
-    glm::mat4 model_grid(1.0f);
-    grid.set_transform({ {model_grid}, view, projection3d });
+    grid.set_transform({ { glm::mat4(1.0) }, view, projection3d });
     grid.draw_lines({ {"colors[0]", glm::vec3(1.0f, 1.0f, 1.0f)} });
 
-    // draw textured gun model with position fixed rel. to camera
-    // view = I => fixed translation with camera as origin
-    // stick gun at bottom of screen
-    glm::mat4 model_gun = glm::scale(
-      glm::rotate(
-        glm::rotate(
-          glm::translate(glm::mat4(1.0f), glm::vec3(0.8f, -0.7f, -2.0f)),
-          glm::radians(25.0f),
-          glm::vec3(0.0f, 1.0f, 0.0f)
-        ),
-        glm::radians(15.0f),
-        glm::vec3(1.0f, 0.0f, 0.0f)
-      ),
-      glm::vec3(0.15f)
-    );
-
-    // calculate normal matrix only once (instead of doing it in shader for every vertex)
-    // normal vec to world space (when non-uniform scaling): https://learnopengl.com/Lighting/Basic-Lighting
-    glm::mat4 normal_mat_gun = glm::inverseTranspose(model_gun);
-
+    // gun sticked to lower-right corner
     gun.set_transform({ {model_gun}, glm::mat4(1.0f), projection3d });
+    gun.set_uniform_arr("normals_mats", { normal_mat_gun });
     gun.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
-
-      {"normal_mat", normal_mat_gun},
     });
 
     // render 3d model for suzanne with normal mapping
-    glm::mat4 model_suzanne = glm::translate(glm::mat4(1.0f), glm::vec3(8.0f, 2.0f, 2.0f));
-    glm::mat4 normal_mat_suzanne = glm::inverseTranspose(model_suzanne);
     suzanne.set_transform({ {model_suzanne}, view, projection3d });
+    suzanne.set_uniform_arr("normals_mats", { normal_mat_suzanne });
     suzanne.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},
       {"positions_lights[1]", lights[1].position},
       {"positions_lights[2]", lights[2].position},
-
-      {"normal_mat", normal_mat_suzanne},
     });
 
-    // draw 2d health bar HUD surface (scaling then translation with origin at lower left corner)
-    Texture2D texture_surface_hud = textures_factory.get<Texture2D>("health");
-    glm::mat4 model_hud_health(glm::scale(
-      glm::translate(
-        glm::mat4(1.0f),
-        glm::vec3(window.width - texture_surface_hud.width, window.height - texture_surface_hud.height, 0.0f)
-      ),
-      glm::vec3(texture_surface_hud.width, texture_surface_hud.height, 1.0f)
-    ));
+    // draw 2d health bar HUD surface
     surface.set_transform({ {model_hud_health}, glm::mat4(1.0f), projection2d });
     surface.draw({ {"texture2d", texture_surface_hud} });
 
     // draw crosshair gun target surface at center of screen
-    Texture2D texture_surface_crosshair = textures_factory.get<Texture2D>("crosshair");
-    glm::mat4 model_crosshair(glm::scale(
-      glm::translate(glm::mat4(1.0f), glm::vec3(
-        window.width / 2.0f - texture_surface_crosshair.width / 2.0f,
-        window.height / 2.0f - texture_surface_crosshair.height / 2.0f,
-        0.0f
-      )),
-      glm::vec3(texture_surface_crosshair.width, texture_surface_crosshair.height, 1.0f)
-    ));
     surface.set_transform({ {model_crosshair}, glm::mat4(1.0f), projection2d });
     surface.draw({ {"texture2d", texture_surface_crosshair} });
 
