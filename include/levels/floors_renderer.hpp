@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "entries/wall_entry.hpp"
+#include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
 #include "render/renderer.hpp"
 #include "texture_2d.hpp"
@@ -11,7 +12,7 @@
 /* Called from LevelRenderer to render floor & ceiling */
 class FloorsRenderer {
 public:
-  FloorsRenderer(const TexturesFactory& textures_factory, const Program& program, const glm::vec2& size);
+  FloorsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory, const glm::vec2& size);
   void set_transform(const Transformation& t);
   void draw(const Uniforms& uniforms);
   void free();
@@ -22,7 +23,6 @@ private:
   glm::vec2 m_size;
 
   Renderer m_renderer;
-  Transformation m_transformation;
 
   /* textures (lifecycle managed by TexturesFactory) */
   Texture2D m_tex_floor_diffuse;

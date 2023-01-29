@@ -8,9 +8,9 @@
  * @param n_cols Number of tiles on x-axis (floor width)
  * @param n_rows Number of tiles on z-axis (floor depth)
  */
-FloorsRenderer::FloorsRenderer(const TexturesFactory& textures_factory, const Program& program, const glm::vec2& size):
+FloorsRenderer::FloorsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory, const glm::vec2& size):
   m_size(size),
-  m_renderer(program, Surface(size), Attributes::get({"position", "normal", "texture_coord"}, 7, true)),
+  m_renderer(shaders_factory["tile"], Surface(size), Attributes::get({"position", "normal", "texture_coord"}, 7, true)),
   m_tex_floor_diffuse(textures_factory.get<Texture2D>("floor_diffuse")),
   m_tex_floor_normal(textures_factory.get<Texture2D>("floor_normal")),
   m_tex_ceiling_diffuse(textures_factory.get<Texture2D>("ceiling_diffuse")),
@@ -19,8 +19,9 @@ FloorsRenderer::FloorsRenderer(const TexturesFactory& textures_factory, const Pr
   calculate_uniforms();
 }
 
+/* Called each frame before draw() */
 void FloorsRenderer::set_transform(const Transformation& t) {
-  m_transformation = t;
+  m_renderer.set_transform({ m_models_floors, t.view, t.projection });
 }
 
 /**
@@ -28,7 +29,6 @@ void FloorsRenderer::set_transform(const Transformation& t) {
  * Supports instancing
  */
 void FloorsRenderer::draw(const Uniforms& uniforms) {
-  m_renderer.set_transform({ m_models_floors, m_transformation.view, m_transformation.projection });
   m_renderer.set_uniform_arr("normals_mats", m_normals_mats_floors);
   m_renderer.set_uniform_arr("textures_diffuse", m_textures_diffuse);
   m_renderer.set_uniform_arr("textures_normal", m_textures_normal);

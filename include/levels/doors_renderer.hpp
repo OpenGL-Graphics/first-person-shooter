@@ -6,7 +6,7 @@
 #include "render/renderer.hpp"
 
 /* Called from LevelRenderer to render doors */
-struct DoorsRenderer {
+class DoorsRenderer {
 public:
   DoorsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory);
   void calculate_uniforms(const std::vector<glm::vec3>& positions);

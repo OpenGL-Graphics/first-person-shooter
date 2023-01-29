@@ -4,9 +4,11 @@
 #include <unordered_map>
 
 #include "render/renderer.hpp"
+
 #include "levels/walls_renderer.hpp"
 #include "levels/floors_renderer.hpp"
 #include "levels/doors_renderer.hpp"
+#include "levels/trees_renderer.hpp"
 
 #include "levels/tilemap.hpp"
 #include "program.hpp"
@@ -50,16 +52,14 @@ private:
   Texture2D m_tex_window;
 
   /**
-   * Renderers for wall, window, & ceiling/floor tiles
+   * Renderers for wall, window, ceiling/floor tiles, & trees props
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
    * with instancing
    */
   DoorsRenderer m_renderer_doors;
   WallsRenderer m_renderer_walls;
   FloorsRenderer m_renderer_floors;
-
-  /* tree props rendered multiple times (with instancing) */
-  ModelRenderer m_trees;
+  TreesRenderer m_renderer_trees;
 
   /* Windows (with instancing) */
   Sprite m_windows;
@@ -83,7 +83,6 @@ private:
   void calculate_uniforms();
   void draw_targets(const Uniforms& u);
   void draw_windows(const Uniforms& u);
-  void draw_trees(const Uniforms& u);
 };
 
 #endif // LEVEL_RENDERER_HPP

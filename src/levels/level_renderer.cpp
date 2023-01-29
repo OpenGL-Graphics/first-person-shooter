@@ -26,11 +26,11 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
 
   // renderers for doors/floors
   m_renderer_doors(shaders_factory, textures_factory),
-  m_renderer_floors(textures_factory, shaders_factory["tile"], { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
+  m_renderer_floors(shaders_factory, textures_factory, { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
   m_renderer_walls(shaders_factory, textures_factory),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
-  m_trees(shaders_factory["texture"], AssimpUtil::Model("assets/models/tree/tree.obj", importer), Attributes::get({"position", "normal", "texture_coord", "tangent"})),
+  m_renderer_trees(shaders_factory, textures_factory, importer),
 
   // window
   m_windows(m_tex_window, shaders_factory["texture_surface"]),
@@ -120,6 +120,7 @@ void LevelRenderer::parse_tilemap() {
 void LevelRenderer::calculate_uniforms() {
   m_renderer_doors.calculate_uniforms(m_positions_doors);
   m_renderer_walls.calculate_uniforms(m_walls, m_positions_windows);
+  m_renderer_trees.calculate_uniforms(m_positions_trees);
 }
 
 /**
@@ -137,10 +138,11 @@ void LevelRenderer::set_transform(const Transformation& t) {
     target_entry.bounding_box.transform(model_target);
   }
 
-  // drawing floors/walls/doors delegated to other classes
+  // set positions of props in appropriate classes
   m_renderer_floors.set_transform(t);
   m_renderer_walls.set_transform(t);
   m_renderer_doors.set_transform(t);
+  m_renderer_trees.set_transform(t);
 }
 
 /**
@@ -149,33 +151,13 @@ void LevelRenderer::set_transform(const Transformation& t) {
  */
 void LevelRenderer::draw(const Uniforms& u) {
   draw_targets(u);
-  draw_trees(u);
   m_renderer_doors.draw(u);
   m_renderer_walls.draw();
   m_renderer_floors.draw(u);
+  m_renderer_trees.draw(u);
 
   // called last for blending transparent window with objects in bg
   draw_windows(u);
-}
-
-/**
- * Draw trees 3d model at positions parsed in constructor
- * Supports instancing
- */
-void LevelRenderer::draw_trees(const Uniforms& u) {
-  const unsigned int N_TREES = m_positions_trees.size();
-  std::vector<glm::mat4> models_trees(N_TREES), normals_mats_trees(N_TREES);
-
-  for (size_t i_tree = 0; i_tree < N_TREES; ++i_tree) {
-    glm::vec3 position = m_positions_trees[i_tree];
-    glm::mat4 model_tree = glm::translate(glm::mat4(1.0f), position);
-    models_trees[i_tree] = model_tree;
-    normals_mats_trees[i_tree] = glm::inverseTranspose(model_tree);
-  }
-
-  m_trees.set_transform({ models_trees, m_transformation.view, m_transformation.projection });
-  m_trees.set_uniform_arr("normals_mats", normals_mats_trees);
-  m_trees.draw(u);
 }
 
 /**
@@ -234,9 +216,9 @@ void LevelRenderer::free() {
   m_renderer_doors.free();
   m_renderer_floors.free();
   m_renderer_walls.free();
+  m_renderer_trees.free();
 
   // entities
-  m_trees.free();
   m_windows.free();
   m_targets.free();
 }
