@@ -5,7 +5,7 @@ layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 texture_coord;
 
 // number of walls determined on runtime
-#define MAX_N_INSTANCES 120
+#define MAX_N_INSTANCES 256
 
 // opengl tranformation matrices
 uniform mat4 models[MAX_N_INSTANCES];      // object coord -> world coord

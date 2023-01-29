@@ -27,7 +27,7 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
   // renderers for doors/floors
   m_renderer_doors(shaders_factory, textures_factory),
   m_renderer_floors(textures_factory, shaders_factory["tile"], { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
-  m_renderer_walls(textures_factory, shaders_factory["texture_cube"]),
+  m_renderer_walls(shaders_factory, textures_factory),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
   m_trees(shaders_factory["texture"], AssimpUtil::Model("assets/models/tree/tree.obj", importer), Attributes::get({"position", "normal", "texture_coord", "tangent"})),
@@ -115,10 +115,32 @@ void LevelRenderer::parse_tilemap() {
 
 /**
  * Pass positions parsed from tilemap to renderers classes
- * Called from ctor to avoid inverting matrices in each frame
+ * Called from ctor (after parsing tilemap) to avoid inverting matrices in each frame
  */
 void LevelRenderer::calculate_uniforms() {
   m_renderer_doors.calculate_uniforms(m_positions_doors);
+  m_renderer_walls.calculate_uniforms(m_walls, m_positions_windows);
+}
+
+/**
+ * Set model matrix (translation/rotation/scaling) used by renderers in `draw()`
+ * `m_position` serves as an offset when translating surfaces tiles in `draw()`
+ * n_instances = 1 in Transformation as there's only one terrain anyway
+ */
+void LevelRenderer::set_transform(const Transformation& t) {
+  m_transformation = t;
+
+  // update bbox to world coords using model matrix
+  for (TargetEntry& target_entry : LevelRenderer::targets) {
+    glm::mat4 model_target = glm::translate(glm::mat4(1.0f), target_entry.position);
+    target_entry.bounding_box = m_targets.bounding_box;
+    target_entry.bounding_box.transform(model_target);
+  }
+
+  // drawing floors/walls/doors delegated to other classes
+  m_renderer_floors.set_transform(t);
+  m_renderer_walls.set_transform(t);
+  m_renderer_doors.set_transform(t);
 }
 
 /**
@@ -129,7 +151,7 @@ void LevelRenderer::draw(const Uniforms& u) {
   draw_targets(u);
   draw_trees(u);
   m_renderer_doors.draw(u);
-  m_renderer_walls.draw(m_walls);
+  m_renderer_walls.draw();
   m_renderer_floors.draw(u);
 
   // called last for blending transparent window with objects in bg
@@ -170,12 +192,11 @@ void LevelRenderer::draw_windows(const Uniforms& u) {
     float y_window_bottom = m_height/2.0f - height_window/2.0f;
     glm::vec3 position_window(position_tile.x, y_window_bottom, position_tile.z);
     models_windows[i_window] = glm::translate(glm::mat4(1.0f), position_window);
-
-    // draw two walls below & above window (supports instancing)
-    m_renderer_walls.draw_walls_around_window(position_tile);
   }
 
+  // draw windows & two walls below/above them
   // with face culling enabled, one face (back) of windows surfaces not rendered
+  m_renderer_walls.draw_walls_around_window();
   m_windows.set_transform({ models_windows, m_transformation.view, m_transformation.projection });
   glDisable(GL_CULL_FACE);
   m_windows.draw();
@@ -205,27 +226,6 @@ void LevelRenderer::draw_targets(const Uniforms& u) {
   m_targets.set_transform({ models_targets, m_transformation.view, m_transformation.projection });
   m_targets.set_uniform_arr("normals_mats", normals_mats_targets);
   m_targets.draw(u);
-}
-
-/**
- * Set model matrix (translation/rotation/scaling) used by renderers in `draw()`
- * `m_position` serves as an offset when translating surfaces tiles in `draw()`
- * n_instances = 1 in Transformation as there's only one terrain anyway
- */
-void LevelRenderer::set_transform(const Transformation& t) {
-  m_transformation = t;
-
-  // update bbox to world coords using model matrix
-  for (TargetEntry& target_entry : LevelRenderer::targets) {
-    glm::mat4 model_target = glm::translate(glm::mat4(1.0f), target_entry.position);
-    target_entry.bounding_box = m_targets.bounding_box;
-    target_entry.bounding_box.transform(model_target);
-  }
-
-  // drawing floors/walls delegated to another class
-  m_renderer_floors.set_transform(t);
-  m_renderer_walls.set_transform(t);
-  m_renderer_doors.set_transform(t);
 }
 
 /* Renderer lifecycle managed internally */

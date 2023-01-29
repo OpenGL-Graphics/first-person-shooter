@@ -7,24 +7,20 @@
 #include "geometries/cube.hpp"
 
 /* Cubes used for walls as face culling hides back-face & lighting affect it similarly to front one */
-WallsRenderer::WallsRenderer(const TexturesFactory& textures_factory, const Program& program):
+WallsRenderer::WallsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory):
   m_renderer(
-    program,
+    shaders_factory["texture_cube"],
     Cube(false, { m_wall_length, m_wall_height, m_wall_depth }),
     Attributes::get({"position", "normal", "texture_coord"})
   ),
   m_renderer_subwall(
-    program,
+    shaders_factory["texture_cube"],
     Cube(false, { m_wall_length, m_subwall_height, m_wall_depth }),
     Attributes::get({"position", "normal", "texture_coord"})
   ),
 
   m_texture(textures_factory.get<Texture2D>("wall_diffuse"))
 {
-}
-
-void WallsRenderer::set_transform(const Transformation& t) {
-  m_transformation = t;
 }
 
 /* Calculate offset rel. to tile map position in entry (unit cube geometry centered around origin) */
@@ -73,13 +69,10 @@ std::array<float, 2> WallsRenderer::calculate_angles(const WallEntry& entry) {
   return angles;
 }
 
-/**
- * Draw all walls at positions given in constructor
- * Supports instancing
- */
-void WallsRenderer::draw(const std::vector<WallEntry>& entries) {
-  // number of walls determined on runtime
-  std::vector<glm::mat4> models_walls;
+/* Calculate model matrices for full walls */
+void WallsRenderer::calculate_uniforms_full(const std::vector<WallEntry>& entries) {
+  const unsigned int N_WALLS = entries.size();
+  m_models.resize(N_WALLS);
 
   // Draw wall rotated by `angle` (in deg) around y-axis at entry's position
   // Actual position & angle calculated accord. to wall's orientation
@@ -101,32 +94,59 @@ void WallsRenderer::draw(const std::vector<WallEntry>& entries) {
         glm::vec3(0.0f, 1.0f, 0.0f)
       );
 
-      models_walls.push_back(model);
+      m_models.push_back(model);
     } // END WALLS PIECES
   } // END WALLS
+}
 
-  Uniforms uniforms;
-  uniforms["texture2d"] = m_texture;
-  m_renderer.set_transform({ models_walls, m_transformation.view, m_transformation.projection });
-  m_renderer.draw(uniforms);
+/* Calculate model matrices for two walls above & above each window */
+void WallsRenderer::calculate_uniforms_around_window(const std::vector<glm::vec3>& positions_windows) {
+  const unsigned int N_WINDOWS = positions_windows.size();
+  std::vector<glm::mat4> models_bottom(N_WINDOWS);
+  std::vector<glm::mat4> models_top(N_WINDOWS);
+
+  // for (const glm::vec3 position_tile : positions_windows) {
+  for (size_t i_window = 0; i_window < N_WINDOWS; ++i_window) {
+    glm::vec3 position_tile = positions_windows[i_window];
+    glm::vec3 position_bottom = position_tile + glm::vec3(m_wall_length / 2, m_subwall_height / 2, m_wall_depth / 2);
+    glm::vec3 position_top = position_bottom + glm::vec3(0, m_subwall_height + m_window_height, 0);
+    models_bottom[i_window] = glm::translate(glm::mat4(1.0f), position_bottom);
+    models_top[i_window] = glm::translate(glm::mat4(1.0f), position_top);
+  }
+
+  m_models_around_windows = std::move(models_bottom);
+  m_models_around_windows.insert(m_models_around_windows.end(), models_top.begin(), models_top.end());
 }
 
 /**
- * Draw wall below window located at `position_tile` & another above it
+ * Called in LevelRenderer's ctor to avoid inverting matrix every frame
+ * @param entries Define positions/angles & # of walls for full walls
+ * @param positions_windows Used to draw two walls below & above windows
+ */
+void WallsRenderer::calculate_uniforms(const std::vector<WallEntry>& entries, const std::vector<glm::vec3>& positions_windows) {
+  calculate_uniforms_full(entries);
+  calculate_uniforms_around_window(positions_windows);
+}
+
+/* Called each frame before draw() to set matrices uniforms */
+void WallsRenderer::set_transform(const Transformation& t) {
+  m_renderer.set_transform({ m_models, t.view, t.projection });
+  m_renderer_subwall.set_transform({ m_models_around_windows, t.view, t.projection });
+}
+
+/**
+ * Draw all walls at positions parsed from tilemap in LevelRenderer's ctor
  * Supports instancing
  */
-void WallsRenderer::draw_walls_around_window(const glm::vec3& position_tile) {
-  Uniforms uniforms;
-  uniforms["texture2d"] = m_texture;
+void WallsRenderer::draw() {
+  m_renderer.draw({ {"texture2d", m_texture} });
+}
 
-  // wall below/above window
-  glm::vec3 position_bottom = position_tile + glm::vec3(m_wall_length / 2, m_subwall_height / 2, m_wall_depth / 2);
-  glm::vec3 position_top = position_bottom + glm::vec3(0, m_subwall_height + m_window_height, 0);
-  glm::mat4 model_bottom = glm::translate(glm::mat4(1.0f), position_bottom);
-  glm::mat4 model_top = glm::translate(glm::mat4(1.0f), position_top);
-
-  m_renderer_subwall.set_transform({ {model_bottom, model_top}, m_transformation.view, m_transformation.projection });
-  m_renderer_subwall.draw(uniforms);
+/**
+ * Supports instancing
+ */
+void WallsRenderer::draw_walls_around_window() {
+  m_renderer_subwall.draw({ {"texture2d", m_texture} });
 }
 
 void WallsRenderer::free() {
