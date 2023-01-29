@@ -23,7 +23,6 @@ private:
   Image m_image;
 
   void set_normals();
-  void set_positions_from_perlin();
   void set_positions_from_image();
   void set_vertexes_from_paraboloid();
 };

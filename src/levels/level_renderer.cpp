@@ -21,19 +21,14 @@ std::vector<TargetEntry> LevelRenderer::targets;
 LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory):
   m_tilemap("assets/levels/map.txt"),
 
-  // textures
-  m_tex_window(textures_factory.get<Texture2D>("window")),
-
-  // renderers for doors/floors
+  // renderers for props
   m_renderer_doors(shaders_factory, textures_factory),
   m_renderer_floors(shaders_factory, textures_factory, { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
   m_renderer_walls(shaders_factory, textures_factory),
+  m_renderer_windows(shaders_factory, textures_factory),
 
   // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
   m_renderer_trees(shaders_factory, textures_factory, importer),
-
-  // window
-  m_windows(m_tex_window, shaders_factory["texture_surface"]),
 
   // target (enemy) to shoot
   m_targets(importer, shaders_factory["texture"]),
@@ -121,6 +116,7 @@ void LevelRenderer::calculate_uniforms() {
   m_renderer_doors.calculate_uniforms(m_positions_doors);
   m_renderer_walls.calculate_uniforms(m_walls, m_positions_windows);
   m_renderer_trees.calculate_uniforms(m_positions_trees);
+  m_renderer_windows.calculate_uniforms(m_positions_windows);
 }
 
 /**
@@ -132,6 +128,7 @@ void LevelRenderer::set_transform(const Transformation& t) {
   m_transformation = t;
 
   // update bbox to world coords using model matrix
+  // TODO: calculate in ctor (not every frame)
   for (TargetEntry& target_entry : LevelRenderer::targets) {
     glm::mat4 model_target = glm::translate(glm::mat4(1.0f), target_entry.position);
     target_entry.bounding_box = m_targets.bounding_box;
@@ -143,6 +140,7 @@ void LevelRenderer::set_transform(const Transformation& t) {
   m_renderer_walls.set_transform(t);
   m_renderer_doors.set_transform(t);
   m_renderer_trees.set_transform(t);
+  m_renderer_windows.set_transform(t);
 }
 
 /**
@@ -152,37 +150,15 @@ void LevelRenderer::set_transform(const Transformation& t) {
 void LevelRenderer::draw(const Uniforms& u) {
   draw_targets(u);
   m_renderer_doors.draw(u);
-  m_renderer_walls.draw();
   m_renderer_floors.draw(u);
   m_renderer_trees.draw(u);
 
-  // called last for blending transparent window with objects in bg
-  draw_windows(u);
-}
-
-/**
- * Draw window at mid y-coord of `position_tile` with half-walls below & above it
- * Supports instancing
- */
-void LevelRenderer::draw_windows(const Uniforms& u) {
-  const unsigned int N_WINDOWS = m_positions_windows.size();
-  std::vector<glm::mat4> models_windows(N_WINDOWS);
-
-  for (size_t i_window = 0; i_window < N_WINDOWS; ++i_window) {
-    glm::vec3 position_tile = m_positions_windows[i_window];
-    float height_window = 1.0f;
-    float y_window_bottom = m_height/2.0f - height_window/2.0f;
-    glm::vec3 position_window(position_tile.x, y_window_bottom, position_tile.z);
-    models_windows[i_window] = glm::translate(glm::mat4(1.0f), position_window);
-  }
-
-  // draw windows & two walls below/above them
-  // with face culling enabled, one face (back) of windows surfaces not rendered
+  // draw full walls & two walls below/above them
+  m_renderer_walls.draw();
   m_renderer_walls.draw_walls_around_window();
-  m_windows.set_transform({ models_windows, m_transformation.view, m_transformation.projection });
-  glDisable(GL_CULL_FACE);
-  m_windows.draw();
-  glEnable(GL_CULL_FACE);
+
+  // called last for blending transparent window with objects in bg
+  m_renderer_windows.draw();
 }
 
 /**
@@ -219,6 +195,6 @@ void LevelRenderer::free() {
   m_renderer_trees.free();
 
   // entities
-  m_windows.free();
+  m_renderer_windows.free();
   m_targets.free();
 }

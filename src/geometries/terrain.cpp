@@ -3,7 +3,6 @@
 #include <algorithm>
 
 #include "geometries/terrain.hpp"
-#include "materials/heightmap.hpp"
 
 /* Construct terrain from heightmap image */
 Terrain::Terrain(const Image& heightmap):
@@ -40,28 +39,6 @@ void Terrain::set_positions_from_image() {
       m_vertexes[m_n_coords * i_vertex] = i_col * xz_scale;  // miniature sized
       m_vertexes[m_n_coords * i_vertex + 1] = pixel_value * y_scale;
       m_vertexes[m_n_coords * i_vertex + 2] = i_row * xz_scale;
-    }
-  }
-}
-
-/**
- * Set vertexes positions from 2D perlin noise
- * y-axis is the vertical axis in OpenGL (whereas for terrain plan z=0 is the ground)
- */
-void Terrain::set_positions_from_perlin() {
-  Heightmap heightmap(m_n_vertexes_x, m_n_vertexes_y);
-  std::vector<std::vector<float>> elevations =  heightmap.elevations;
-
-  for (size_t i_vertex_y = 0; i_vertex_y < m_n_vertexes_y; ++i_vertex_y) {
-    for (size_t i_vertex_x = 0; i_vertex_x < m_n_vertexes_x; ++i_vertex_x) {
-      float z = elevations[i_vertex_y][i_vertex_x] * 10.0f;
-      unsigned int i_vertex = i_vertex_y * m_n_vertexes_x + i_vertex_x;
-
-      // vertex's xyz position
-      m_vertexes[m_n_coords * i_vertex] = i_vertex_x;
-      m_vertexes[m_n_coords * i_vertex + 1] = z;
-      m_vertexes[m_n_coords * i_vertex + 2] = i_vertex_y;
-      std::cout << "z: " << z << '\n';
     }
   }
 }

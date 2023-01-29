@@ -9,6 +9,7 @@
 #include "levels/floors_renderer.hpp"
 #include "levels/doors_renderer.hpp"
 #include "levels/trees_renderer.hpp"
+#include "levels/windows_renderer.hpp"
 
 #include "levels/tilemap.hpp"
 #include "program.hpp"
@@ -18,7 +19,6 @@
 #include "entries/wall_entry.hpp"
 
 #include "entities/target.hpp"
-#include "entities/sprite.hpp"
 
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
@@ -48,9 +48,6 @@ private:
   /* declared before `m_renderer_floor` as nrows/ncols needed to avoid stretching texture */
   Tilemap m_tilemap;
 
-  /* textures (lifecycle managed in TexturesFactory) */
-  Texture2D m_tex_window;
-
   /**
    * Renderers for wall, window, ceiling/floor tiles, & trees props
    * Door & floor are both surfaces but with different uv-coords (to avoid stretching texture)
@@ -60,9 +57,7 @@ private:
   WallsRenderer m_renderer_walls;
   FloorsRenderer m_renderer_floors;
   TreesRenderer m_renderer_trees;
-
-  /* Windows (with instancing) */
-  Sprite m_windows;
+  WindowsRenderer m_renderer_windows;
 
   /* Targets enemies to shoot (with instancing) */
   Target m_targets;
@@ -82,7 +77,6 @@ private:
   void parse_tilemap();
   void calculate_uniforms();
   void draw_targets(const Uniforms& u);
-  void draw_windows(const Uniforms& u);
 };
 
 #endif // LEVEL_RENDERER_HPP

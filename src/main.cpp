@@ -41,7 +41,6 @@
 #include "globals/lights.hpp"
 
 #include "entities/splatmap.hpp"
-#include "entities/sprite.hpp"
 
 #include "framebuffer.hpp"
 #include "framebuffer_exception.hpp"
