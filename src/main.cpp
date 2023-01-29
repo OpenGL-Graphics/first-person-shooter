@@ -23,7 +23,7 @@
 
 #include "render/renderer.hpp"
 #include "render/text_renderer.hpp"
-#include "render/level_renderer.hpp"
+#include "levels/level_renderer.hpp"
 #include "render/model_renderer.hpp"
 
 #include "text/glyphs.hpp"

@@ -4,9 +4,9 @@
 #include <unordered_map>
 
 #include "render/renderer.hpp"
-#include "render/walls_renderer.hpp"
-#include "render/floors_renderer.hpp"
-#include "render/doors_renderer.hpp"
+#include "levels/walls_renderer.hpp"
+#include "levels/floors_renderer.hpp"
+#include "levels/doors_renderer.hpp"
 
 #include "levels/tilemap.hpp"
 #include "program.hpp"

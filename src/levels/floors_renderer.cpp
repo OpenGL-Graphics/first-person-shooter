@@ -1,7 +1,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
-#include "render/floors_renderer.hpp"
+#include "levels/floors_renderer.hpp"
 #include "geometries/surface.hpp"
 
 /**

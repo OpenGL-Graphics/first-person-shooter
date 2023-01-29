@@ -6,7 +6,7 @@
 #include "physics/bounding_box.hpp"
 
 #include "entries/target_entry.hpp"
-#include "render/level_renderer.hpp"
+#include "levels/level_renderer.hpp"
 
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 Camera* MouseHandler::m_camera;

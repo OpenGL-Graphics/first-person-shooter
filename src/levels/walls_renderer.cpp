@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
-#include "render/walls_renderer.hpp"
+#include "levels/walls_renderer.hpp"
 #include "geometries/cube.hpp"
 
 /* Cubes used for walls as face culling hides back-face & lighting affect it similarly to front one */

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include "render/level_renderer.hpp"
+#include "levels/level_renderer.hpp"
 
 #include "geometries/surface.hpp"
 #include "geometries/cube.hpp"
