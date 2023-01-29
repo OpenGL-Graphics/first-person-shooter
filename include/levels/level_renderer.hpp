@@ -10,6 +10,7 @@
 #include "levels/doors_renderer.hpp"
 #include "levels/trees_renderer.hpp"
 #include "levels/windows_renderer.hpp"
+#include "levels/targets_renderer.hpp"
 
 #include "levels/tilemap.hpp"
 #include "program.hpp"
@@ -17,8 +18,6 @@
 #include "entries/target_entry.hpp"
 #include "entries/wall_orientation.hpp"
 #include "entries/wall_entry.hpp"
-
-#include "entities/target.hpp"
 
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
@@ -29,12 +28,6 @@
 struct LevelRenderer {
   /* Used to block camera from going through walls */
   std::vector<glm::vec3> positions_walls;
-
-  /**
-   * Used to check for intersec. with mouse in `MouseHandler`
-   * TODO: externalize in `globals/`
-   */
-  static std::vector<TargetEntry> targets;
 
   LevelRenderer(Assimp::Importer& importer, const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory);
   void draw(const Uniforms& u={});
@@ -58,12 +51,7 @@ private:
   FloorsRenderer m_renderer_floors;
   TreesRenderer m_renderer_trees;
   WindowsRenderer m_renderer_windows;
-
-  /* Targets enemies to shoot (with instancing) */
-  Target m_targets;
-
-  /* transformation matrixes (view, projection) passed to tiles renderers before `draw()` */
-  Transformation m_transformation;
+  TargetsRenderer m_renderer_targets;
 
   /* position of level */
   glm::vec3 m_position;
@@ -76,7 +64,6 @@ private:
 
   void parse_tilemap();
   void calculate_uniforms();
-  void draw_targets(const Uniforms& u);
 };
 
 #endif // LEVEL_RENDERER_HPP

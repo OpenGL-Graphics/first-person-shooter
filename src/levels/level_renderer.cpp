@@ -7,12 +7,7 @@
 
 #include "geometries/surface.hpp"
 #include "geometries/cube.hpp"
-
-/**
- * Static class members require a declaration in *.cpp (to allocate space for them)
- * TODO: externalize in `globals/`
- */
-std::vector<TargetEntry> LevelRenderer::targets;
+#include "globals/targets.hpp"
 
 /**
  * Sets positions of object tiles only once in constructor (origin at tilemap's upper-left corner)
@@ -26,12 +21,8 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
   m_renderer_floors(shaders_factory, textures_factory, { m_tilemap.n_cols - 1, m_tilemap.n_rows - 1 }),
   m_renderer_walls(shaders_factory, textures_factory),
   m_renderer_windows(shaders_factory, textures_factory),
-
-  // tree props don't have a texture (only a color attached to each mesh in `AssimpUtil::Model::set_mesh_color()`)
   m_renderer_trees(shaders_factory, textures_factory, importer),
-
-  // target (enemy) to shoot
-  m_targets(importer, shaders_factory["texture"]),
+  m_renderer_targets(shaders_factory, importer),
 
   m_position(0, 0, 0)
 {
@@ -75,7 +66,7 @@ void LevelRenderer::parse_tilemap() {
         case Tilemap::Tiles::ENEMMY: // non-mobile enemies
           // world-space bbox calculated from `m_targets` local-space bbox in `set_transform()`
           target_entry = { false, position_tile };
-          LevelRenderer::targets.push_back(target_entry);
+          targets.push_back(target_entry);
           continue;
         case Tilemap::Tiles::DOOR_H:
           m_positions_doors.push_back(position_tile);
@@ -113,6 +104,8 @@ void LevelRenderer::parse_tilemap() {
  * Called from ctor (after parsing tilemap) to avoid inverting matrices in each frame
  */
 void LevelRenderer::calculate_uniforms() {
+  // set uniforms matrixes
+  m_renderer_targets.calculate_uniforms();
   m_renderer_doors.calculate_uniforms(m_positions_doors);
   m_renderer_walls.calculate_uniforms(m_walls, m_positions_windows);
   m_renderer_trees.calculate_uniforms(m_positions_trees);
@@ -122,20 +115,10 @@ void LevelRenderer::calculate_uniforms() {
 /**
  * Set model matrix (translation/rotation/scaling) used by renderers in `draw()`
  * `m_position` serves as an offset when translating surfaces tiles in `draw()`
- * n_instances = 1 in Transformation as there's only one terrain anyway
  */
 void LevelRenderer::set_transform(const Transformation& t) {
-  m_transformation = t;
-
-  // update bbox to world coords using model matrix
-  // TODO: calculate in ctor (not every frame)
-  for (TargetEntry& target_entry : LevelRenderer::targets) {
-    glm::mat4 model_target = glm::translate(glm::mat4(1.0f), target_entry.position);
-    target_entry.bounding_box = m_targets.bounding_box;
-    target_entry.bounding_box.transform(model_target);
-  }
-
   // set positions of props in appropriate classes
+  m_renderer_targets.set_transform(t);
   m_renderer_floors.set_transform(t);
   m_renderer_walls.set_transform(t);
   m_renderer_doors.set_transform(t);
@@ -148,7 +131,7 @@ void LevelRenderer::set_transform(const Transformation& t) {
  * @param uniforms Uniforms passed to shader (i.e. lights & camera pos.)
  */
 void LevelRenderer::draw(const Uniforms& u) {
-  draw_targets(u);
+  m_renderer_targets.draw(u);
   m_renderer_doors.draw(u);
   m_renderer_floors.draw(u);
   m_renderer_trees.draw(u);
@@ -161,40 +144,12 @@ void LevelRenderer::draw(const Uniforms& u) {
   m_renderer_windows.draw();
 }
 
-/**
- * Draw targets
- * Supports instancing
- */
-void LevelRenderer::draw_targets(const Uniforms& u) {
-  const unsigned int N_TARGETS = LevelRenderer::targets.size();
-  std::vector<glm::mat4> models_targets(N_TARGETS), normals_mats_targets(N_TARGETS);
-
-  for (size_t i_target = 0; i_target < N_TARGETS; ++i_target) {
-    TargetEntry target_entry = LevelRenderer::targets[i_target];
-    if (target_entry.is_dead)
-      continue;
-
-    // TODO: inverting normal in every iteration :/
-    glm::mat4 model_target = glm::translate(glm::mat4(1.0f), target_entry.position);
-    glm::mat4 normal_mat = glm::inverseTranspose(model_target);
-    models_targets[i_target] = model_target;
-    normals_mats_targets[i_target] = normal_mat;
-  }
-
-  m_targets.set_transform({ models_targets, m_transformation.view, m_transformation.projection });
-  m_targets.set_uniform_arr("normals_mats", normals_mats_targets);
-  m_targets.draw(u);
-}
-
-/* Renderer lifecycle managed internally */
+/* Renderers lifecycle managed by other classes */
 void LevelRenderer::free() {
-  // renderers
+  m_renderer_targets.free();
   m_renderer_doors.free();
   m_renderer_floors.free();
   m_renderer_walls.free();
   m_renderer_trees.free();
-
-  // entities
   m_renderer_windows.free();
-  m_targets.free();
 }

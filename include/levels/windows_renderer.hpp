@@ -1,5 +1,5 @@
-#ifndef SPRITE_HPP
-#define SPRITE_HPP
+#ifndef WINDOWS_RENDERER_HPP
+#define WINDOWS_RENDERER_HPP
 
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
@@ -24,4 +24,4 @@ private:
   std::vector<glm::mat4> m_models;
 };
 
-#endif // SPRITE_HPP
+#endif // WINDOWS_RENDERER_HPP

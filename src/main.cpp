@@ -40,7 +40,7 @@
 #include "globals/score.hpp"
 #include "globals/lights.hpp"
 
-#include "entities/splatmap.hpp"
+#include "terrain/splatmap.hpp"
 
 #include "framebuffer.hpp"
 #include "framebuffer_exception.hpp"

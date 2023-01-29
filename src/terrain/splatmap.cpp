@@ -1,6 +1,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "entities/splatmap.hpp"
+#include "terrain/splatmap.hpp"
 #include "geometries/terrain.hpp"
 
 Splatmap::Splatmap(const Program& program):

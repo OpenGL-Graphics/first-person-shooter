@@ -35,7 +35,6 @@ file(COPY lib/ikpMP3.so DESTINATION ${CMAKE_BINARY_DIR})
 # main executable
 file(GLOB SRC
   "src/geometries/*.cpp"
-  "src/materials/*.cpp"
   "src/navigation/*.cpp"
   "src/render/*.cpp"
   "src/shaders/*.cpp"
@@ -45,14 +44,13 @@ file(GLOB SRC
   "src/profiling/*.cpp"
   "src/controls/*.cpp"
   "src/physics/*.cpp"
-  "src/perlin/*.cpp"
-  "src/entities/*.cpp"
   "src/utils/*.cpp"
   "src/levels/*.cpp"
   "src/math/*.cpp"
   "src/audio/*.cpp"
   "src/globals/*.cpp"
   "src/factories/*.cpp"
+  "src/terrain/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})
