@@ -9,22 +9,24 @@
  * Inspired by triangle-strip terrain from this tutorial:
  * http://www.learnopengles.com/android-lesson-eight-an-introduction-to-index-buffer-objects-ibos/
  */
-class Terrain : public Geometry, public Grid {
-public:
-  Terrain(const Image& heightmap);
-  unsigned int get_n_elements() const override;
+namespace geometry {
+  class Terrain : public Geometry, public Grid {
+  public:
+    Terrain(const Image& heightmap);
+    unsigned int get_n_elements() const override;
 
-private:
-  /* used to magnify/reduce size of grid (horizontally & vertically) */
-  const float xz_scale = 1.0f / 5;
-  const float y_scale = 1.0f / 100;
+  private:
+    /* used to magnify/reduce size of grid (horizontally & vertically) */
+    const float xz_scale = 1.0f / 5;
+    const float y_scale = 1.0f / 100;
 
-  /* heightmap image */
-  Image m_image;
+    /* heightmap image */
+    Image m_image;
 
-  void set_normals();
-  void set_positions_from_image();
-  void set_vertexes_from_paraboloid();
-};
+    void set_normals();
+    void set_positions_from_image();
+    void set_vertexes_from_paraboloid();
+  };
+}
 
 #endif // TERRAIN_HPP

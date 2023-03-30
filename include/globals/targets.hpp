@@ -3,7 +3,7 @@
 
 #include "entries/target_entry.hpp"
 
-// score declared as a global variable (i.e. accessible everywhere)
+// targets declared as a global variable (i.e. accessible everywhere)
 // https://stackoverflow.com/a/3627979/2228912 
 extern std::vector<TargetEntry> targets;
 

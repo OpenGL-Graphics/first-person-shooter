@@ -4,7 +4,7 @@
 #include "levels/trees_renderer.hpp"
 
 TreesRenderer::TreesRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory, Assimp::Importer& importer):
-  m_renderer(shaders_factory["texture"], AssimpUtil::Model("assets/models/tree/tree.obj", importer), Attributes::get({"position", "normal", "texture_coord", "tangent"}))
+  m_renderer(shaders_factory["texture"], assimp_utils::Model("assets/models/tree/tree.obj", importer), Attributes::get({"position", "normal", "texture_coord", "tangent"}))
 {
 }
 

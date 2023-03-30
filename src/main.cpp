@@ -11,7 +11,7 @@
 #include "texture_2d.hpp"
 #include "texture_3d.hpp"
 #include "window.hpp"
-#include "navigation/camera.hpp"
+#include "navigation/frustum.hpp"
 
 #include "geometries/cube.hpp"
 #include "geometries/surface.hpp"
@@ -50,8 +50,13 @@
 #include "factories/textures_factory.hpp"
 
 using namespace irrklang;
+using namespace geometry;
 
 int main() {
+  ////////////////////////////////////////////////
+  // Window & camera
+  ////////////////////////////////////////////////
+
   // glfw window
   Window window("FPS game");
 
@@ -77,6 +82,20 @@ int main() {
   // camera
   Camera camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
   // Camera camera(glm::vec3(13.0f, 2.0f, 5.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+  // transformation matrices
+  float near = 0.001,
+        far = 50.0;
+  float aspect_ratio = (float) window.width / (float) window.height;
+  glm::mat4 projection3d = glm::perspective(glm::radians(camera.fov), aspect_ratio, near, far);
+  glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
+
+  // used to calculate frustum planes (to cull hidden objects => higher fps)
+  Frustum frustum(near, far, aspect_ratio);
+
+  ////////////////////////////////////////////////
+  // Renderers
+  ////////////////////////////////////////////////
 
   // create & install vertex & fragment shaders on GPU
   ShadersFactory shaders_factory;
@@ -129,7 +148,7 @@ int main() {
 
   // load 3d model from .obj file & its renderer
   time_profiler.start();
-  AssimpUtil::Model model3d_gun("assets/models/sniper/sniper.obj", importer),
+  assimp_utils::Model model3d_gun("assets/models/sniper/sniper.obj", importer),
                     model3d_suzanne("assets/models/suzanne/suzanne.obj", importer);
 
   ModelRenderer gun(shaders_factory["texture"], model3d_gun, Attributes::get({"position", "normal", "texture_coord", "tangent"}));
@@ -141,11 +160,6 @@ int main() {
   LevelRenderer level(importer, shaders_factory, textures_factory);
   time_profiler.stop("* Loading tilemap, tree & enemy 3D models");
   camera.boundaries = level.positions_walls;
-
-  // transformation matrices
-  glm::mat4 view;
-  glm::mat4 projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 1.0e-3f, 50.f);
-  glm::mat4 projection2d = glm::ortho(0.0f, (float) window.width, 0.0f, (float) window.height);
 
   ////////////////////////////////////////////////
   // Uniforms for cylinders
@@ -265,8 +279,17 @@ int main() {
 
   while (!window.is_closed()) {
     // update transformation matrices (camera fov changes on zoom)
-    view = camera.get_view();
+    glm::mat4 view = camera.get_view();
     projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 0.5f, 32.0f);
+
+    ///
+    // check if origin inside frustum
+    frustum.calculate_planes(camera);
+    if (frustum.is_inside(glm::vec3()))
+      std::cout << "Inside frustum" << '\n';
+    else
+      std::cout << "Outside frustum" << '\n';
+    ///
 
     {
       // clear framebuffer's attached color buffer in every frame

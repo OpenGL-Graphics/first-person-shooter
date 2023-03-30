@@ -3,6 +3,8 @@
 
 #include "geometries/sphere.hpp"
 
+using namespace geometry;
+
 Sphere::Sphere(unsigned int n_longitudes, unsigned int n_latitudes):
   m_n_longitudes(n_longitudes),
   m_n_latitudes(n_latitudes),

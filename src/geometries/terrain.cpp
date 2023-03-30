@@ -4,6 +4,8 @@
 
 #include "geometries/terrain.hpp"
 
+using namespace geometry;
+
 /* Construct terrain from heightmap image */
 Terrain::Terrain(const Image& heightmap):
   Grid(heightmap.width, heightmap.height),

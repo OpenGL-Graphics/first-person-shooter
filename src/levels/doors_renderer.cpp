@@ -5,6 +5,8 @@
 #include "levels/doors_renderer.hpp"
 #include "geometries/surface.hpp"
 
+using namespace geometry;
+
 DoorsRenderer::DoorsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory):
   m_renderer(shaders_factory["tile"], Surface(glm::vec2(1, m_height)), Attributes::get({"position", "normal", "texture_coord"}, 7, true)),
 

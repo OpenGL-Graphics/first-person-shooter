@@ -8,16 +8,18 @@
  * - 10 lines parallel to x-axis
  * - 10 lines perpendicular to them (parallel to z-axis)
  */
-class GridLines : public Geometry {
-public:
-  GridLines();
+namespace geometry {
+  class GridLines : public Geometry {
+  public:
+    GridLines();
 
-private:
-  static const int N_LINES = 35;
+  private:
+    static const int N_LINES = 35;
 
-  void set_vertexes();
-  void set_indices();
-  void set_n_elements();
-};
+    void set_vertexes();
+    void set_indices();
+    void set_n_elements();
+  };
+}
 
 #endif // GRID_LINES_HPP

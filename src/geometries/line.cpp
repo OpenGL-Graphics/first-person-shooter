@@ -1,5 +1,7 @@
 #include "geometries/line.hpp"
 
+using namespace geometry;
+
 Line::Line(const glm::vec3& point_start, const glm::vec3& point_end):
   m_point_start(point_start),
   m_point_end(point_end)

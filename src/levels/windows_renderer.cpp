@@ -3,6 +3,8 @@
 #include "levels/windows_renderer.hpp"
 #include "geometries/surface.hpp"
 
+using namespace geometry;
+
 /**
  * 2D sprite for props
  * Grass prop instances generated inside level accord. to tilemap

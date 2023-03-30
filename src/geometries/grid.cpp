@@ -2,6 +2,8 @@
 
 #include "geometries/grid.hpp"
 
+using namespace geometry;
+
 Grid::Grid(unsigned int n_vertexes_x, unsigned int n_vertexes_y):
   m_n_vertexes_x(n_vertexes_x),
   m_n_vertexes_y(n_vertexes_y)

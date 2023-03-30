@@ -19,9 +19,12 @@ struct Camera {
   /* used in 3D projection matrix (zoom-in corresponds to lower field-of-view) */
   float fov;
 
-  /* look at parameters (used to position cube on LMB click) */
+  /* camera position & look at direction vector */
   glm::vec3 position;
   glm::vec3 direction;
+
+  /* Needed to calculate frustum planes normals (by cross-product) */
+  glm::vec3 up;
 
   /* boundaries of level (i.e. position of walls) */
   std::vector<glm::vec3> boundaries;
@@ -30,12 +33,14 @@ struct Camera {
   bool is_jumping;
   bool is_falling;
 
-  Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up);
+  Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& u);
   glm::mat4 get_view();
   void move(Direction d);
   void rotate(float x_offset, float y_offset);
   void zoom(Zoom z);
   void update();
+
+  glm::vec3 get_right() const;
 
 private:
   // camera movements constants
@@ -47,8 +52,6 @@ private:
   const float SPEED_FALL = 0.1f;
   const float MIN_Y = 2.0f;
   const float MAX_Y = 3.0f;
-
-  glm::vec3 m_up;
 
   // direction of movement
   glm::vec3 m_forward_dir;

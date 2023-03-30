@@ -20,7 +20,7 @@ private:
   BoundingBox m_bounding_box;
 
   /* delegate drawing to model renderer */
-  AssimpUtil::Model m_model3d;
+  assimp_utils::Model m_model3d;
   ModelRenderer m_renderer;
 
   /* Uniform matrices for all targets (dead & alive) */

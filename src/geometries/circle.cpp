@@ -2,6 +2,8 @@
 
 #include "geometries/circle.hpp"
 
+using namespace geometry;
+
 Circle::Circle(int n_corners):
   m_n_corners(n_corners)
 {

@@ -6,11 +6,11 @@
 // movement constants
 const float SPEED = 0.1f;
 
-ModelRenderer::ModelRenderer(const Program& program, const AssimpUtil::Model& model, const std::vector<Attribute>& attributes):
+ModelRenderer::ModelRenderer(const Program& program, const assimp_utils::Model& model, const std::vector<Attribute>& attributes):
   m_model(model)
 {
   // one renderer by mesh (to avoid mixing up meshes indices)
-  for (const AssimpUtil::Mesh& mesh : m_model.meshes) {
+  for (const assimp_utils::Mesh& mesh : m_model.meshes) {
     Renderer renderer(program, Geometry(mesh.vertexes, mesh.indices, mesh.positions), attributes);
     renderers.push_back(renderer);
   }
@@ -38,7 +38,7 @@ void ModelRenderer::draw(const Uniforms& u, bool with_outlines) {
 
   for (size_t i_renderer = 0; i_renderer < renderers.size(); ++i_renderer) {
     // retrieve materials/textures from mesh (get a ref. to avoid copying vec. members)
-    AssimpUtil::Mesh& mesh = m_model.meshes[i_renderer];
+    assimp_utils::Mesh& mesh = m_model.meshes[i_renderer];
     mesh.set_uniforms(uniforms);
     Renderer renderer = renderers[i_renderer];
 

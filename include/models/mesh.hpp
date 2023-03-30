@@ -14,7 +14,7 @@
  * Accessed publicly from `renderer::ModelRenderer` through `models::Model`
  * Namespace to avoid confusion between `models/Model` & `entities/Model`
  */
-namespace AssimpUtil {
+namespace assimp_utils {
   struct Mesh {
     std::vector<float> vertexes;
     std::vector<unsigned int> indices;

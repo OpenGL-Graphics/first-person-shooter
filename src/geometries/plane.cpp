@@ -4,6 +4,8 @@
 
 #include "geometries/plane.hpp"
 
+using namespace geometry;
+
 /* Construct random terrain using Perlin noise values */
 Plane::Plane(unsigned int n_vertexes_x, unsigned int n_vertexes_y):
   Grid(n_vertexes_x, n_vertexes_y)

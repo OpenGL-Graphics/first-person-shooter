@@ -9,6 +9,8 @@
  */
 #include "geometries/cube.hpp"
 
+using namespace geometry;
+
 /**
  * @param is_skybox Skybox has internal triangles (i.e. indices) with CCW winding order (visible)
  *                  => only internal faces are visible with face culling enabled

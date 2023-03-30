@@ -1,6 +1,6 @@
 #include "models/mesh.hpp"
 
-using namespace AssimpUtil;
+using namespace assimp_utils;
 
 Mesh::Mesh(aiMesh* mesh):
   m_mesh(mesh)

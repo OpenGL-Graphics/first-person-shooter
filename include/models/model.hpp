@@ -12,9 +12,9 @@
  * Serves as parent of all meshes inside scene (i.e. 3D model in *.obj format)
  * Namespace to avoid confusion with `entities/Model`
  */
-namespace AssimpUtil {
+namespace assimp_utils {
   struct Model {
-    std::vector<AssimpUtil::Mesh> meshes;
+    std::vector<assimp_utils::Mesh> meshes;
 
     Model(const std::string& path, Assimp::Importer& importer);
     void free();

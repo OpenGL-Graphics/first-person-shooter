@@ -3,6 +3,8 @@
 #include "terrain/splatmap.hpp"
 #include "geometries/terrain.hpp"
 
+using namespace geometry;
+
 Splatmap::Splatmap(const Program& program):
   // terrain textures (used by same shader) need to be attached to different texture units
   m_texture_terrain_water(Image("assets/images/terrain/water.jpg"), GL_TEXTURE0),

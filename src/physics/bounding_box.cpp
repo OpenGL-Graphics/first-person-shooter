@@ -4,6 +4,8 @@
 #include "physics/bounding_box.hpp"
 #include "math/axis_aligned_plane.hpp"
 
+using namespace math;
+
 /* Needed so bbox (class member) can be automatically init in Renderer constructor */
 BoundingBox::BoundingBox() {
 }

@@ -4,6 +4,8 @@
 #include "levels/floors_renderer.hpp"
 #include "geometries/surface.hpp"
 
+using namespace geometry;
+
 /**
  * @param n_cols Number of tiles on x-axis (floor width)
  * @param n_rows Number of tiles on z-axis (floor depth)

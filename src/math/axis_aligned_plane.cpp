@@ -1,5 +1,7 @@
 #include "math/axis_aligned_plane.hpp"
 
+using namespace math;
+
 /* AA-Planes have two coords that are null (i.e. z = z0 or y = y0 or x = x0) */
 AxisAlignedPlane::AxisAlignedPlane(float* x, float* y, float* z):
   x0(x),

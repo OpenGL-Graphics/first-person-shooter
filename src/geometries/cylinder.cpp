@@ -2,6 +2,8 @@
 
 #include "geometries/cylinder.hpp"
 
+using namespace geometry;
+
 /* Calculate vertexes & indices on creation */
 Cylinder::Cylinder(int n_corners, float radius, float height):
   // duplicated statring corner for cylinder seam (avoids stretching uv between last & 1st point)

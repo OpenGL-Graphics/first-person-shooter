@@ -5,10 +5,10 @@
 
 #include "navigation/camera.hpp"
 
-Camera::Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up):
+Camera::Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& u):
   position(pos),
   direction(dir),
-  m_up(up),
+  up(u),
   m_forward_dir(dir),
 
   pitch(0.0f),
@@ -20,6 +20,10 @@ Camera::Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up):
 {
 }
 
+glm::vec3 Camera::get_right() const {
+  return glm::normalize(glm::cross(direction, up));
+}
+
 /**
  * View matrix orients a scene in such a way to simulate camera's movement (inversion of camera's transformation matrix)
  * i.e. translation/rotation of scene in opposite directions to camera
@@ -27,7 +31,7 @@ Camera::Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& up):
  */
 glm::mat4 Camera::get_view() {
   // only camera direction is rotated by mouse in `rotate()`
-  glm::mat4 view = glm::lookAt(position, position + direction, m_up);
+  glm::mat4 view = glm::lookAt(position, position + direction, up);
 
   return view;
 }
@@ -60,7 +64,7 @@ bool Camera::is_close_to_boundaries(const glm::vec3& position_future) {
 
 void Camera::move(Direction d) {
   // move forward/backward & sideways & up/down
-  glm::vec3 right_dir = glm::normalize(glm::cross(m_forward_dir, m_up));
+  glm::vec3 right_dir = get_right();
   glm::vec3 position_future;
 
   switch (d) {
@@ -77,10 +81,10 @@ void Camera::move(Direction d) {
       position_future = position - SPEED_MOVEMENT*right_dir;
       break;
     case Direction::UP:
-      position_future = position + SPEED_MOVEMENT*m_up;
+      position_future = position + SPEED_MOVEMENT*up;
       break;
     case Direction::DOWN:
-      position_future = position - SPEED_MOVEMENT*m_up;
+      position_future = position - SPEED_MOVEMENT*up;
       break;
   }
 
@@ -107,7 +111,7 @@ void Camera::rotate(float x_offset, float y_offset) {
   }
 
   // fps camera navigation by rotating its direction vector around x/y-axis
-  glm::vec3 right_dir = glm::normalize(glm::cross(m_forward_dir, m_up));
+  glm::vec3 right_dir = get_right();
   glm::mat4 rotation_yaw_mat = glm::rotate(glm::mat4(1.0f), yaw_offset, glm::vec3(0.0f, 1.0f, 0.0f));
   glm::mat4 rotation_pitch_mat = glm::rotate(glm::mat4(1.0f), pitch_offset, right_dir);
   direction = glm::vec3(rotation_pitch_mat * rotation_yaw_mat * glm::vec4(direction, 1.0f));
@@ -128,7 +132,7 @@ void Camera::jump() {
     return;
   }
 
-  position += SPEED_JUMP*m_up;
+  position += SPEED_JUMP*up;
 }
 
 /* Same rationale as `Camera::jump()` in other direction */
@@ -140,7 +144,7 @@ void Camera::fall() {
     return;
   }
 
-  position -= SPEED_FALL*m_up;
+  position -= SPEED_FALL*up;
 }
 
 /* called in main loop for a continuous jumping/falling */

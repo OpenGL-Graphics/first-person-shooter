@@ -5,7 +5,7 @@
 #include "models/model.hpp"
 #include "models/model_exception.hpp"
 
-using namespace AssimpUtil;
+using namespace assimp_utils;
 
 /**
  * Load 3d model in .obj ascii format with Assimp

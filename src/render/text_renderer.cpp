@@ -3,6 +3,8 @@
 #include "render/text_renderer.hpp"
 #include "geometries/surface.hpp"
 
+using namespace geometry;
+
 TextRenderer::TextRenderer(const Program& program, const std::vector<Attribute>& attributes, const Font& font):
   Renderer(program, Surface(), attributes, true),
   m_glyphs(font.extract_glyphs())

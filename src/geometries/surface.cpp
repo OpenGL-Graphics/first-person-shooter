@@ -1,5 +1,7 @@
 #include "geometries/surface.hpp"
 
+using namespace geometry;
+
 /**
  * @param size Needed to avoid stretching wall texture (i.e. uv-coords follow xyz coords)
  */

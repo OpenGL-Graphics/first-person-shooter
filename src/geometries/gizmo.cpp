@@ -1,5 +1,7 @@
 #include "geometries/gizmo.hpp"
 
+using namespace geometry;
+
 Gizmo::Gizmo() {
   set_vertexes();
   set_indices();

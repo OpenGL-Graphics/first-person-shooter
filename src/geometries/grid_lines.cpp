@@ -1,5 +1,7 @@
 #include "geometries/grid_lines.hpp"
 
+using namespace geometry;
+
 GridLines::GridLines() {
   set_vertexes();
   set_indices();
