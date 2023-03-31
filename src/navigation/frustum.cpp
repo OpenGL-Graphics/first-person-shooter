@@ -59,7 +59,7 @@ void Frustum::calculate_planes(const Camera& camera) {
 }
 
 /* True if given point is inside frustum (i.e. in front of all frustum planes) */
-bool Frustum::is_inside(const glm::vec3& point) {
+bool Frustum::is_inside(const glm::vec3& point) const {
   return (
     left_plane.is_in_front_of_plane(point) &&
     right_plane.is_in_front_of_plane(point) &&

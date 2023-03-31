@@ -61,17 +61,19 @@ void TargetsRenderer::calculate_uniforms() {
 }
 
 /**
- * Keeps in uniform matrices only alive targets to avoid drawing them
+ * Keeps in uniform matrices only alive targets to avoid drawing dead ones
  * @param name "model" to get model matrix & "normal" to get normal matrix
  */
-std::vector<glm::mat4> TargetsRenderer::get_uniform_mats(const std::string& name) {
+std::vector<glm::mat4> TargetsRenderer::get_uniform_mats(const std::string& name, const Frustum& frustum) {
   const size_t N_TARGETS = targets.size();
   std::vector<glm::mat4> matrices;
 
   for (size_t i_target = 0; i_target < N_TARGETS; ++i_target) {
     TargetEntry target_entry = targets[i_target];
+    glm::vec3 position = target_entry.position;
 
-    if (!target_entry.is_dead) {
+    // check if not dead & inside frustum
+    if (!target_entry.is_dead && frustum.is_inside(position)) {
       glm::mat4 mat = (name == "normal") ? m_normals_mats[i_target] : m_models[i_target];
       matrices.push_back(mat);
     }
@@ -84,17 +86,18 @@ std::vector<glm::mat4> TargetsRenderer::get_uniform_mats(const std::string& name
  * Delegate transform to renderer
  * Translate target to position from tilemap
  */
-void TargetsRenderer::set_transform(const Transformation& t) {
+void TargetsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
   // ignore dead targets (to avoid drawing them)
-  std::vector<glm::mat4> models = get_uniform_mats("model");
+  std::vector<glm::mat4> models = get_uniform_mats("model", frustum);
   m_renderer.set_transform({ models, t.view, t.projection });
+
+  std::vector<glm::mat4> normals_mats = get_uniform_mats("normal", frustum);
+  m_renderer.set_uniform_arr("normals_mats", normals_mats);
 }
 
 /* delegate drawing with OpenGL (buffers & shaders) to renderer */
 void TargetsRenderer::draw(const Uniforms& uniforms) {
   // ignore dead targets (to avoid drawing them)
-  std::vector<glm::mat4> normals_mats = get_uniform_mats("model");
-  m_renderer.set_uniform_arr("normals_mats", normals_mats);
   m_renderer.draw(uniforms);
 }
 

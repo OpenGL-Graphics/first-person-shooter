@@ -4,13 +4,14 @@
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
 #include "render/renderer.hpp"
+#include "navigation/frustum.hpp"
 
 /* Window 2D sprite having an image as a texture */
 class WindowsRenderer {
 public:
   WindowsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory);
   void calculate_uniforms(const std::vector<glm::vec3>& positions);
-  void set_transform(const Transformation& t);
+  void set_transform(const Transformation& t, const Frustum& frustum);
   void draw();
   void free();
 
@@ -22,6 +23,8 @@ private:
   Renderer m_renderer;
 
   std::vector<glm::mat4> m_models;
+
+  std::vector<glm::mat4> get_uniform_mats(const Frustum& frustum);
 };
 
 #endif // WINDOWS_RENDERER_HPP

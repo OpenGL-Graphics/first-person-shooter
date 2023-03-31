@@ -22,12 +22,33 @@ void TreesRenderer::calculate_uniforms(const std::vector<glm::vec3>& positions) 
   }
 }
 
-void TreesRenderer::set_transform(const Transformation& t) {
-  m_renderer.set_transform({ m_models, t.view, t.projection });
+/* Keeps in uniform matrices only instances inside frustum */
+std::vector<glm::mat4> TreesRenderer::get_uniform_mats(const std::string& name, const Frustum& frustum) {
+  std::vector<glm::mat4> matrices;
+
+  for (size_t i_model = 0; i_model < m_models.size(); ++i_model) {
+    glm::mat4 model = m_models[i_model];
+    glm::vec3 position = model[3];
+
+    // check if inside frustum
+    if (frustum.is_inside(position)) {
+      glm::mat4 mat = (name == "normal") ? m_normals_mats[i_model] : m_models[i_model];
+      matrices.push_back(mat);
+    }
+  }
+
+  return matrices;
+}
+
+void TreesRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
+  std::vector<glm::mat4> models = get_uniform_mats("model", frustum);
+  std::vector<glm::mat4> normals_mats = get_uniform_mats("normal", frustum);
+
+  m_renderer.set_transform({ models, t.view, t.projection });
+  m_renderer.set_uniform_arr("normals_mats", normals_mats);
 }
 
 void TreesRenderer::draw(const Uniforms& uniforms) {
-  m_renderer.set_uniform_arr("normals_mats", m_normals_mats);
   m_renderer.draw(uniforms);
 }
 

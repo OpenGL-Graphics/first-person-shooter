@@ -6,6 +6,8 @@
 #include "levels/walls_renderer.hpp"
 #include "geometries/cube.hpp"
 
+using namespace geometry;
+
 /* Cubes used for walls as face culling hides back-face & lighting affect it similarly to front one */
 WallsRenderer::WallsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory):
   m_renderer(
@@ -71,7 +73,7 @@ std::array<float, 2> WallsRenderer::calculate_angles(const WallEntry& entry) {
 
 /* Calculate model matrices for full walls */
 void WallsRenderer::calculate_uniforms_full(const std::vector<WallEntry>& entries) {
-  const unsigned int N_WALLS = entries.size();
+  const size_t N_WALLS = entries.size();
   m_models.resize(N_WALLS);
 
   // Draw wall rotated by `angle` (in deg) around y-axis at entry's position
@@ -128,10 +130,30 @@ void WallsRenderer::calculate_uniforms(const std::vector<WallEntry>& entries, co
   calculate_uniforms_around_window(positions_windows);
 }
 
+/* Keeps in uniform matrices only instances inside frustum */
+std::vector<glm::mat4> WallsRenderer::get_uniform_mats(bool is_around_window, const Frustum& frustum) {
+  std::vector<glm::mat4> matrices;
+
+  for (size_t i_model = 0; i_model < m_models.size(); ++i_model) {
+    glm::mat4 model = is_around_window ? m_models_around_windows[i_model] : m_models[i_model];
+    glm::vec3 position = model[3];
+
+    // check if inside frustum
+    if (frustum.is_inside(position)) {
+      matrices.push_back(model);
+    }
+  }
+
+  return matrices;
+}
+
 /* Called each frame before draw() to set matrices uniforms */
-void WallsRenderer::set_transform(const Transformation& t) {
-  m_renderer.set_transform({ m_models, t.view, t.projection });
-  m_renderer_subwall.set_transform({ m_models_around_windows, t.view, t.projection });
+void WallsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
+  std::vector<glm::mat4> models = get_uniform_mats(false, frustum);
+  std::vector<glm::mat4> models_around_windows = get_uniform_mats(true, frustum);
+
+  m_renderer.set_transform({ models, t.view, t.projection });
+  m_renderer_subwall.set_transform({ models_around_windows, t.view, t.projection });
 }
 
 /**

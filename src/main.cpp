@@ -282,14 +282,8 @@ int main() {
     glm::mat4 view = camera.get_view();
     projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 0.5f, 32.0f);
 
-    ///
-    // check if origin inside frustum
+    // update frustum's six planes accord. to camera's position & look dir.
     frustum.calculate_planes(camera);
-    if (frustum.is_inside(glm::vec3()))
-      std::cout << "Inside frustum" << '\n';
-    else
-      std::cout << "Outside frustum" << '\n';
-    ///
 
     {
       // clear framebuffer's attached color buffer in every frame
@@ -343,7 +337,7 @@ int main() {
     terrain.draw();
 
     // draw level tiles surfaces on right view
-    level.set_transform({ {glm::mat4(1.0f)}, view, projection3d });
+    level.set_transform({ {glm::mat4(1.0f)}, view, projection3d }, frustum);
     level.draw({
       {"position_camera", camera.position},
       {"positions_lights[0]", lights[0].position},

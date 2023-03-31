@@ -11,7 +11,7 @@ namespace math {
 
     Plane() = default;
     Plane(const glm::vec3& n, const glm::vec3& point);
-    bool is_in_front_of_plane(const glm::vec3& point);
+    bool is_in_front_of_plane(const glm::vec3& point) const;
   };
 }
 

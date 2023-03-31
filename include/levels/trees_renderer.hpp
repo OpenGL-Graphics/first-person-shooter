@@ -5,13 +5,14 @@
 #include "factories/textures_factory.hpp"
 #include "render/model_renderer.hpp"
 #include "uniforms.hpp"
+#include "navigation/frustum.hpp"
 
 /* Called from LevelRenderer to render trees props */
 class TreesRenderer {
 public:
   TreesRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory, Assimp::Importer& importer);
   void calculate_uniforms(const std::vector<glm::vec3>& positions);
-  void set_transform(const Transformation& t);
+  void set_transform(const Transformation& t, const Frustum& frustum);
   void draw(const Uniforms& uniforms);
   void free();
 
@@ -20,6 +21,8 @@ private:
 
   std::vector<glm::mat4> m_models;
   std::vector<glm::mat4> m_normals_mats;
+
+  std::vector<glm::mat4> get_uniform_mats(const std::string& name, const Frustum& frustum);
 };
 
 #endif // TREES_RENDERER_HPP

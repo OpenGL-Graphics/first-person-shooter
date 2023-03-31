@@ -115,15 +115,17 @@ void LevelRenderer::calculate_uniforms() {
 /**
  * Set model matrix (translation/rotation/scaling) used by renderers in `draw()`
  * `m_position` serves as an offset when translating surfaces tiles in `draw()`
+ * @param frustum Used to avoid drawing objects outside frustum (optimize fps)
  */
-void LevelRenderer::set_transform(const Transformation& t) {
+void LevelRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
   // set positions of props in appropriate classes
-  m_renderer_targets.set_transform(t);
+  // Support frustum culling (by filtering out models mats outside frustum)
+  m_renderer_targets.set_transform(t, frustum);
   m_renderer_floors.set_transform(t);
-  m_renderer_walls.set_transform(t);
-  m_renderer_doors.set_transform(t);
-  m_renderer_trees.set_transform(t);
-  m_renderer_windows.set_transform(t);
+  m_renderer_walls.set_transform(t, frustum);
+  m_renderer_doors.set_transform(t, frustum);
+  m_renderer_trees.set_transform(t, frustum);
+  m_renderer_windows.set_transform(t, frustum);
 }
 
 /**

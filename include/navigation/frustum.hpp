@@ -8,7 +8,7 @@
 class Frustum {
 public:
   Frustum(float n, float f, float aspect);
-  bool is_inside(const glm::vec3& point);
+  bool is_inside(const glm::vec3& point) const;
   void calculate_planes(const Camera& camera);
   void print_planes();
 

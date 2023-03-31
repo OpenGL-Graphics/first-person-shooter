@@ -22,6 +22,6 @@ Plane::Plane(const glm::vec3& n, const glm::vec3& point):
  *     + = 0: if point belongs to plane
  * source: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
  */
-bool Plane::is_in_front_of_plane(const glm::vec3& point) {
+bool Plane::is_in_front_of_plane(const glm::vec3& point) const {
   return glm::dot(normal, point) - d > 0;
 }

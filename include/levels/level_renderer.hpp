@@ -22,6 +22,8 @@
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
 
+#include "navigation/frustum.hpp"
+
 /**
  * Renderer for level items (e.g. walls, doors...)
  */
@@ -31,7 +33,7 @@ struct LevelRenderer {
 
   LevelRenderer(Assimp::Importer& importer, const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory);
   void draw(const Uniforms& u={});
-  void set_transform(const Transformation& t);
+  void set_transform(const Transformation& t, const Frustum& frustum);
   void free();
 
 private:

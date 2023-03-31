@@ -31,12 +31,30 @@ void WindowsRenderer::calculate_uniforms(const std::vector<glm::vec3>& positions
   }
 }
 
+/* Keeps in uniform matrices only instances inside frustum */
+std::vector<glm::mat4> WindowsRenderer::get_uniform_mats(const Frustum& frustum) {
+  std::vector<glm::mat4> matrices;
+
+  for (const glm::mat4& model : m_models) {
+    // glm matrices in col-major (last col is the translation offset)
+    glm::vec3 position = model[3];
+
+    // check if inside frustum
+    if (frustum.is_inside(position)) {
+      matrices.push_back(model);
+    }
+  }
+
+  return matrices;
+}
+
 /**
  * Delegate transform to renderer
  * Supports instancing (multiple transparent windows)
  */
-void WindowsRenderer::set_transform(const Transformation& t) {
-  m_renderer.set_transform({ m_models, t.view, t.projection });
+void WindowsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
+  std::vector<glm::mat4> models = get_uniform_mats(frustum);
+  m_renderer.set_transform({ models, t.view, t.projection });
 }
 
 /* delegate drawing with OpenGL (buffers & shaders) to renderer */

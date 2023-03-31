@@ -5,13 +5,14 @@
 #include "entries/target_entry.hpp"
 #include "render/model_renderer.hpp"
 #include "physics/bounding_box.hpp"
+#include "navigation/frustum.hpp"
 
 /* Target to destroy on intersection with mouse cursor */
 class TargetsRenderer {
 public:
   TargetsRenderer(const ShadersFactory& shaders_factory, Assimp::Importer& importer);
   void calculate_uniforms();
-  void set_transform(const Transformation& t);
+  void set_transform(const Transformation& t, const Frustum& frustum);
   void draw(const Uniforms& uniforms);
   void free();
 
@@ -28,7 +29,7 @@ private:
   std::vector<glm::mat4> m_normals_mats;
 
   void calculate_bounding_box();
-  std::vector<glm::mat4> get_uniform_mats(const std::string& name);
+  std::vector<glm::mat4> get_uniform_mats(const std::string& name, const Frustum& frustum);
 };
 
 #endif // TARGETS_RENDERER_HPP

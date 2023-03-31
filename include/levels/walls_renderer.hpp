@@ -7,12 +7,13 @@
 #include "render/renderer.hpp"
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
+#include "navigation/frustum.hpp"
 
 /* Called from LevelRenderer to render walls */
 class WallsRenderer {
 public:
   WallsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory);
-  void set_transform(const Transformation& t);
+  void set_transform(const Transformation& t, const Frustum& frustum);
   void calculate_uniforms(const std::vector<WallEntry>& entries, const std::vector<glm::vec3>& positions_windows);
   void draw();
   void draw_walls_around_window();
@@ -42,6 +43,8 @@ private:
   std::array<float, 2> calculate_angles(const WallEntry& entry);
   void calculate_uniforms_full(const std::vector<WallEntry>& entries);
   void calculate_uniforms_around_window(const std::vector<glm::vec3>& positions_windows);
+
+  std::vector<glm::mat4> get_uniform_mats(bool is_around_window, const Frustum& frustum);
 };
 
 #endif // WALLS_RENDERER_HPP
