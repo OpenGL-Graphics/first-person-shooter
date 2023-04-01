@@ -2,8 +2,10 @@
 #ifndef FRUSTUM_HPP
 #define FRUSTUM_HPP
 
+#include <vector>
+
 #include "math/plane.hpp"
-#include "camera.hpp"
+#include "navigation/camera.hpp"
 
 class Frustum {
 public:

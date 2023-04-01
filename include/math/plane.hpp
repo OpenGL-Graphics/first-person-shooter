@@ -3,7 +3,10 @@
 
 #include <glm/glm.hpp>
 
-/* Plane defined by its normal vector and the signed dist from origin d */
+/**
+ * Plane defined by its normal vector and the signed dist from origin d
+ * Used by Frustum
+ */
 namespace math {
   struct Plane {
     glm::vec3 normal;

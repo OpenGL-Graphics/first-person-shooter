@@ -9,7 +9,7 @@
 #include "globals/targets.hpp"
 
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
-Camera* MouseHandler::m_camera;
+CameraFPS* MouseHandler::m_camera;
 Window* MouseHandler::m_window;
 int MouseHandler::m_xmouse;
 int MouseHandler::m_ymouse;
@@ -22,7 +22,7 @@ Audio* MouseHandler::m_audio;
  * @param cube Check for its intersection with camera's intersection
  * @param audio
  */
-void MouseHandler::init(Window* window, Camera* camera, Audio* audio) {
+void MouseHandler::init(Window* window, CameraFPS* camera, Audio* audio) {
   // init static members: initial mouse's xy-coords at center of screen
   m_camera = camera;
   m_window = window;

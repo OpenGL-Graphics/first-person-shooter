@@ -11,6 +11,7 @@
 #include "texture_2d.hpp"
 #include "texture_3d.hpp"
 #include "window.hpp"
+
 #include "navigation/frustum.hpp"
 
 #include "geometries/cube.hpp"
@@ -80,8 +81,7 @@ int main() {
   Audio audio;
 
   // camera
-  Camera camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-  // Camera camera(glm::vec3(13.0f, 2.0f, 5.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+  CameraFPS camera(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
   // transformation matrices
   float near = 0.001,
@@ -314,6 +314,7 @@ int main() {
     // mandatory bcos of below otherwise cube will hide everything else (coz it closest to camera)
     glDepthMask(GL_FALSE);
 
+    // /*****
     // no translation of skybox when camera moves
     // camera initially at origin always inside skybox unit cube => skybox looks larger
     glm::mat4 view_without_translation = glm::mat4(glm::mat3(view));
@@ -322,6 +323,7 @@ int main() {
       view_without_translation, projection3d
     });
     skybox.draw({ {"texture3d", textures_factory.get<Texture3D>("skybox") } });
+    // *****/
     glDepthMask(GL_TRUE);
 
     // cube with outline using two-passes rendering & stencil buffer
@@ -329,12 +331,14 @@ int main() {
     cubes.set_transform({ {model_cube_outline}, view, projection3d });
     cubes.draw_with_outlines({ {"colors[0]", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
+    // /*****
     // draw textured terrain using triangle strips
     terrain.set_transform({
       { glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.5f, -14)) },
       view, projection3d
     });
     terrain.draw();
+    // *****/
 
     // draw level tiles surfaces on right view
     level.set_transform({ {glm::mat4(1.0f)}, view, projection3d }, frustum);

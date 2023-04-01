@@ -1,6 +1,6 @@
 #include "controls/key_handler.hpp"
 
-KeyHandler::KeyHandler(const Window& window, Camera& camera):
+KeyHandler::KeyHandler(const Window& window, CameraFPS& camera):
   m_window(window),
   m_camera(camera)
 {

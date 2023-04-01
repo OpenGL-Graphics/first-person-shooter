@@ -2,7 +2,7 @@
 #define MOUSE_HANDLER_HPP
 
 #include "window.hpp"
-#include "navigation/camera.hpp"
+#include "navigation/camera_fps.hpp"
 #include "audio/audio.hpp"
 
 /**
@@ -13,7 +13,7 @@
 class MouseHandler {
 public:
   /* No need for instance constructor to init static private members */
-  static void init(Window* window, Camera* camera, Audio* audio);
+  static void init(Window* window, CameraFPS* camera, Audio* audio);
 
   /* static methods can be passed as function pointers callbacks (no `this` argument) */
   static void on_mouse_move(GLFWwindow* window, double xpos, double ypos);
@@ -23,7 +23,7 @@ public:
 private:
   /* Observers */
   /* declared as a pointer (not ref. as static members are defined in *.cpp), so camera can respond to mouse events (i.e. be modified) */
-  static Camera* m_camera;
+  static CameraFPS* m_camera;
 
   /* Needed to get 3d projection matrix for raycasting (mouse position to 3d position) */
   static Window* m_window;

@@ -2,7 +2,7 @@
 #define KEY_HANDLER_HPP
 
 #include "window.hpp"
-#include "navigation/camera.hpp"
+#include "navigation/camera_fps.hpp"
 
 /**
  * Subject class in the Observer design pattern
@@ -10,14 +10,14 @@
  */
 class KeyHandler {
 public:
-  KeyHandler(const Window& window, Camera& camera);
+  KeyHandler(const Window& window, CameraFPS& camera);
   void on_keypress();
 
 private:
   Window m_window;
 
   /* Observers (references so they can be modified) */
-  Camera& m_camera;
+  CameraFPS& m_camera;
 };
 
 #endif // KEY_HANDLER_HPP

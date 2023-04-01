@@ -3,40 +3,18 @@
 #include <algorithm>
 #include <iostream>
 
-#include "navigation/camera.hpp"
+#include "navigation/camera_fps.hpp"
 
-Camera::Camera(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& u):
-  position(pos),
-  direction(dir),
-  up(u),
+CameraFPS::CameraFPS(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& u):
+  Camera(pos, dir, u),
   m_forward_dir(dir),
-
-  pitch(0.0f),
-  yaw(0.0f),
-  fov(45.0f),
 
   is_jumping(false),
   is_falling(false)
 {
 }
 
-glm::vec3 Camera::get_right() const {
-  return glm::normalize(glm::cross(direction, up));
-}
-
-/**
- * View matrix orients a scene in such a way to simulate camera's movement (inversion of camera's transformation matrix)
- * i.e. translation/rotation of scene in opposite directions to camera
- * Important: pitch/yaw angles rotate scene's object not camera
- */
-glm::mat4 Camera::get_view() {
-  // only camera direction is rotated by mouse in `rotate()`
-  glm::mat4 view = glm::lookAt(position, position + direction, up);
-
-  return view;
-}
-
-void Camera::zoom(Zoom z) {
+void CameraFPS::zoom(Zoom z) {
   if (z == Zoom::IN) {
     fov -= 5.0f;
   } else if (z == Zoom::OUT) {
@@ -49,7 +27,7 @@ void Camera::zoom(Zoom z) {
  * Used to prevent camera from going through walls
  * @param position_future Next position of camera
  */
-bool Camera::is_close_to_boundaries(const glm::vec3& position_future) {
+bool CameraFPS::is_close_to_boundaries(const glm::vec3& position_future) {
   ///
   return false;
   ///
@@ -62,7 +40,7 @@ bool Camera::is_close_to_boundaries(const glm::vec3& position_future) {
   return min_distance < 1.2f;
 }
 
-void Camera::move(Direction d) {
+void CameraFPS::move(Direction d) {
   // move forward/backward & sideways & up/down
   glm::vec3 right_dir = get_right();
   glm::vec3 position_future;
@@ -95,7 +73,7 @@ void Camera::move(Direction d) {
     position = position_future;
 }
 
-void Camera::rotate(float x_offset, float y_offset) {
+void CameraFPS::rotate(float x_offset, float y_offset) {
   // increment angles accord. to 2D mouse movement
   float PI = glm::pi<float>();
   float yaw_offset = SENSITIVITY * x_offset;
@@ -124,7 +102,7 @@ void Camera::rotate(float x_offset, float y_offset) {
  * Jump with camera till a certain elevation then start falling
  * Inspired by: https://codereview.stackexchange.com/a/43187
  */
-void Camera::jump() {
+void CameraFPS::jump() {
   // maximum elevation at y = 3.0f
   if (position.y >= MAX_Y) {
     is_jumping = false;
@@ -135,8 +113,8 @@ void Camera::jump() {
   position += SPEED_JUMP*up;
 }
 
-/* Same rationale as `Camera::jump()` in other direction */
-void Camera::fall() {
+/* Same rationale as `CameraFPS::jump()` in other direction */
+void CameraFPS::fall() {
   // initial camera elevation at y = 2.0f
   if (position.y <= MIN_Y) {
     is_jumping = false;
@@ -148,7 +126,7 @@ void Camera::fall() {
 }
 
 /* called in main loop for a continuous jumping/falling */
-void Camera::update() {
+void CameraFPS::update() {
   if (is_jumping) {
     jump();
   } else if (is_falling) {
