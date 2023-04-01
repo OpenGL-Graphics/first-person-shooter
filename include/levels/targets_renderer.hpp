@@ -29,7 +29,7 @@ private:
   std::vector<glm::mat4> m_normals_mats;
 
   void calculate_bounding_box();
-  std::vector<glm::mat4> get_uniform_mats(const std::string& name, const Frustum& frustum);
+  std::vector<glm::mat4> cull_dead(const std::vector<glm::mat4>& matrices, const std::vector<TargetEntry> targets);
 };
 
 #endif // TARGETS_RENDERER_HPP

@@ -19,10 +19,9 @@ public:
 private:
   ModelRenderer m_renderer;
 
+  std::vector<glm::vec3> m_positions;
   std::vector<glm::mat4> m_models;
   std::vector<glm::mat4> m_normals_mats;
-
-  std::vector<glm::mat4> get_uniform_mats(const std::string& name, const Frustum& frustum);
 };
 
 #endif // TREES_RENDERER_HPP

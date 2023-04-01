@@ -12,6 +12,9 @@ public:
   void calculate_planes(const Camera& camera);
   void print_planes();
 
+  template <typename T>
+  std::vector<T> cull(const std::vector<T>& arr, const std::vector<glm::vec3>& positions) const;
+
 private:
   float near;
   float far;

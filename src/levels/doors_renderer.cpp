@@ -19,13 +19,14 @@ DoorsRenderer::DoorsRenderer(const ShadersFactory& shaders_factory, const Textur
 /* Called in LevelRenderer's ctor to avoid inverting matrix every frame */
 void DoorsRenderer::calculate_uniforms(const std::vector<glm::vec3>& positions) {
   const size_t N_DOORS = positions.size();
+  m_positions = std::move(positions);
   m_models.resize(N_DOORS);
   m_normals_mats.resize(N_DOORS);
   m_textures_diffuse.resize(N_DOORS);
   m_textures_normal.resize(N_DOORS);
 
   for (size_t i_door = 0; i_door < N_DOORS; ++i_door) {
-    glm::vec3 position_door = positions[i_door];
+    glm::vec3 position_door = m_positions[i_door];
     glm::mat4 model = glm::translate(glm::mat4(1.0f), position_door);
     glm::mat4 normal_mat = glm::inverseTranspose(model);
     m_models[i_door] = model;
@@ -37,29 +38,11 @@ void DoorsRenderer::calculate_uniforms(const std::vector<glm::vec3>& positions) 
 }
 
 /**
- * Keeps in uniform matrices only instances inside frustum
  * Note: textures not filtered out as all doors have the same textures
  */
-std::vector<glm::mat4> DoorsRenderer::get_uniform_mats(const std::string& name, const Frustum& frustum) {
-  std::vector<glm::mat4> matrices;
-
-  for (size_t i_model = 0; i_model < m_models.size(); ++i_model) {
-    glm::mat4 model = m_models[i_model];
-    glm::vec3 position = model[3];
-
-    // check if inside frustum
-    if (frustum.is_inside(position)) {
-      glm::mat4 mat = (name == "normal") ? m_normals_mats[i_model] : m_models[i_model];
-      matrices.push_back(mat);
-    }
-  }
-
-  return matrices;
-}
-
 void DoorsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
-  std::vector<glm::mat4> models = get_uniform_mats("model", frustum);
-  std::vector<glm::mat4> normals_mats = get_uniform_mats("normal", frustum);
+  std::vector<glm::mat4> models = frustum.cull(m_models, m_positions);
+  std::vector<glm::mat4> normals_mats = frustum.cull(m_normals_mats, m_positions);
 
   m_renderer.set_transform({ models, t.view, t.projection });
   m_renderer.set_uniform_arr("normals_mats", normals_mats);

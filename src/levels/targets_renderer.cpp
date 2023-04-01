@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
+#include "entries/target_entry.hpp"
 #include "levels/targets_renderer.hpp"
 #include "globals/targets.hpp"
 #include "geometries/cube.hpp"
@@ -60,26 +61,21 @@ void TargetsRenderer::calculate_uniforms() {
   }
 }
 
-/**
- * Keeps in uniform matrices only alive targets to avoid drawing dead ones
- * @param name "model" to get model matrix & "normal" to get normal matrix
- */
-std::vector<glm::mat4> TargetsRenderer::get_uniform_mats(const std::string& name, const Frustum& frustum) {
-  const size_t N_TARGETS = targets.size();
-  std::vector<glm::mat4> matrices;
+/* Keeps in uniform matrices only alive targets to avoid drawing dead ones */
+std::vector<glm::mat4> TargetsRenderer::cull_dead(const std::vector<glm::mat4>& matrices, const std::vector<TargetEntry> targets) {
+  std::vector<glm::mat4> matrices_out;
 
-  for (size_t i_target = 0; i_target < N_TARGETS; ++i_target) {
+  for (size_t i_target = 0; i_target < targets.size(); ++i_target) {
     TargetEntry target_entry = targets[i_target];
-    glm::vec3 position = target_entry.position;
 
-    // check if not dead & inside frustum
-    if (!target_entry.is_dead && frustum.is_inside(position)) {
-      glm::mat4 mat = (name == "normal") ? m_normals_mats[i_target] : m_models[i_target];
-      matrices.push_back(mat);
+    // check if not dead
+    if (!target_entry.is_dead) {
+      glm::mat4 mat = matrices[i_target];
+      matrices_out.push_back(mat);
     }
   }
 
-  return matrices;
+  return matrices_out;
 }
 
 /**
@@ -87,11 +83,20 @@ std::vector<glm::mat4> TargetsRenderer::get_uniform_mats(const std::string& name
  * Translate target to position from tilemap
  */
 void TargetsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
-  // ignore dead targets (to avoid drawing them)
-  std::vector<glm::mat4> models = get_uniform_mats("model", frustum);
-  m_renderer.set_transform({ models, t.view, t.projection });
+  // frustum culling first
+  std::vector<glm::vec3> positions;
+  auto get_position = [](const auto& target) { return target.position; };
+  std::transform(targets.begin(), targets.end(), std::back_inserter(positions), get_position);
 
-  std::vector<glm::mat4> normals_mats = get_uniform_mats("normal", frustum);
+  std::vector<glm::mat4> models_frustum = frustum.cull(m_models, positions);
+  std::vector<glm::mat4> normals_mats_frustum = frustum.cull(m_normals_mats, positions);
+  std::vector<TargetEntry> targets_frustum = frustum.cull(targets, positions);
+
+  // ignore dead targets (to avoid drawing them)
+  std::vector<glm::mat4> models = cull_dead(models_frustum, targets_frustum);
+  std::vector<glm::mat4> normals_mats = cull_dead(normals_mats_frustum, targets_frustum);
+
+  m_renderer.set_transform({ models, t.view, t.projection });
   m_renderer.set_uniform_arr("normals_mats", normals_mats);
 }
 

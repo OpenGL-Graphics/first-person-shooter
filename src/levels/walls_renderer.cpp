@@ -74,7 +74,6 @@ std::array<float, 2> WallsRenderer::calculate_angles(const WallEntry& entry) {
 /* Calculate model matrices for full walls */
 void WallsRenderer::calculate_uniforms_full(const std::vector<WallEntry>& entries) {
   const size_t N_WALLS = entries.size();
-  m_models.resize(N_WALLS);
 
   // Draw wall rotated by `angle` (in deg) around y-axis at entry's position
   // Actual position & angle calculated accord. to wall's orientation
@@ -97,6 +96,7 @@ void WallsRenderer::calculate_uniforms_full(const std::vector<WallEntry>& entrie
       );
 
       m_models.push_back(model);
+      m_positions.push_back(position);
     } // END WALLS PIECES
   } // END WALLS
 }
@@ -104,20 +104,17 @@ void WallsRenderer::calculate_uniforms_full(const std::vector<WallEntry>& entrie
 /* Calculate model matrices for two walls above & above each window */
 void WallsRenderer::calculate_uniforms_around_window(const std::vector<glm::vec3>& positions_windows) {
   const unsigned int N_WINDOWS = positions_windows.size();
-  std::vector<glm::mat4> models_bottom(N_WINDOWS);
-  std::vector<glm::mat4> models_top(N_WINDOWS);
 
-  // for (const glm::vec3 position_tile : positions_windows) {
   for (size_t i_window = 0; i_window < N_WINDOWS; ++i_window) {
     glm::vec3 position_tile = positions_windows[i_window];
     glm::vec3 position_bottom = position_tile + glm::vec3(m_wall_length / 2, m_subwall_height / 2, m_wall_depth / 2);
     glm::vec3 position_top = position_bottom + glm::vec3(0, m_subwall_height + m_window_height, 0);
-    models_bottom[i_window] = glm::translate(glm::mat4(1.0f), position_bottom);
-    models_top[i_window] = glm::translate(glm::mat4(1.0f), position_top);
-  }
+    glm::mat4 model_bottom = glm::translate(glm::mat4(1.0f), position_bottom);
+    glm::mat4 model_top = glm::translate(glm::mat4(1.0f), position_top);
 
-  m_models_around_windows = std::move(models_bottom);
-  m_models_around_windows.insert(m_models_around_windows.end(), models_top.begin(), models_top.end());
+    m_models_around_windows.insert(m_models_around_windows.end(), { model_bottom, model_top });
+    m_positions_around_windows.insert(m_positions_around_windows.end(), { position_bottom, position_top });
+  }
 }
 
 /**
@@ -130,27 +127,10 @@ void WallsRenderer::calculate_uniforms(const std::vector<WallEntry>& entries, co
   calculate_uniforms_around_window(positions_windows);
 }
 
-/* Keeps in uniform matrices only instances inside frustum */
-std::vector<glm::mat4> WallsRenderer::get_uniform_mats(bool is_around_window, const Frustum& frustum) {
-  std::vector<glm::mat4> matrices;
-
-  for (size_t i_model = 0; i_model < m_models.size(); ++i_model) {
-    glm::mat4 model = is_around_window ? m_models_around_windows[i_model] : m_models[i_model];
-    glm::vec3 position = model[3];
-
-    // check if inside frustum
-    if (frustum.is_inside(position)) {
-      matrices.push_back(model);
-    }
-  }
-
-  return matrices;
-}
-
 /* Called each frame before draw() to set matrices uniforms */
 void WallsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
-  std::vector<glm::mat4> models = get_uniform_mats(false, frustum);
-  std::vector<glm::mat4> models_around_windows = get_uniform_mats(true, frustum);
+  std::vector<glm::mat4> models = frustum.cull(m_models, m_positions);
+  std::vector<glm::mat4> models_around_windows = frustum.cull(m_models_around_windows, m_positions_around_windows);
 
   m_renderer.set_transform({ models, t.view, t.projection });
   m_renderer_subwall.set_transform({ models_around_windows, t.view, t.projection });

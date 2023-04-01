@@ -23,12 +23,11 @@ private:
   Texture2D m_tex_diffuse;
   Texture2D m_tex_normal;
 
+  std::vector<glm::vec3> m_positions;
   std::vector<glm::mat4> m_models;
   std::vector<glm::mat4> m_normals_mats;
   std::vector<Texture2D> m_textures_diffuse;
   std::vector<Texture2D> m_textures_normal;
-
-  std::vector<glm::mat4> get_uniform_mats(const std::string& name, const Frustum& frustum);
 };
 
 #endif // DOORS_RENDERER_HPP

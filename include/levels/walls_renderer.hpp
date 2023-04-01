@@ -36,6 +36,8 @@ private:
   /* Texture3D was stretching without repeat */
   Texture2D m_texture;
 
+  std::vector<glm::vec3> m_positions;
+  std::vector<glm::vec3> m_positions_around_windows;
   std::vector<glm::mat4> m_models;
   std::vector<glm::mat4> m_models_around_windows;
 
@@ -43,8 +45,6 @@ private:
   std::array<float, 2> calculate_angles(const WallEntry& entry);
   void calculate_uniforms_full(const std::vector<WallEntry>& entries);
   void calculate_uniforms_around_window(const std::vector<glm::vec3>& positions_windows);
-
-  std::vector<glm::mat4> get_uniform_mats(bool is_around_window, const Frustum& frustum);
 };
 
 #endif // WALLS_RENDERER_HPP

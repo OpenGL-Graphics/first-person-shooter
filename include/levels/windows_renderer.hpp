@@ -22,9 +22,8 @@ private:
   Texture2D m_texture;
   Renderer m_renderer;
 
+  std::vector<glm::vec3> m_positions;
   std::vector<glm::mat4> m_models;
-
-  std::vector<glm::mat4> get_uniform_mats(const Frustum& frustum);
 };
 
 #endif // WINDOWS_RENDERER_HPP

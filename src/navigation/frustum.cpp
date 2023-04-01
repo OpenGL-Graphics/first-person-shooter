@@ -2,6 +2,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "navigation/frustum.hpp"
+#include "entries/target_entry.hpp"
 
 using namespace math;
 
@@ -69,3 +70,28 @@ bool Frustum::is_inside(const glm::vec3& point) const {
     far_plane.is_in_front_of_plane(point)
   );
 }
+
+/**
+ * Fiter out matrices corresp. to positions outside frustum
+ * Used to frustum cull tiles from level renderers (tile = wall, window, door, tree...)
+ * Note: matrices and positions have the same size. Positions can be extracted from model but not from normal matrix!
+ */
+template <typename T>
+std::vector<T> Frustum::cull(const std::vector<T>& vec, const std::vector<glm::vec3>& positions) const {
+  std::vector<T> vec_out;
+
+  for (size_t i_position = 0; i_position < positions.size(); ++i_position) {
+    T item = vec[i_position];
+    glm::vec3 position = positions[i_position];
+
+    // check if inside frustum
+    if (is_inside(position))
+      vec_out.push_back(item);
+  }
+
+  return vec_out;
+}
+
+// template instantiation (avoids linking error)
+template std::vector<glm::mat4> Frustum::cull(const std::vector<glm::mat4>&, const std::vector<glm::vec3>&) const;
+template std::vector<TargetEntry> Frustum::cull(const std::vector<TargetEntry>&, const std::vector<glm::vec3>&) const;
