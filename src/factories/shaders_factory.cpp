@@ -5,8 +5,6 @@ ShadersFactory::ShadersFactory():
   m_programs {
     { "skybox", Program("assets/shaders/skybox.vert", "assets/shaders/skybox.frag") },
     { "text", Program("assets/shaders/instancing/texture_surface.vert", "assets/shaders/texture_text.frag") },
-    { "plane", Program("assets/shaders/light_plane.vert", "assets/shaders/light_plane.frag") },
-    { "light_terrain", Program("assets/shaders/light_terrain.vert", "assets/shaders/light_terrain.frag") },
 
     // instancing (draw same geometry multiple times at once)
     { "phong", Program("assets/shaders/instancing/phong.vert", "assets/shaders/instancing/phong.frag") },

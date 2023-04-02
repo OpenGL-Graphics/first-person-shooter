@@ -16,7 +16,6 @@
 
 #include "geometries/cube.hpp"
 #include "geometries/surface.hpp"
-#include "geometries/plane.hpp"
 #include "geometries/sphere.hpp"
 #include "geometries/cylinder.hpp"
 #include "geometries/gizmo.hpp"
@@ -40,8 +39,6 @@
 
 #include "globals/score.hpp"
 #include "globals/lights.hpp"
-
-#include "terrain/splatmap.hpp"
 
 #include "framebuffer.hpp"
 #include "framebuffer_exception.hpp"
@@ -123,7 +120,6 @@ int main() {
   Renderer cubes(shaders_factory["basic"], Cube(), Attributes::get({"position"}, 8));
   Renderer skybox(shaders_factory["skybox"], Cube(true), Attributes::get({"position"}, 8));
   Renderer surface(shaders_factory["texture_surface"], Surface(), Attributes::get({"position", "normal", "texture_coord"}, 7, true));
-  Renderer plane(shaders_factory["plane"], Plane(50, 50), Attributes::get({"position", "normal", "texture_coord"}));
   Renderer spheres(shaders_factory["phong"], Sphere(32, 32), Attributes::get({"position", "normal"}));
   Renderer cylinders(shaders_factory["phong"], Cylinder(32, 0.25f, 3.5f), Attributes::get({"position", "normal", "texture_coord", "tangent"}));
   Renderer gizmo(shaders_factory["basic"], Gizmo(), Attributes::get({"position"}));
@@ -135,9 +131,6 @@ int main() {
   const unsigned int N_LIGHTS = lights.size(),
                      N_CYLINDERS = 2,
                      N_SPHERES = 3;
-
-  // terrain from triangle strips & textured with image splatmap
-  Splatmap terrain(shaders_factory["light_terrain"]);
 
   // accord. to doc: better to reuse importer, & destroys scene (3d model) once out of scope
   Assimp::Importer importer;
@@ -331,15 +324,6 @@ int main() {
     cubes.set_transform({ {model_cube_outline}, view, projection3d });
     cubes.draw_with_outlines({ {"colors[0]", glm::vec3(0.0f, 0.0f, 1.0f)} });
 
-    // /*****
-    // draw textured terrain using triangle strips
-    terrain.set_transform({
-      { glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.5f, -14)) },
-      view, projection3d
-    });
-    terrain.draw();
-    // *****/
-
     // draw level tiles surfaces on right view
     level.set_transform({ {glm::mat4(1.0f)}, view, projection3d }, frustum);
     level.draw({
@@ -392,21 +376,6 @@ int main() {
     });
     surface.draw({ {"texture2d", texture_framebuffer } });
     ///
-
-    // draw animated & textured wave from plane using triangle strips
-    plane.set_transform({
-      { glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 5.0f)) },
-      view, projection3d
-    });
-
-    plane.draw_plane({
-      {"texture2d", textures_factory.get<Texture2D>("wave")},
-      {"light.position", lights[0].position},
-      {"light.ambiant", 0.2f * lights[0].color},
-      {"light.diffuse", 0.5f * lights[0].color},
-      {"light.specular", lights[0].color},
-      {"time", static_cast<float>(glfwGetTime())},
-    });
 
     // TODO: rotate in vertex shader & move inverseTranspose outside game loop
     // shaded sphere rotating around light
@@ -566,11 +535,9 @@ int main() {
 
   // destroy renderers of each shape (frees vao & vbo)
   level.free();
-  terrain.free();
   skybox.free();
   surface.free();
   surface_glyph.free();
-  plane.free();
   gizmo.free();
   grid.free();
 

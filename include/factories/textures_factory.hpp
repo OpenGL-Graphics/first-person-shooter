@@ -25,7 +25,6 @@ private:
 
   std::unique_ptr<Texture3D> m_skybox;
   std::unique_ptr<Texture2D> m_health;
-  std::unique_ptr<Texture2D> m_wave;
   std::unique_ptr<Texture2D> m_crosshair;
   std::unique_ptr<Texture2D> m_wall_diffuse;
   std::unique_ptr<Texture2D> m_wall_normal;

@@ -21,7 +21,6 @@ TexturesFactory::TexturesFactory():
   m_skybox(std::make_unique<Texture3D>(m_skybox_images)),
   m_crosshair(std::make_unique<Texture2D>(Image("assets/images/surfaces/crosshair.png"))),
   m_health(std::make_unique<Texture2D>(Image("assets/images/surfaces/health.png"))),
-  m_wave(std::make_unique<Texture2D>(Image("assets/images/plane/wave.png"))),
   m_wall_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0)),
   m_wall_normal(std::make_unique<Texture2D>(Image("assets/images/level/wall_normal.jpg"), GL_TEXTURE1)),
   m_door_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/door_diffuse.jpg"), GL_TEXTURE0)),
@@ -40,9 +39,6 @@ TexturesFactory::TexturesFactory():
     // 2D textures for HUDS
     { "crosshair", m_crosshair.get() },
     { "health", m_health.get() },
-
-    // 2D texture for flat grid plane (shape made as a sin wave in vertex shader)
-    { "wave", m_wave.get() },
 
     // textures used in LevelRenderer (incl. FloorsRenderer, WallsRenderer)
     { "window", m_window.get() },
