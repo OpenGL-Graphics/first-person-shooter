@@ -13,7 +13,7 @@
 #include "levels/targets_renderer.hpp"
 
 #include "levels/tilemap.hpp"
-#include "program.hpp"
+#include "shader/program.hpp"
 
 #include "entries/target_entry.hpp"
 #include "entries/wall_orientation.hpp"

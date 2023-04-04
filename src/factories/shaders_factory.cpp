@@ -3,7 +3,6 @@
 /* Similar to how programs are managed in <imgui-paint>/Canvas */
 ShadersFactory::ShadersFactory():
   m_programs {
-    { "skybox", Program("assets/shaders/skybox.vert", "assets/shaders/skybox.frag") },
     { "text", Program("assets/shaders/instancing/texture_surface.vert", "assets/shaders/texture_text.frag") },
 
     // instancing (draw same geometry multiple times at once)

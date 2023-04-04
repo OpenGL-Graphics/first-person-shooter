@@ -7,7 +7,7 @@
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
 #include "render/renderer.hpp"
-#include "texture_2d.hpp"
+#include "texture/texture_2d.hpp"
 
 /* Called from LevelRenderer to render floor & ceiling */
 class FloorsRenderer {

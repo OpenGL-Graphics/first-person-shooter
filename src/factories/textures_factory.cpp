@@ -4,21 +4,7 @@
 
 /* Similar to how programs are managed in <imgui-paint>/Canvas */
 TexturesFactory::TexturesFactory():
-  // 3D cube texture for skybox (left-handed coords system for cubemaps)
-  // See faces order: https://www.khronos.org/opengl/wiki/Cubemap_Texture
-  // cubemap images have their origin at upper-left corner (=> don't flip)
-  // https://stackoverflow.com/a/11690553/2228912
-  m_skybox_images({
-    Image("assets/images/skybox/posx.jpg", false), // pos-x (right face)
-    Image("assets/images/skybox/negx.jpg", false), // neg-x (left face)
-    Image("assets/images/skybox/posy.jpg", false), // pos-y (top face)
-    Image("assets/images/skybox/negy.jpg", false), // neg-y (bottom face)
-    Image("assets/images/skybox/posz.jpg", false), // pos-z (front face)
-    Image("assets/images/skybox/negz.jpg", false)  // neg-z (back face)
-  }),
-
   // smart pointer freed when out of scopt (doesn't work if inserted directly into m_textures bcos it copies a unique_ptr)
-  m_skybox(std::make_unique<Texture3D>(m_skybox_images)),
   m_crosshair(std::make_unique<Texture2D>(Image("assets/images/surfaces/crosshair.png"))),
   m_health(std::make_unique<Texture2D>(Image("assets/images/surfaces/health.png"))),
   m_wall_diffuse(std::make_unique<Texture2D>(Image("assets/images/level/wall_diffuse.jpg"), GL_TEXTURE0)),
@@ -34,8 +20,6 @@ TexturesFactory::TexturesFactory():
   m_ceiling_normal(std::make_unique<Texture2D>(Image("assets/images/level/ceiling_normal.jpg"), GL_TEXTURE3)),
 
   m_textures {
-    { "skybox", m_skybox.get() },
-
     // 2D textures for HUDS
     { "crosshair", m_crosshair.get() },
     { "health", m_health.get() },

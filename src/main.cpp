@@ -8,8 +8,8 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 
-#include "texture_2d.hpp"
-#include "texture_3d.hpp"
+#include "texture/texture_2d.hpp"
+#include "texture/texture_3d.hpp"
 #include "window.hpp"
 
 #include "navigation/frustum.hpp"
@@ -40,9 +40,9 @@
 #include "globals/score.hpp"
 #include "globals/lights.hpp"
 
-#include "framebuffer.hpp"
-#include "framebuffer_exception.hpp"
-#include "shader_exception.hpp"
+#include "framebuffer/framebuffer.hpp"
+#include "framebuffer/framebuffer_exception.hpp"
+#include "shader/shader_exception.hpp"
 
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
@@ -118,7 +118,6 @@ int main() {
   // renderer (encapsulates VAO & VBO) for each shape to render
   // 08-01-23: ~ total of 40K vertexes coords (float/uint) for geometries => peanuts (not the place to optimize)
   Renderer cubes(shaders_factory["basic"], Cube(), Attributes::get({"position"}, 8));
-  Renderer skybox(shaders_factory["skybox"], Cube(true), Attributes::get({"position"}, 8));
   Renderer surface(shaders_factory["texture_surface"], Surface(), Attributes::get({"position", "normal", "texture_coord"}, 7, true));
   Renderer spheres(shaders_factory["phong"], Sphere(32, 32), Attributes::get({"position", "normal"}));
   Renderer cylinders(shaders_factory["phong"], Cylinder(32, 0.25f, 3.5f), Attributes::get({"position", "normal", "texture_coord", "tangent"}));
@@ -300,24 +299,6 @@ int main() {
 
     // clear color & depth buffers before rendering every frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // draw skybox
-    // https://learnopengl.com/Advanced-OpenGL/Cubemaps
-    // disable depth testing so skybox is always at background
-    // mandatory bcos of below otherwise cube will hide everything else (coz it closest to camera)
-    glDepthMask(GL_FALSE);
-
-    // /*****
-    // no translation of skybox when camera moves
-    // camera initially at origin always inside skybox unit cube => skybox looks larger
-    glm::mat4 view_without_translation = glm::mat4(glm::mat3(view));
-    skybox.set_transform({
-      { glm::scale(glm::mat4(1.0f), glm::vec3(2)) },
-      view_without_translation, projection3d
-    });
-    skybox.draw({ {"texture3d", textures_factory.get<Texture3D>("skybox") } });
-    // *****/
-    glDepthMask(GL_TRUE);
 
     // cube with outline using two-passes rendering & stencil buffer
     glm::mat4 model_cube_outline(glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 1.0f, 5.0f)));
@@ -535,7 +516,6 @@ int main() {
 
   // destroy renderers of each shape (frees vao & vbo)
   level.free();
-  skybox.free();
   surface.free();
   surface_glyph.free();
   gizmo.free();

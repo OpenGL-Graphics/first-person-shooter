@@ -4,8 +4,8 @@
 #include <memory>
 #include <unordered_map>
 
-#include "texture_2d.hpp"
-#include "texture_3d.hpp"
+#include "texture/texture_2d.hpp"
+#include "texture/texture_3d.hpp"
 
 /*
  * Factory to produce 2D/3D texture (exploit runtime polymorphism)
@@ -21,9 +21,6 @@ public:
   void free();
 
 private:
-  std::vector<Image> m_skybox_images;
-
-  std::unique_ptr<Texture3D> m_skybox;
   std::unique_ptr<Texture2D> m_health;
   std::unique_ptr<Texture2D> m_crosshair;
   std::unique_ptr<Texture2D> m_wall_diffuse;

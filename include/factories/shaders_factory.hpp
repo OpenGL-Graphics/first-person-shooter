@@ -1,7 +1,7 @@
 #ifndef SHADERS_FACTORY_HPP
 #define SHADERS_FACTORY_HPP
 
-#include "program.hpp"
+#include "shader/program.hpp"
 
 /**
  * Factory to produce singletons shader Programs

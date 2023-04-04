@@ -4,7 +4,7 @@
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
 #include "render/model_renderer.hpp"
-#include "uniforms.hpp"
+#include "shader/uniforms.hpp"
 #include "navigation/frustum.hpp"
 
 /* Called from LevelRenderer to render trees props */

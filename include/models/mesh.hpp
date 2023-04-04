@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <assimp/mesh.h>
 
-#include "texture_2d.hpp"
+#include "texture/texture_2d.hpp"
 #include "shader/uniforms.hpp"
 
 /**
