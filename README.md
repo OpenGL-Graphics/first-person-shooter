@@ -25,16 +25,25 @@ $ apt install libglm-dev libglfw3-dev libassimp-dev
 # Requirements
 - ~~OpenGL/GLSL 3.3+~~ GLSL 4.6 to support array indexing using non-consts (i.e. id-instance)
 
+# Audio
+MP3 audio sound is played with FMOD, which is bundled with this project (Linux x86\_64 headers & libs). irrKlang was used before, but it caused audio glitches when music was played while the game was running.
+
+# Contols
+- Mouse: Orbit camera & shoot with LMB
+- WASD keys: Move camera
+
 # Resources
 - [Health bar][health-bar] made by Daniel Zhang (APEXOUS) and available under the CC0 license.
 - Textures (incl. skybox) downloaded from [textures.com][textures.com].
 - [Low poly sniper][lowpoly-sniper]
 - [Samurai][samurai]
+- [Gun shot sound effect][gun-shot]
 
 [health-bar]: https://opengameart.org/content/rpg-hud-bars
 [textures.com]: https://www.textures.com
 [lowpoly-sniper]: https://opengameart.org/content/low-poly-stylized-sniper
 [samurai]: https://opengameart.org/content/3d-lowpoly-samurai-with-animations-fbx-format
+[gun-shot]: https://opengameart.org/content/light-machine-gun
 
 ---
 

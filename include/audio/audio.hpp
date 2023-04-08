@@ -1,19 +1,21 @@
 #ifndef AUDIO_HPP
 #define AUDIO_HPP
 
-#include <string>
+#include "fmod/fmod.hpp"
 
-#include "irrklang/irrKlang.h"
-
-/* Wrapper class around IrrKlang's sound engine for playing sounds */
+/* Wrapper class around fmod sound engine for playing sounds */
 class Audio {
 public:
   Audio();
-  void play_2d(const std::string& path);
+  void shot();
+  void update();
   void free();
 
 private:
-  irrklang::ISoundEngine* m_sound_engine;
+  FMOD::System* m_system;
+  FMOD::Sound* m_shot_sound;
+
+  void check_error(FMOD_RESULT result);
 };
 
 #endif // AUDIO_HPP

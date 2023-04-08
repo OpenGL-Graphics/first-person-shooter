@@ -47,7 +47,6 @@
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
 
-using namespace irrklang;
 using namespace geometry;
 
 int main() {
@@ -56,7 +55,7 @@ int main() {
   ////////////////////////////////////////////////
 
   // glfw window
-  Window window("FPS game");
+  Window window("FPS game", true);
 
   if (window.is_null()) {
     std::cout << "Failed to create window or OpenGL context" << "\n";
@@ -272,7 +271,7 @@ int main() {
   while (!window.is_closed()) {
     // update transformation matrices (camera fov changes on zoom)
     glm::mat4 view = camera.get_view();
-    projection3d = glm::perspective(glm::radians(camera.fov), (float) window.width / (float) window.height, 0.5f, 32.0f);
+    projection3d = glm::perspective(glm::radians(camera.fov), aspect_ratio, near, far);
 
     // update frustum's six planes accord. to camera's position & look dir.
     frustum.calculate_planes(camera);
@@ -500,6 +499,9 @@ int main() {
     window.show_fps();
 
     // MemoryProfiler::profile("Bottom of game loop");
+
+    // required by fmod
+    audio.update();
   }
 
   // destroy textures

@@ -38,7 +38,7 @@ void MouseHandler::init(Window* window, CameraFPS* camera, Audio* audio) {
 void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, int mods) {
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
     // play gun shot sound
-    m_audio->play_2d("assets/audio/gun_shot.mp3");
+    m_audio->shot();
 
     for (TargetEntry& target_entry : targets) {
       if (target_entry.is_dead)

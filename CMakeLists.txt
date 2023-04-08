@@ -20,17 +20,13 @@ file(COPY assets DESTINATION ${CMAKE_BINARY_DIR})
 find_package(Freetype REQUIRED)
 find_package(assimp REQUIRED)
 
-# irrklang library for playing sounds
+# fmod library for playing sounds
 list(APPEND CMAKE_PREFIX_PATH "./lib")
-find_library(LIB_IRRKLANG IrrKlang)
-find_library(LIB_IRRKLANG_MP3 IkpMP3)
+find_library(LIB_FMOD fmod)
 
 # glfw-window & opengl-utils (texture, shader, & framebuffer) libraries from submodules
 add_subdirectory(glfw-window)
 add_subdirectory(opengl-utils)
-
-# copy irrklang mp3 plugin (needed to play mp3 files)
-file(COPY lib/ikpMP3.so DESTINATION ${CMAKE_BINARY_DIR})
 
 # main executable
 file(GLOB SRC
@@ -61,7 +57,7 @@ target_include_directories(main PRIVATE
 target_link_libraries(main
   assimp
   ${FREETYPE_LIBRARIES}
-  ${LIB_IRRKLANG}
+  ${LIB_FMOD}
   glfw_window
   opengl_utils
 )
