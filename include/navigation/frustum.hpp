@@ -10,12 +10,14 @@
 class Frustum {
 public:
   Frustum(float n, float f, float aspect);
-  bool is_inside(const glm::vec3& point) const;
   void calculate_planes(const Camera& camera);
   void print_planes();
 
   template <typename T>
-  std::vector<T> cull(const std::vector<T>& arr, const std::vector<glm::vec3>& positions) const;
+  bool is_inside(const T& element) const;
+
+  template <typename T, typename U>
+  std::vector<T> cull(const std::vector<T>& arr, const std::vector<U>& elements) const;
 
 private:
   float near;

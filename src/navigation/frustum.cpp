@@ -59,15 +59,20 @@ void Frustum::calculate_planes(const Camera& camera) {
   left_plane = Plane(normal_left, camera.position);
 }
 
-/* True if given point is inside frustum (i.e. in front of all frustum planes) */
-bool Frustum::is_inside(const glm::vec3& point) const {
+/**
+ * If element is a:
+ * point: True if given point is inside frustum (i.e. in front of all frustum planes)
+ * bbox: True if bbox's half diagonal (rel. to each plane) is inside frustum
+ */
+template <typename T>
+bool Frustum::is_inside(const T& element) const {
   return (
-    left_plane.is_in_front_of_plane(point) &&
-    right_plane.is_in_front_of_plane(point) &&
-    top_plane.is_in_front_of_plane(point) &&
-    bottom_plane.is_in_front_of_plane(point) &&
-    near_plane.is_in_front_of_plane(point) &&
-    far_plane.is_in_front_of_plane(point)
+    left_plane.is_in_front_of_plane(element) &&
+    right_plane.is_in_front_of_plane(element) &&
+    top_plane.is_in_front_of_plane(element) &&
+    bottom_plane.is_in_front_of_plane(element) &&
+    near_plane.is_in_front_of_plane(element) &&
+    far_plane.is_in_front_of_plane(element)
   );
 }
 
@@ -75,17 +80,18 @@ bool Frustum::is_inside(const glm::vec3& point) const {
  * Fiter out matrices corresp. to positions outside frustum
  * Used to frustum cull tiles from level renderers (tile = wall, window, door, tree...)
  * Note: matrices and positions have the same size. Positions can be extracted from model but not from normal matrix!
+ * @param elements To check if they are inside frustum (can be points or bboxes)
  */
-template <typename T>
-std::vector<T> Frustum::cull(const std::vector<T>& vec, const std::vector<glm::vec3>& positions) const {
+template <typename T, typename U>
+std::vector<T> Frustum::cull(const std::vector<T>& vec, const std::vector<U>& elements) const {
   std::vector<T> vec_out;
 
-  for (size_t i_position = 0; i_position < positions.size(); ++i_position) {
-    T item = vec[i_position];
-    glm::vec3 position = positions[i_position];
+  for (size_t i_element = 0; i_element < elements.size(); ++i_element) {
+    T item = vec[i_element];
+    U element = elements[i_element];
 
     // check if inside frustum
-    if (is_inside(position))
+    if (is_inside(element))
       vec_out.push_back(item);
   }
 
@@ -95,3 +101,6 @@ std::vector<T> Frustum::cull(const std::vector<T>& vec, const std::vector<glm::v
 // template instantiation (avoids linking error)
 template std::vector<glm::mat4> Frustum::cull(const std::vector<glm::mat4>&, const std::vector<glm::vec3>&) const;
 template std::vector<TargetEntry> Frustum::cull(const std::vector<TargetEntry>&, const std::vector<glm::vec3>&) const;
+
+template std::vector<glm::mat4> Frustum::cull(const std::vector<glm::mat4>&, const std::vector<BoundingBox>&) const;
+template std::vector<TargetEntry> Frustum::cull(const std::vector<TargetEntry>&, const std::vector<BoundingBox>&) const;

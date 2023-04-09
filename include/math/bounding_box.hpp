@@ -1,13 +1,19 @@
 #ifndef BOUNDING_BOX_HPP
 #define BOUNDING_BOX_HPP
 
+#include <ostream>
 #include <vector>
 #include <glm/glm.hpp>
 
 struct BoundingBox {
+  static const int NO_COLLISION = -1;
+
   glm::vec3 min;
   glm::vec3 max;
-  static const int NO_COLLISION = -1;
+
+  /* needed for frustum culling */
+  glm::vec3 center;
+  glm::vec3 half_diagonal;
 
   BoundingBox();
   BoundingBox(const std::vector<glm::vec3>& positions);
@@ -16,6 +22,13 @@ struct BoundingBox {
   bool check_collision(const BoundingBox& bounding_box);
   int check_collision(const std::vector<BoundingBox>& bounding_boxes);
   bool intersects(const glm::vec3& point, const glm::vec3& vector);
+
+  /* Friend: non-member function that has access to class' private fields */
+  friend std::ostream& operator<<(std::ostream& stream, const BoundingBox& bbox);
+
+private:
+  void calculate_min_max(const std::vector<glm::vec3>& positions);
+  void calculate_center_diagonal();
 };
 
 #endif // BOUNDING_BOX_HPP

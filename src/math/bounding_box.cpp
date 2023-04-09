@@ -1,7 +1,8 @@
 #include <algorithm>
 #include <iostream>
+#include <glm/gtx/string_cast.hpp>
 
-#include "physics/bounding_box.hpp"
+#include "math/bounding_box.hpp"
 #include "math/axis_aligned_plane.hpp"
 
 using namespace math;
@@ -16,28 +17,31 @@ BoundingBox::BoundingBox(const std::vector<glm::vec3>& positions) {
     return;
   }
 
-  glm::vec3 min_x = *std::min_element(positions.begin(), positions.end(), [](const glm::vec3& position1, const glm::vec3& position2) {
-    return position1.x < position2.x;
-  });
-  glm::vec3 min_y = *std::min_element(positions.begin(), positions.end(), [](const glm::vec3& position1, const glm::vec3& position2) {
-    return position1.y < position2.y;
-  });
-  glm::vec3 min_z = *std::min_element(positions.begin(), positions.end(), [](const glm::vec3& position1, const glm::vec3& position2) {
-    return position1.z < position2.z;
-  });
+  calculate_min_max(positions);
+  calculate_center_diagonal();
+}
 
-  glm::vec3 max_x = *std::max_element(positions.begin(), positions.end(), [](const glm::vec3& position1, const glm::vec3& position2) {
-    return position1.x < position2.x;
-  });
-  glm::vec3 max_y = *std::max_element(positions.begin(), positions.end(), [](const glm::vec3& position1, const glm::vec3& position2) {
-    return position1.y < position2.y;
-  });
-  glm::vec3 max_z = *std::max_element(positions.begin(), positions.end(), [](const glm::vec3& position1, const glm::vec3& position2) {
-    return position1.z < position2.z;
-  });
+void BoundingBox::calculate_min_max(const std::vector<glm::vec3>& positions) {
+  auto get_x_bound = [](const glm::vec3& position1, const glm::vec3& position2) { return position1.x < position2.x; };
+  auto get_y_bound = [](const glm::vec3& position1, const glm::vec3& position2) { return position1.y < position2.y; };
+  auto get_z_bound = [](const glm::vec3& position1, const glm::vec3& position2) { return position1.z < position2.z; };
+
+  glm::vec3 min_x = *std::min_element(positions.begin(), positions.end(), get_x_bound);
+  glm::vec3 min_y = *std::min_element(positions.begin(), positions.end(), get_y_bound);
+  glm::vec3 min_z = *std::min_element(positions.begin(), positions.end(), get_z_bound);
+
+  glm::vec3 max_x = *std::max_element(positions.begin(), positions.end(), get_x_bound);
+  glm::vec3 max_y = *std::max_element(positions.begin(), positions.end(), get_y_bound);
+  glm::vec3 max_z = *std::max_element(positions.begin(), positions.end(), get_z_bound);
 
   min = glm::vec3(min_x.x, min_y.y, min_z.z);
   max = glm::vec3(max_x.x, max_y.y, max_z.z);
+}
+
+/* Calculate bbox center & its half diagonal (must be called after calc. min/max) */
+void BoundingBox::calculate_center_diagonal() {
+  center = (min + max) / 2.0f;
+  half_diagonal = max - center;
 }
 
 /**
@@ -95,6 +99,7 @@ bool BoundingBox::intersects(const glm::vec3& point, const glm::vec3& vector) {
 void BoundingBox::transform(const glm::mat4& mat_model) {
   min = mat_model * glm::vec4(min, 1.0f);
   max = mat_model * glm::vec4(max, 1.0f);
+  calculate_center_diagonal();
 }
 
 /* Check if current bounding box collides with given one */
@@ -122,4 +127,9 @@ int BoundingBox::check_collision(const std::vector<BoundingBox>& bounding_boxes)
   }
 
   return NO_COLLISION;
+}
+
+/* For debugging */
+std::ostream& operator<<(std::ostream& stream, const BoundingBox& bbox) {
+  return stream << "Center: " << glm::to_string(bbox.center);
 }

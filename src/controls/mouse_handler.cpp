@@ -2,8 +2,8 @@
 
 #include "controls/mouse_handler.hpp"
 #include "math/transformation.hpp"
+#include "math/bounding_box.hpp"
 #include "globals/score.hpp"
-#include "physics/bounding_box.hpp"
 
 #include "entries/target_entry.hpp"
 #include "globals/targets.hpp"

@@ -4,7 +4,7 @@
 #include "factories/shaders_factory.hpp"
 #include "entries/target_entry.hpp"
 #include "render/model_renderer.hpp"
-#include "physics/bounding_box.hpp"
+#include "math/bounding_box.hpp"
 #include "navigation/frustum.hpp"
 
 /* Target to destroy on intersection with mouse cursor */

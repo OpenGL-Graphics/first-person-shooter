@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-#include "physics/bounding_box.hpp"
+#include "math/bounding_box.hpp"
 
 struct TargetEntry {
   bool is_dead;

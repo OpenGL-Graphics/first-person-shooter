@@ -83,14 +83,14 @@ std::vector<glm::mat4> TargetsRenderer::cull_dead(const std::vector<glm::mat4>& 
  * Translate target to position from tilemap
  */
 void TargetsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
-  // frustum culling first
-  std::vector<glm::vec3> positions;
-  auto get_position = [](const auto& target) { return target.position; };
-  std::transform(targets.begin(), targets.end(), std::back_inserter(positions), get_position);
+  // frustum culling first (with bbox radius - more accurate than with its center)
+  std::vector<BoundingBox> bboxes;
+  auto get_bbox = [](const auto& target) { return target.bounding_box; };
+  std::transform(targets.begin(), targets.end(), std::back_inserter(bboxes), get_bbox);
 
-  std::vector<glm::mat4> models_frustum = frustum.cull(m_models, positions);
-  std::vector<glm::mat4> normals_mats_frustum = frustum.cull(m_normals_mats, positions);
-  std::vector<TargetEntry> targets_frustum = frustum.cull(targets, positions);
+  std::vector<glm::mat4> models_frustum = frustum.cull(m_models, bboxes);
+  std::vector<glm::mat4> normals_mats_frustum = frustum.cull(m_normals_mats, bboxes);
+  std::vector<TargetEntry> targets_frustum = frustum.cull(targets, bboxes);
 
   // ignore dead targets (to avoid drawing them)
   std::vector<glm::mat4> models = cull_dead(models_frustum, targets_frustum);

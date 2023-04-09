@@ -39,14 +39,12 @@ file(GLOB SRC
   "src/models/*.cpp"
   "src/profiling/*.cpp"
   "src/controls/*.cpp"
-  "src/physics/*.cpp"
   "src/utils/*.cpp"
   "src/levels/*.cpp"
   "src/math/*.cpp"
   "src/audio/*.cpp"
   "src/globals/*.cpp"
   "src/factories/*.cpp"
-  "src/terrain/*.cpp"
 )
 
 add_executable(main src/main.cpp ${SRC})

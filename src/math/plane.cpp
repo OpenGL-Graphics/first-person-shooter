@@ -22,6 +22,22 @@ Plane::Plane(const glm::vec3& n, const glm::vec3& point):
  *     + = 0: if point belongs to plane
  * source: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
  */
+float Plane::get_signed_distance(const glm::vec3& point) const {
+  return glm::dot(normal, point) - d;
+}
+
+/* True if point located on same side plane normal is pointing to */
 bool Plane::is_in_front_of_plane(const glm::vec3& point) const {
-  return glm::dot(normal, point) - d > 0;
+  return get_signed_distance(point) > 0;
+}
+
+/**
+ * True if bbox half-extent is on plane's normal side
+ * https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
+ */
+bool Plane::is_in_front_of_plane(const BoundingBox& bbox) const {
+  // bbox radius depends on orientation of its half diagonal vec. rel. to plane normal
+  float radius_bbox = std::abs(glm::dot(bbox.half_diagonal, normal));
+
+  return get_signed_distance(bbox.center) > -radius_bbox;
 }

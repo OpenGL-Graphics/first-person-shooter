@@ -55,7 +55,7 @@ int main() {
   ////////////////////////////////////////////////
 
   // glfw window
-  Window window("FPS game", true);
+  Window window("FPS game", false);
 
   if (window.is_null()) {
     std::cout << "Failed to create window or OpenGL context" << "\n";
