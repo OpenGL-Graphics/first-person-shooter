@@ -11,7 +11,8 @@
 class WindowsRenderer {
 public:
   WindowsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory);
-  void calculate_uniforms(const std::vector<glm::vec3>& positions);
+  void calculate_uniforms(const std::vector<glm::vec3>& positions_tiles);
+  void calculate_bboxes(const std::vector<glm::vec3>& positions_tiles);
   void set_transform(const Transformation& t, const Frustum& frustum);
   void draw();
   void free();

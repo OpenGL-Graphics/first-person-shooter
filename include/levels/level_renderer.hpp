@@ -66,6 +66,7 @@ private:
 
   void parse_tilemap();
   void calculate_uniforms();
+  void calculate_bboxes();
 };
 
 #endif // LEVEL_RENDERER_HPP

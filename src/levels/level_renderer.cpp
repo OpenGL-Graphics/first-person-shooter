@@ -28,6 +28,7 @@ LevelRenderer::LevelRenderer(Assimp::Importer& importer, const ShadersFactory& s
 {
   parse_tilemap();
   calculate_uniforms();
+  calculate_bboxes();
 }
 
 /* Only calculate world positions & angles in constructor (not in `draw()`) */
@@ -110,6 +111,12 @@ void LevelRenderer::calculate_uniforms() {
   m_renderer_walls.calculate_uniforms(m_walls, m_positions_windows);
   m_renderer_trees.calculate_uniforms(m_positions_trees);
   m_renderer_windows.calculate_uniforms(m_positions_windows);
+}
+
+/* Bboxes needed for frustum culling (calculate in ctor) */
+void LevelRenderer::calculate_bboxes() {
+  m_renderer_windows.calculate_bboxes(m_positions_windows);
+  m_renderer_doors.calculate_bboxes(m_positions_doors);
 }
 
 /**
