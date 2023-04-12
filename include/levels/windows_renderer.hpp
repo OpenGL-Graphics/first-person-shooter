@@ -3,6 +3,7 @@
 
 #include "factories/shaders_factory.hpp"
 #include "factories/textures_factory.hpp"
+#include "math/bounding_box.hpp"
 #include "render/renderer.hpp"
 #include "navigation/frustum.hpp"
 
@@ -17,13 +18,13 @@ public:
 
 private:
   const float m_height = 3.5;
-  const float height_window = 1.0f;
+  const glm::vec3 m_size = { 1, 1, 0 };
 
   Texture2D m_texture;
   Renderer m_renderer;
 
-  std::vector<glm::vec3> m_positions;
   std::vector<glm::mat4> m_models;
+  std::vector<BoundingBox> m_bboxes;
 };
 
 #endif // WINDOWS_RENDERER_HPP

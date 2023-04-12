@@ -21,6 +21,15 @@ BoundingBox::BoundingBox(const std::vector<glm::vec3>& positions) {
   calculate_center_diagonal();
 }
 
+/* Used to check intersec. of windows with Frustum */
+BoundingBox::BoundingBox(const glm::vec3& c, const glm::vec3& hd):
+  center(c),
+  half_diagonal(hd)
+{
+  min = center - half_diagonal;
+  max = center + half_diagonal;
+}
+
 void BoundingBox::calculate_min_max(const std::vector<glm::vec3>& positions) {
   auto get_x_bound = [](const glm::vec3& position1, const glm::vec3& position2) { return position1.x < position2.x; };
   auto get_y_bound = [](const glm::vec3& position1, const glm::vec3& position2) { return position1.y < position2.y; };

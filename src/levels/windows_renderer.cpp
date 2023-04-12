@@ -2,6 +2,7 @@
 
 #include "levels/windows_renderer.hpp"
 #include "geometries/surface.hpp"
+#include "math/bounding_box.hpp"
 
 using namespace geometry;
 
@@ -19,16 +20,20 @@ WindowsRenderer::WindowsRenderer(const ShadersFactory& shaders_factory, const Te
  * Called in LevelRenderer's ctor to avoid inverting matrix every frame
  * Draw windows at mid y-coord of `position_tile`
  */
-void WindowsRenderer::calculate_uniforms(const std::vector<glm::vec3>& positions) {
-  const unsigned int N_WINDOWS = positions.size();
-  m_positions = std::move(positions);
+void WindowsRenderer::calculate_uniforms(const std::vector<glm::vec3>& positions_tiles) {
+  const unsigned int N_WINDOWS = positions_tiles.size();
   m_models.resize(N_WINDOWS);
+  m_bboxes.resize(N_WINDOWS);
 
   for (size_t i_window = 0; i_window < N_WINDOWS; ++i_window) {
-    glm::vec3 position_tile = m_positions[i_window];
-    float y_window_bottom = m_height/2.0f - height_window/2.0f;
+    glm::vec3 position_tile = positions_tiles[i_window];
+    float y_window_bottom = m_height/2.0f - m_size.y/2.0f;
     glm::vec3 position_window(position_tile.x, y_window_bottom, position_tile.z);
     m_models[i_window] = glm::translate(glm::mat4(1.0f), position_window);
+
+    // surface origin at lower-left corner
+    glm::vec3 position_center(position_window.x + m_size.x/2, position_window.y + m_size.y/2, position_window.z);
+    m_bboxes[i_window] = BoundingBox(position_center, m_size / 2.0f);
   }
 }
 
@@ -37,7 +42,7 @@ void WindowsRenderer::calculate_uniforms(const std::vector<glm::vec3>& positions
  * Supports instancing (multiple transparent windows)
  */
 void WindowsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
-  std::vector<glm::mat4> models = frustum.cull(m_models, m_positions);
+  std::vector<glm::mat4> models = frustum.cull(m_models, m_bboxes);
   m_renderer.set_transform({ models, t.view, t.projection });
 }
 
