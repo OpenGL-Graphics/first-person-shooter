@@ -276,7 +276,7 @@ int main() {
     {
       // clear framebuffer's attached color buffer in every frame
       framebuffer.bind();
-      framebuffer.clear({ 1.0f, 1.0f, 1.0f, 1.0f });
+      framebuffer.clear({ 0.0f, 0.0f, 0.0f, 1.0f });
 
       // draw red cube to texture attached to framebuffer
       cubes.set_transform({

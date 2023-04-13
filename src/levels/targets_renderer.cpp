@@ -14,26 +14,9 @@
  */
 TargetsRenderer::TargetsRenderer(const ShadersFactory& shaders_factory, Assimp::Importer& importer):
   m_model3d("assets/models/samurai/samurai.obj", importer),
-  m_renderer(shaders_factory["texture"], m_model3d, Attributes::get({"position", "normal", "texture_coord", "tangent"}))
+  m_renderer(shaders_factory["texture"], m_model3d, Attributes::get({"position", "normal", "texture_coord", "tangent"})),
+  m_bounding_box(m_renderer.get_positions())
 {
-  calculate_bounding_box();
-}
-
-/**
- * Calculate bounding box in local space from bounding boxes of each mesh renderer
- * Called in constructor
- */
-void TargetsRenderer::calculate_bounding_box() {
-  // concatenate local vertexes xyz
-  std::vector<glm::vec3> positions;
-
-  for (Renderer& renderer : m_renderer.renderers) {
-    std::vector<glm::vec3> positions_renderer = renderer.vbo.positions;
-    positions.insert(positions.end(), positions_renderer.begin(), positions_renderer.end());
-  }
-
-  // calculate bounding box from positions in local coords in vbo
-  m_bounding_box = BoundingBox(positions);
 }
 
 /* Called from LevelRenderer ctor to avoid calculating inverse & bbox each frame */
@@ -44,15 +27,20 @@ void TargetsRenderer::calculate_uniforms() {
 
   for (size_t i_target = 0; i_target < N_TARGETS; ++i_target) {
     // scale-down samurai 3d model (scaling then translation)
-    TargetEntry& target_entry = targets[i_target];
-    glm::mat4 model_target = glm::scale(
-      glm::translate(glm::mat4(1.0f), target_entry.position),
-      glm::vec3(1 / 2.0f)
-    );
+    TargetEntry target_entry = targets[i_target];
+    glm::mat4 model_target = glm::translate(glm::mat4(1.0f), target_entry.position);
     glm::mat4 normal_mat = glm::inverseTranspose(model_target);
 
     m_models[i_target] = model_target;
     m_normals_mats[i_target] = normal_mat;
+  }
+}
+
+/* Must be called after calculate_uniforms() */
+void TargetsRenderer::calculate_bboxes() {
+  for (size_t i_target = 0; i_target < m_models.size(); ++i_target) {
+    TargetEntry& target_entry = targets[i_target];
+    glm::mat4 model_target = m_models[i_target];
 
     // update global var's bbox to world coords using model matrix
     // needed for mouse intersection in MouseHandler

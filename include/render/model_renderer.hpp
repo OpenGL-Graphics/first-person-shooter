@@ -18,6 +18,8 @@ struct ModelRenderer {
   void set_uniform_arr(const std::string& name, const std::vector<glm::mat4>& u);
   void free();
 
+  std::vector<glm::vec3> get_positions();
+
 private:
   assimp_utils::Model m_model;
 };

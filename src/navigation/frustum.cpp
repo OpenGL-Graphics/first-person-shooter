@@ -62,10 +62,11 @@ void Frustum::calculate_planes(const Camera& camera) {
 /**
  * If element is a:
  * point: True if given point is inside frustum (i.e. in front of all frustum planes)
- * bbox: True if bbox's half diagonal (rel. to each plane) is inside frustum
+ * bbox: True if part of bbox's half diagonal (rel. to each plane) is inside frustum
  */
 template <typename T>
 bool Frustum::is_inside(const T& element) const {
+  // TODO: error in left/right planes?
   return (
     left_plane.is_in_front_of_plane(element) &&
     right_plane.is_in_front_of_plane(element) &&

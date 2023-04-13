@@ -17,6 +17,22 @@ ModelRenderer::ModelRenderer(const Program& program, const assimp_utils::Model& 
 }
 
 /**
+ * Used to calculate Bbox from positions in local coords in vbo,
+ * in TargetsRenderer/TreesRenderer
+ */
+std::vector<glm::vec3> ModelRenderer::get_positions() {
+  // concatenate local vertexes xyz
+  std::vector<glm::vec3> positions;
+
+  for (Renderer& renderer : renderers) {
+    std::vector<glm::vec3> positions_renderer = renderer.vbo.positions;
+    positions.insert(positions.end(), positions_renderer.begin(), positions_renderer.end());
+  }
+
+  return positions;
+}
+
+/**
  * Initial transformation (position) of 3D Object accord. to model matrix
  * as well view & projection matrixes
  */

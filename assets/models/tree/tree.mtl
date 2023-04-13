@@ -1,8 +1,8 @@
-# Blender MTL File: 'None'
-# Material Count: 2
+# Blender 3.5.0 MTL File: 'None'
+# www.blender.org
 
 newmtl Material.001
-Ns 225.000000
+Ns 224.999985
 Ka 1.000000 1.000000 1.000000
 Kd 0.134274 0.060378 0.000000
 Ks 0.500000 0.500000 0.500000
@@ -12,7 +12,7 @@ d 1.000000
 illum 2
 
 newmtl Material.002
-Ns 225.000000
+Ns 224.999985
 Ka 1.000000 1.000000 1.000000
 Kd 0.080611 0.156410 0.025949
 Ks 0.500000 0.500000 0.500000

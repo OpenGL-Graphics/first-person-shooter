@@ -12,12 +12,17 @@ class TreesRenderer {
 public:
   TreesRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory, Assimp::Importer& importer);
   void calculate_uniforms(const std::vector<glm::vec3>& positions);
+  void calculate_bboxes(const std::vector<glm::vec3>& positions);
   void set_transform(const Transformation& t, const Frustum& frustum);
   void draw(const Uniforms& uniforms);
   void free();
 
 private:
   ModelRenderer m_renderer;
+
+  /* Bounding box in local space & world space */
+  BoundingBox m_bounding_box;
+  std::vector<BoundingBox> m_bboxes;
 
   std::vector<glm::vec3> m_positions;
   std::vector<glm::mat4> m_models;

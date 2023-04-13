@@ -115,6 +115,8 @@ void LevelRenderer::calculate_uniforms() {
 
 /* Bboxes needed for frustum culling (calculate in ctor) */
 void LevelRenderer::calculate_bboxes() {
+  m_renderer_targets.calculate_bboxes();
+  m_renderer_trees.calculate_bboxes(m_positions_trees);
   m_renderer_windows.calculate_bboxes(m_positions_windows);
   m_renderer_doors.calculate_bboxes(m_positions_doors);
 }

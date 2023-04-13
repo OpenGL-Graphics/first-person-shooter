@@ -140,5 +140,7 @@ int BoundingBox::check_collision(const std::vector<BoundingBox>& bounding_boxes)
 
 /* For debugging */
 std::ostream& operator<<(std::ostream& stream, const BoundingBox& bbox) {
-  return stream << "Center: " << glm::to_string(bbox.center);
+  return stream << "Center: " << glm::to_string(bbox.center)
+                << " min: " << glm::to_string(bbox.min)
+                << " max: " << glm::to_string(bbox.max);
 }
