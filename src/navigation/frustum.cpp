@@ -1,6 +1,7 @@
 #include <iostream>
 #include <glm/gtx/string_cast.hpp>
 
+#include "math/bounding_box.hpp"
 #include "navigation/frustum.hpp"
 #include "entries/target_entry.hpp"
 
@@ -66,7 +67,6 @@ void Frustum::calculate_planes(const Camera& camera) {
  */
 template <typename T>
 bool Frustum::is_inside(const T& element) const {
-  // TODO: error in left/right planes?
   return (
     left_plane.is_in_front_of_plane(element) &&
     right_plane.is_in_front_of_plane(element) &&
@@ -78,18 +78,17 @@ bool Frustum::is_inside(const T& element) const {
 }
 
 /**
- * Fiter out matrices corresp. to positions outside frustum
+ * Fiter out matrices corresp. to bboxes outside frustum
  * Used to frustum cull tiles from level renderers (tile = wall, window, door, tree...)
- * Note: matrices and positions have the same size. Positions can be extracted from model but not from normal matrix!
- * @param elements To check if they are inside frustum (can be points or bboxes)
+ * @param bboxes To check if they are inside frustum
  */
-template <typename T, typename U>
-std::vector<T> Frustum::cull(const std::vector<T>& vec, const std::vector<U>& elements) const {
+template <typename T>
+std::vector<T> Frustum::cull(const std::vector<T>& vec, const std::vector<BoundingBox>& bboxes) const {
   std::vector<T> vec_out;
 
-  for (size_t i_element = 0; i_element < elements.size(); ++i_element) {
+  for (size_t i_element = 0; i_element < bboxes.size(); ++i_element) {
     T item = vec[i_element];
-    U element = elements[i_element];
+    BoundingBox element = bboxes[i_element];
 
     // check if inside frustum
     if (is_inside(element))
@@ -100,8 +99,5 @@ std::vector<T> Frustum::cull(const std::vector<T>& vec, const std::vector<U>& el
 }
 
 // template instantiation (avoids linking error)
-template std::vector<glm::mat4> Frustum::cull(const std::vector<glm::mat4>&, const std::vector<glm::vec3>&) const;
-template std::vector<TargetEntry> Frustum::cull(const std::vector<TargetEntry>&, const std::vector<glm::vec3>&) const;
-
 template std::vector<glm::mat4> Frustum::cull(const std::vector<glm::mat4>&, const std::vector<BoundingBox>&) const;
 template std::vector<TargetEntry> Frustum::cull(const std::vector<TargetEntry>&, const std::vector<BoundingBox>&) const;

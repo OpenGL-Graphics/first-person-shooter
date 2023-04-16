@@ -42,7 +42,7 @@ void TreesRenderer::calculate_bboxes(const std::vector<glm::vec3>& positions) {
 
 void TreesRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
   std::vector<glm::mat4> models = frustum.cull(m_models, m_bboxes);
-  std::vector<glm::mat4> normals_mats = frustum.cull(m_normals_mats, m_positions);
+  std::vector<glm::mat4> normals_mats = frustum.cull(m_normals_mats, m_bboxes);
 
   m_renderer.set_transform({ models, t.view, t.projection });
   m_renderer.set_uniform_arr("normals_mats", normals_mats);

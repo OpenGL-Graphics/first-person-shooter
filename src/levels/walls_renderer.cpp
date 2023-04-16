@@ -10,14 +10,17 @@ using namespace geometry;
 
 /* Cubes used for walls as face culling hides back-face & lighting affect it similarly to front one */
 WallsRenderer::WallsRenderer(const ShadersFactory& shaders_factory, const TexturesFactory& textures_factory):
+  m_bbox(glm::vec3(0), m_size / 2.0f),
+  m_bbox_around_windows(glm::vec3(0), m_size_around_window / 2.0f),
+
   m_renderer(
     shaders_factory["texture_cube"],
-    Cube(false, { m_wall_length, m_wall_height, m_wall_depth }),
+    Cube(false, m_size),
     Attributes::get({"position", "normal", "texture_coord"})
   ),
   m_renderer_subwall(
     shaders_factory["texture_cube"],
-    Cube(false, { m_wall_length, m_subwall_height, m_wall_depth }),
+    Cube(false, m_size_around_window),
     Attributes::get({"position", "normal", "texture_coord"})
   ),
 
@@ -96,7 +99,6 @@ void WallsRenderer::calculate_uniforms_full(const std::vector<WallEntry>& entrie
       );
 
       m_models.push_back(model);
-      m_positions.push_back(position);
     } // END WALLS PIECES
   } // END WALLS
 }
@@ -113,7 +115,6 @@ void WallsRenderer::calculate_uniforms_around_window(const std::vector<glm::vec3
     glm::mat4 model_top = glm::translate(glm::mat4(1.0f), position_top);
 
     m_models_around_windows.insert(m_models_around_windows.end(), { model_bottom, model_top });
-    m_positions_around_windows.insert(m_positions_around_windows.end(), { position_bottom, position_top });
   }
 }
 
@@ -127,10 +128,32 @@ void WallsRenderer::calculate_uniforms(const std::vector<WallEntry>& entries, co
   calculate_uniforms_around_window(positions_windows);
 }
 
+/* Calculate bboxes for full walls OR for walls around windows (accod. to is_around_window) */
+std::vector<BoundingBox> WallsRenderer::calculate_bboxes_for(bool is_around_window) {
+  const unsigned int N_WALLS = (is_around_window ? m_models_around_windows.size() : m_models.size());
+  std::vector<BoundingBox> bboxes(N_WALLS);
+
+  // update cube (centered around origin) to world coords using model matrix
+  for (size_t i_wall = 0; i_wall < N_WALLS; ++i_wall) {
+    glm::mat4 model = (is_around_window ? m_models_around_windows[i_wall] : m_models[i_wall]);
+    BoundingBox bbox = (is_around_window ? m_bbox_around_windows : m_bbox);
+    bbox.transform(model);
+    bboxes[i_wall] = bbox;
+  }
+
+  return bboxes;
+}
+
+/* Must be called after calculate_uniforms() */
+void WallsRenderer::calculate_bboxes() {
+  m_bboxes = calculate_bboxes_for(false);
+  m_bboxes_around_windows = calculate_bboxes_for(true);
+}
+
 /* Called each frame before draw() to set matrices uniforms */
 void WallsRenderer::set_transform(const Transformation& t, const Frustum& frustum) {
-  std::vector<glm::mat4> models = frustum.cull(m_models, m_positions);
-  std::vector<glm::mat4> models_around_windows = frustum.cull(m_models_around_windows, m_positions_around_windows);
+  std::vector<glm::mat4> models = frustum.cull(m_models, m_bboxes);
+  std::vector<glm::mat4> models_around_windows = frustum.cull(m_models_around_windows, m_bboxes_around_windows);
 
   m_renderer.set_transform({ models, t.view, t.projection });
   m_renderer_subwall.set_transform({ models_around_windows, t.view, t.projection });

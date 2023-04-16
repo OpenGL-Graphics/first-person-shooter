@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "math/bounding_box.hpp"
 #include "math/plane.hpp"
 #include "navigation/camera.hpp"
 
@@ -16,8 +17,8 @@ public:
   template <typename T>
   bool is_inside(const T& element) const;
 
-  template <typename T, typename U>
-  std::vector<T> cull(const std::vector<T>& arr, const std::vector<U>& elements) const;
+  template <typename T>
+  std::vector<T> cull(const std::vector<T>& arr, const std::vector<BoundingBox>& bboxes) const;
 
 private:
   float near;

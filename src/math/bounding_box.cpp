@@ -108,6 +108,14 @@ bool BoundingBox::intersects(const glm::vec3& point, const glm::vec3& vector) {
 void BoundingBox::transform(const glm::mat4& mat_model) {
   min = mat_model * glm::vec4(min, 1.0f);
   max = mat_model * glm::vec4(max, 1.0f);
+
+  // 90deg vertical wall rotation => min.z = max_z (& max.z = min_z) => recalculate
+  glm::vec3 min_temp(std::min(min.x, max.x), std::min(min.y, max.y), std::min(min.z, max.z));
+  glm::vec3 max_temp(std::max(min.x, max.x), std::max(min.y, max.y), std::max(min.z, max.z));
+
+  min = min_temp;
+  max = max_temp;
+
   calculate_center_diagonal();
 }
 

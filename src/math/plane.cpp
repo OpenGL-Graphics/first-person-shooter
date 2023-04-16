@@ -32,12 +32,14 @@ bool Plane::is_in_front_of_plane(const glm::vec3& point) const {
 }
 
 /**
- * True if bbox half-extent is on plane's normal side
+ * True if parts or all of bbox half-extent is on plane's normal side
  * https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
  */
 bool Plane::is_in_front_of_plane(const BoundingBox& bbox) const {
-  // bbox radius depends on orientation of its half diagonal vec. rel. to plane normal
-  float radius_bbox = std::abs(glm::dot(bbox.half_diagonal, normal));
+  // Fig 9.12 & Eq 9.25: http://what-when-how.com/advanced-methods-in-computer-graphics/collision-detection-advanced-methods-in-computer-graphics-part-3/
+  // radius = largest projected distance by any AABB vertex (i.e closest one to plane) on plane normal
+  // abs. to ensure normal points in same dir. as bbox's half-diag (=> max dist.)
+  float radius_bbox = glm::dot(bbox.half_diagonal, glm::abs(normal));
 
   return get_signed_distance(bbox.center) > -radius_bbox;
 }
