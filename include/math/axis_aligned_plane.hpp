@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 /* Used for defining six planes tangents to axis-aligned bounding box */
+// TODO: Improve implementation: A float and an enum to specify the axis
 namespace math {
   struct AxisAlignedPlane {
     float* x0;
@@ -11,7 +12,7 @@ namespace math {
     float* z0;
 
     AxisAlignedPlane(float* x, float* y, float* z);
-    glm::vec3 intersect_line(const glm::vec3& point, const glm::vec3& vector) const;
+    bool intersect_line(const glm::vec3& point, const glm::vec3& vector, glm::vec3& intersection_point) const;
   };
 }
 

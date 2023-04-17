@@ -40,11 +40,14 @@ void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, in
     // play gun shot sound
     m_audio->shot();
 
-    for (TargetEntry& target_entry : targets) {
+    for (size_t i_target = 0; i_target < targets.size(); ++i_target) {
+      TargetEntry& target_entry = targets[i_target];
       if (target_entry.is_dead)
         continue;
 
-      // TODO: too buggy! a line can intersect a target while gun faces the opposite direction
+      // TODO: pass an instance of math/ray with origin & vector
+      // TODO: target2 would still be killed before target3 even if former in bg
+      std::cout << "Target: " << i_target << '\n';
       BoundingBox bounding_box = target_entry.bounding_box;
       bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
 

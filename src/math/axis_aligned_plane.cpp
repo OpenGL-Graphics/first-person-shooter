@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "math/axis_aligned_plane.hpp"
 
 using namespace math;
@@ -13,8 +15,9 @@ AxisAlignedPlane::AxisAlignedPlane(float* x, float* y, float* z):
 /**
  * Calculates intersection point of AA-Plane and line defined by its parameteric equation
  * Line defined by a point and a vector
+ * @returns False if plane is behind directed ray (i.e. no intersection)
  */
-glm::vec3 AxisAlignedPlane::intersect_line(const glm::vec3& point, const glm::vec3& vector) const {
+bool AxisAlignedPlane::intersect_line(const glm::vec3& point, const glm::vec3& vector, glm::vec3& intersection_point) const {
   float t;
 
   if (z0 != nullptr) {
@@ -24,12 +27,17 @@ glm::vec3 AxisAlignedPlane::intersect_line(const glm::vec3& point, const glm::ve
   } else if (x0 != nullptr) {
     t = (*x0 - point.x) / vector.x;
   }
+  std::cout << "t: " << t;
 
-  glm::vec3 intersection_point = {
+  // when t < 0 => plane is behind the ray (so no intersection)
+  if (t < 0)
+    return false;
+
+  intersection_point = {
     point.x + t * vector.x,
     point.y + t * vector.y,
     point.z + t * vector.z,
   };
 
-  return intersection_point;
+  return true;
 }
