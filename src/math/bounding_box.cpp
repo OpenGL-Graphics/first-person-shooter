@@ -58,10 +58,9 @@ void BoundingBox::calculate_center_diagonal() {
  * Intersection point between 3D line & plane: https://www.youtube.com/watch?v=Td9CZGkqrSg
  * Line defined in 3d by parameteric equations: x = x0 + a*t, y = y0 + b*t, z = z0 + c*t
  * Two parameters below define 3D line corresp. to camera's line of sight
- * @param point Camera position
- * @param vector Camera's look direction
+ * @param ray Camera look direction
  */
-bool BoundingBox::intersects(const glm::vec3& point, const glm::vec3& vector) {
+bool BoundingBox::intersects(const Ray& ray) {
   // six AA-Planes tangent to bbox faces
   AxisAlignedPlane plane_minx(&min.x, nullptr, nullptr);
   AxisAlignedPlane plane_maxx(&max.x, nullptr, nullptr);
@@ -74,7 +73,7 @@ bool BoundingBox::intersects(const glm::vec3& point, const glm::vec3& vector) {
   for (const AxisAlignedPlane& aa_plane : aa_planes) {
     // find intersection points between line and bounding box mathematical (unbounded) plane
     glm::vec3 intersection_point;
-    bool is_plane_behind_ray = !aa_plane.intersect_line(point, vector, intersection_point);
+    bool is_plane_behind_ray = !aa_plane.intersect_line(ray, intersection_point);
 
     // bbox plane behind the ray
     if (is_plane_behind_ray) {

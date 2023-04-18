@@ -1,12 +1,15 @@
 #include <iostream>
 
 #include "controls/mouse_handler.hpp"
+
 #include "math/transformation.hpp"
 #include "math/bounding_box.hpp"
-#include "globals/score.hpp"
+#include "math/ray.hpp"
 
 #include "entries/target_entry.hpp"
+
 #include "globals/targets.hpp"
+#include "globals/score.hpp"
 
 /* Static class members require a declaration in *.cpp (to allocate space for them) */
 CameraFPS* MouseHandler::m_camera;
@@ -36,30 +39,32 @@ void MouseHandler::init(Window* window, CameraFPS* camera, Audio* audio) {
  * Check for intersection between camera's line of sight & cube
  */
 void MouseHandler::on_mouse_click(GLFWwindow* window, int button, int action, int mods) {
-  if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-    // play gun shot sound
-    m_audio->shot();
+  // callback called for all mouse buttons and on press & release
+  if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS)
+    return;
 
-    for (size_t i_target = 0; i_target < targets.size(); ++i_target) {
-      TargetEntry& target_entry = targets[i_target];
-      if (target_entry.is_dead)
-        continue;
+  // play gun shot sound
+  m_audio->shot();
+  Ray ray(m_camera->position, m_camera->direction);
 
-      // TODO: pass an instance of math/ray with origin & vector
-      // TODO: target2 would still be killed before target3 even if former in bg
-      std::cout << "Target: " << i_target << '\n';
-      BoundingBox bounding_box = target_entry.bounding_box;
-      bool is_intersecting = bounding_box.intersects(m_camera->position, m_camera->direction);
+  for (size_t i_target = 0; i_target < targets.size(); ++i_target) {
+    TargetEntry& target_entry = targets[i_target];
+    if (target_entry.is_dead)
+      continue;
 
-      // remove target & increase score on intersection
-      if (is_intersecting) {
-        target_entry.is_dead = true;
-        score++;
-        std::cout << "Intersecting!" << '\n';
-        return;
-      } else {
-        std::cout << "Not intersecting!" << '\n';
-      }
+    // TODO: target2 would still be killed before target3 even if former in bg
+    std::cout << "Target: " << i_target << '\n';
+    BoundingBox bounding_box = target_entry.bounding_box;
+    bool is_intersecting = bounding_box.intersects(ray);
+
+    // remove target & increase score on intersection
+    if (is_intersecting) {
+      target_entry.is_dead = true;
+      score++;
+      std::cout << "Intersecting!" << '\n';
+      return;
+    } else {
+      std::cout << "Not intersecting!" << '\n';
     }
   }
 }

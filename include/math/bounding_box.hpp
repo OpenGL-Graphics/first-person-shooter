@@ -5,6 +5,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "math/ray.hpp"
+
 struct BoundingBox {
   static const int NO_COLLISION = -1;
 
@@ -22,7 +24,7 @@ struct BoundingBox {
 
   bool check_collision(const BoundingBox& bounding_box);
   int check_collision(const std::vector<BoundingBox>& bounding_boxes);
-  bool intersects(const glm::vec3& point, const glm::vec3& vector);
+  bool intersects(const Ray& ray);
 
   /* Friend: non-member function that has access to class' private fields */
   friend std::ostream& operator<<(std::ostream& stream, const BoundingBox& bbox);
