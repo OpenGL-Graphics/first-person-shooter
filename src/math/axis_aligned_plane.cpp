@@ -4,13 +4,15 @@
 
 using namespace math;
 
-/* AA-Planes have two coords that are null (i.e. z = z0 or y = y0 or x = x0) */
-AxisAlignedPlane::AxisAlignedPlane(float* x, float* y, float* z):
-  x0(x),
-  y0(y),
-  z0(z)
-{
-}
+/**
+ * AA-Planes has a main plane to which it's paralle (xy, xz, yz plane),
+ * and a scalar: translation offset from the origin
+ * Equ: z = scalar (axis=xy) or y = scalar (axis=xz) or x = scalar (axis=yz)
+ */
+AxisAlignedPlane::AxisAlignedPlane(float scalar_plane, AxisPlane axis_plane):
+  scalar(scalar_plane),
+  axis(axis_plane)
+{}
 
 /**
  * Calculates intersection point of AA-Plane and ray defined by its line's parameteric equation
@@ -22,12 +24,15 @@ bool AxisAlignedPlane::intersect_line(const Ray& ray, glm::vec3& intersection_po
   glm::vec3 vector = ray.direction;
   float t;
 
-  if (z0 != nullptr) {
-    t = (*z0 - point.z) / vector.z;
-  } else if (y0 != nullptr) {
-    t = (*y0 - point.y) / vector.y;
-  } else if (x0 != nullptr) {
-    t = (*x0 - point.x) / vector.x;
+  switch (axis) {
+    case AxisPlane::XY: // plane z = scalar
+      t = (scalar - point.z) / vector.z;
+      break;
+    case AxisPlane::XZ: // plane y = scalar
+      t = (scalar - point.y) / vector.y;
+      break;
+    case AxisPlane::YZ: // plane x = scalar
+      t = (scalar - point.x) / vector.x;
   }
   std::cout << "t: " << t;
 

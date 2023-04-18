@@ -2,8 +2,8 @@
 #include <iostream>
 #include <glm/gtx/string_cast.hpp>
 
-#include "math/bounding_box.hpp"
 #include "math/axis_aligned_plane.hpp"
+#include "math/bounding_box.hpp"
 
 using namespace math;
 
@@ -62,18 +62,18 @@ void BoundingBox::calculate_center_diagonal() {
  */
 bool BoundingBox::intersects(const Ray& ray) {
   // six AA-Planes tangent to bbox faces
-  AxisAlignedPlane plane_minx(&min.x, nullptr, nullptr);
-  AxisAlignedPlane plane_maxx(&max.x, nullptr, nullptr);
-  AxisAlignedPlane plane_miny(nullptr, &min.y, nullptr);
-  AxisAlignedPlane plane_maxy(nullptr, &max.y, nullptr);
-  AxisAlignedPlane plane_minz(nullptr, nullptr, &min.z);
-  AxisAlignedPlane plane_maxz(nullptr, nullptr, &max.z);
+  AxisAlignedPlane plane_minx(min.x, AxisPlane::YZ);
+  AxisAlignedPlane plane_maxx(max.x, AxisPlane::YZ);
+  AxisAlignedPlane plane_miny(min.y, AxisPlane::XZ);
+  AxisAlignedPlane plane_maxy(max.y, AxisPlane::XZ);
+  AxisAlignedPlane plane_minz(min.z, AxisPlane::XY);
+  AxisAlignedPlane plane_maxz(max.z, AxisPlane::XY);
   std::vector<AxisAlignedPlane> aa_planes = {plane_minx, plane_maxx, plane_miny, plane_maxy, plane_minz, plane_maxz};
 
   for (const AxisAlignedPlane& aa_plane : aa_planes) {
     // find intersection points between line and bounding box mathematical (unbounded) plane
-    glm::vec3 intersection_point;
-    bool is_plane_behind_ray = !aa_plane.intersect_line(ray, intersection_point);
+    glm::vec3 intersect;
+    bool is_plane_behind_ray = !aa_plane.intersect_line(ray, intersect);
 
     // bbox plane behind the ray
     if (is_plane_behind_ray) {
@@ -82,28 +82,29 @@ bool BoundingBox::intersects(const Ray& ray) {
     }
 
     // check if intersection point belongs to bounding box face rectangle
-    if (aa_plane.y0 == nullptr && aa_plane.z0 == nullptr) { // planes x = minx and x = maxx
-      if ((intersection_point.y >= min.y && intersection_point.y <= max.y) &&
-          (intersection_point.z >= min.z && intersection_point.z <= max.z)) {
-        std::cout << " inside" << '\n';
-        return true;
-      }
-    }
+    switch (aa_plane.axis) {
+      case AxisPlane::YZ: // planes x = minx and x = maxx
+        if ((intersect.y >= min.y && intersect.y <= max.y) &&
+            (intersect.z >= min.z && intersect.z <= max.z)) {
+          std::cout << " inside" << '\n';
+          return true;
+        }
+        break;
 
-    if (aa_plane.x0 == nullptr && aa_plane.z0 == nullptr) { // planes y = miny and y = maxy
-      if ((intersection_point.x >= min.x && intersection_point.x <= max.x) &&
-          (intersection_point.z >= min.z && intersection_point.z <= max.z)) {
-        std::cout << " inside" << '\n';
-        return true;
-      }
-    }
+      case AxisPlane::XZ: // planes y = miny and y = maxy
+        if ((intersect.x >= min.x && intersect.x <= max.x) &&
+            (intersect.z >= min.z && intersect.z <= max.z)) {
+          std::cout << " inside" << '\n';
+          return true;
+        }
+        break;
 
-    if (aa_plane.x0 == nullptr && aa_plane.y0 == nullptr) { // planes z = minz and z = maxz
-      if ((intersection_point.x >= min.x && intersection_point.x <= max.x) &&
-          (intersection_point.y >= min.y && intersection_point.y <= max.y)) {
-        std::cout << " inside" << '\n';
-        return true;
-      }
+      case AxisPlane::XY: // planes z = minz and z = maxz
+        if ((intersect.x >= min.x && intersect.x <= max.x) &&
+            (intersect.y >= min.y && intersect.y <= max.y)) {
+          std::cout << " inside" << '\n';
+          return true;
+        }
     }
 
     std::cout << " outside" << '\n';
