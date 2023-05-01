@@ -26,11 +26,10 @@ void CameraFPS::zoom(Zoom z) {
  * Check if future camera position is too close from its distance to closest wall tile
  * Used to prevent camera from going through walls
  * @param position_future Next position of camera
+ * Update: Turns out brute force collision detection wasn't responsible for low FPS (maybe frustum culling was)
  */
 bool CameraFPS::is_close_to_boundaries(const glm::vec3& position_future) {
-  ///
-  return false;
-  ///
+  // return false;
 
   std::vector<float> distances;
   std::transform(boundaries.begin(), boundaries.end(), std::back_inserter(distances),
@@ -67,9 +66,7 @@ void CameraFPS::move(Direction d) {
   }
 
   // only move camera if not too close to walls
-  std::vector<Direction> dirs = {
-    Direction::FORWARD, Direction::BACKWARD, Direction::RIGHT, Direction::LEFT, Direction::UP, Direction::DOWN};
-  if (std::find(dirs.begin(), dirs.end(), d) != dirs.end() && !is_close_to_boundaries(position_future))
+  if (!is_close_to_boundaries(position_future))
     position = position_future;
 }
 
